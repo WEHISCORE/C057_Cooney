@@ -1,3 +1,3 @@
 fastqs,sample,library_type
-/wehisan/general/user_managed/grpu_naik.s_2/2019_Sequencing_Runs/jamesC_10X_040919/CellRanger/HHW3NBGXC,5GEX,Gene Expression
-/wehisan/general/user_managed/grpu_naik.s_2/2019_Sequencing_Runs/jamesC_10X_040919/CellRanger/HNYGGAFXY,HashTag,Antibody Capture
+/wehisan/general/user_managed/grpu_naik.s_2/2019_Sequencing_Runs/jamesC_10X_040919/CellRanger/HHW3NBGXC/outs/fastq_path,5GEX,Gene Expression
+/wehisan/general/user_managed/grpu_naik.s_2/2019_Sequencing_Runs/jamesC_10X_040919/CellRanger/HNYGGAFXY/outs/fastq_path,HashTag,Antibody Capture
