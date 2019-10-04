@@ -1,5 +1,6 @@
 library(scater)
 library(here)
+library(cowplot)
 source(here("analysis", "helper_functions.R"))
 
 sce <- readRDS(here("data", "SCEs", "HTLV_GEX_HTO.CellRanger.SCE.rds"))
@@ -26,14 +27,19 @@ hto <- normalizeSCE(hto)
 hto <- runPCA(hto, ncomponents = 5)
 set.seed(11278)
 hto <- runTSNE(hto)
+set.seed(18078)
+hto <- runUMAP(hto)
 
 library(scran)
 g <- buildSNNGraph(hto, k = 60, use.dimred = "PCA")
 clust <- igraph::cluster_louvain(g)$membership
 sort(table(clust), decreasing = TRUE)
 hto$cluster <- factor(clust)
+# cluster_colours <- setNames(
+#   Polychrome::dark.colors(nlevels(hto$cluster)),
+#   levels(hto$cluster))
 cluster_colours <- setNames(
-  Polychrome::dark.colors(nlevels(hto$cluster)),
+  c(colorblindr::palette_OkabeIto, "black"),
   levels(hto$cluster))
 
 .plotHeatmap(
@@ -47,7 +53,8 @@ cluster_colours <- setNames(
   show_colnames = FALSE,
   fontsize = 8,
   annotation_colors = list(cluster = cluster_colours),
-  color = viridis::inferno(100))
+  color = viridis::inferno(100),
+  main = "Log-expression of HTOs")
 
 .plotHeatmap(
   object = hto,
@@ -60,11 +67,20 @@ cluster_colours <- setNames(
   show_colnames = FALSE,
   fontsize = 8,
   annotation_colors = list(cluster = cluster_colours),
-  color = colorspace::divergex_hcl(n = 100, palette = "RdBu", rev = TRUE))
+  color = colorspace::divergex_hcl(n = 100, palette = "RdBu", rev = TRUE),
+  main = "Row-normalized log-expression of HTOs")
 
 plotTSNE(hto, colour_by = "cluster", point_size = 0) +
   geom_point(aes(colour = colour_by), size = 0.5) +
-  scale_colour_manual(values = cluster_colours, name = "cluster")
+  scale_colour_manual(values = cluster_colours, name = "cluster") +
+  ggtitle("t-SNE: HTOs") +
+  theme_cowplot()
+
+plotUMAP(hto, colour_by = "cluster", point_size = 0) +
+  geom_point(aes(colour = colour_by), size = 0.5) +
+  scale_colour_manual(values = cluster_colours, name = "cluster") +
+  ggtitle("UMAP: HTOs") +
+  theme_cowplot()
 
 stopifnot(identical(colnames(sce), colnames(hto)))
 sce$hto_cluster <- hto$cluster
