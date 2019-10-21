@@ -491,7 +491,7 @@ summary(sizeFactors(sce))
 We check that the size factors are roughly aligned with the total library sizes (Figure \@ref(fig:normplot)).
 Deviations from the diagonal correspond to composition biases due to differential expression between cell subpopulations.
 
-```{r normplot, fig.cap = "Size factors from deconvolution, plotted against library sizes for all cells in each dataset. Axes are shown on a log-scale.", results = "hide", fig.asp = 3}
+```{r normplot, fig.cap = "Size factors from deconvolution, plotted against library sizes for all cells in each dataset. Axes are shown on a log-scale.", results = "hide", fig.asp = 1}
 xlim <- c(0.5, max(sce$total_counts) / 1e3)
 ylim <- range(sizeFactors(sce))
 
