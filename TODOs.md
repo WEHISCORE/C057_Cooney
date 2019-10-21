@@ -1,1 +1,2 @@
-- [ ] Write up `demultiplexing.R` into a proper `C057_Cooney.demultiplexing.Rmd`
+- [ ] Write up `demultiplexing.R` into a proper `C057_Cooney.demultiplex.Rmd`
+- [ ] Write `index.Rmd`

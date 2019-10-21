@@ -143,7 +143,7 @@ colData(sce) <- colData(sce) %>%
   select(-Sample) %>%
   mutate(cluster = hto$cluster) %>%
   left_join(hto_df) %>%
-  select(-cluster) %>%
+  rename(hto_cluster = cluster) %>%
   DataFrame()
 
 # NOTE: James was targetting ~2000 cells/sample
