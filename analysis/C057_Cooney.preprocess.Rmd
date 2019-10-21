@@ -1,0 +1,552 @@
+---
+title: "Preprocessing the Cooney (C057) memory CD4 T-cell data set"
+description: |
+author:
+  - name: Peter Hickey 
+    url: https://peterhickey.org
+    affiliation: WEHI SCORE
+    affiliation_url: https://www.wehi.edu.au/people/shalin-naik/3310/score
+date: "`r Sys.Date()`"
+output: distill::distill_article
+editor_options: 
+  chunk_output_type: console
+bibliography: ref.bib
+---
+
+```{r setup}
+library(SingleCellExperiment)
+library(here)
+library(rmarkdown)
+library(janitor)
+library(BiocStyle)
+library(ggplot2)
+library(cowplot)
+
+source(here("analysis", "helper_functions.R"))
+
+# NOTE: Using >= 4 cores siezes up my laptop. Can use more on RStudio server.
+options(
+  "mc.cores" = 
+    ifelse(Sys.info()[["nodename"]] == "rstudio-2.hpc.wehi.edu.au", 8L, 2L))
+register(MulticoreParam(workers = getOption("mc.cores")))
+
+knitr::opts_chunk$set(fig.path = "C057_Cooney_preprocess_files/")
+```
+
+# Setting up the data
+
+We start from the demultiplexed *SingleCellExperiment* object created in ['Demultiplexing the Cooney (C057) memory CD4 T-cell'](C057_Cooney_demultiplex.html).
+
+```{r}
+sce <- readRDS(here("data", "SCEs", "C057_Cooney.demultiplexed.SCE.rds"))
+```
+
+## Incorporating cell-based annotation
+
+Cell-based annotations are included in the *colData* of the *SingleCellExperiment*.
+We store the counts from the hashtag features in the  *colData* of the *SingleCellExperiment*.
+
+```{r}
+colData(sce) <- endoapply(colData(sce), function(x) {
+  x[is.na(x)] <- "Unknown"
+  factor(x)
+})
+colnames(sce) <- sce$Barcode
+
+hashtags <- sce[!grepl("ENS", rownames(sce)), ]
+sce <- sce[grepl("ENS", rownames(sce)), ]
+colData(sce) <- cbind(colData(sce), as.matrix(t(assay(hashtags))))
+```
+
+```{r}
+hto_to_sample_df <- as.data.frame(colData(sce)) %>%
+  dplyr::select(hto_cluster, HTO, Sample, Treatment, Replicate) %>%
+  dplyr::distinct()
+
+# Some useful colours
+hto_cluster_colours <- setNames(
+  colorblindr::palette_OkabeIto,
+  levels(sce$hto_cluster))
+hto_cluster_colours <- hto_cluster_colours[!is.na(names(hto_cluster_colours))]
+hto_colours <- hto_cluster_colours
+names(hto_colours) <- dplyr::inner_join(
+  data.frame(hto_cluster = names(hto_cluster_colours)),
+  hto_to_sample_df) %>%
+  dplyr::pull(HTO)
+sample_colours <- hto_cluster_colours
+names(sample_colours) <- dplyr::inner_join(
+  data.frame(hto_cluster = names(sample_colours)),
+  hto_to_sample_df) %>%
+  dplyr::pull(Sample)
+treatment_colours <- c(
+  "Infected" = "#e41a1c",
+  "Uninfected" = "#377eb8",
+  "Unknown" = "grey70")
+# NOTE: No replicate_colours because we won't ever colour by this.
+```
+
+### Summary
+
+This dataset contains samples from `r nlevels(sce$Sample)` samples.
+All samples are human memory CD4+ T cells from 'humanised mice'.
+Humanised mice are an immunodeficient strain and injected with human stem cells as pups which then differentiate into human hematopoietic cells as the mice mature.
+Mice were infected or not infected with HTLV, with each condition done in biological triplicate (1 mouse / replicate).
+
+```{r experiment-by-sample, fig.asp = 1/4, fig.cap = "Breakdown of the samples"}
+ggplot(as.data.frame(colData(sce))) + 
+    geom_bar(aes(x = Sample, fill = Sample)) +
+    coord_flip() +
+    ylab("Number of droplets") +
+  scale_fill_manual(values = sample_colours) +
+  theme_cowplot(font_size = 6)
+```
+
+```{r experiment-by-treatment, fig.asp = 1/4, fig.cap = "Breakdown of the two treatments."}
+plot_grid(
+  ggplot(as.data.frame(colData(sce))) + 
+    geom_bar(
+      aes(x = Treatment, fill = Sample),
+      position = position_fill(reverse = TRUE)) +
+    coord_flip() +
+    ylab("Frequency") +
+    scale_fill_manual(values = sample_colours) +
+    theme_cowplot(font_size = 6),
+  ggplot(as.data.frame(colData(sce))) + 
+    geom_bar(aes(x = Treatment, fill = Treatment)) +
+    coord_flip() +
+    ylab("Number of droplets") +
+    scale_fill_manual(values = treatment_colours) +
+    theme_cowplot(font_size = 6),
+  align = "h",
+  ncol = 2)
+```
+
+## Incorporating gene-based annotation
+
+Having quantified gene expression against the Ensembl gene annotation, we have Ensembl-style identifiers for the genes. 
+These identifiers are used as they are unambiguous and highly stable. 
+However, they are difficult to interpret compared to the gene symbols which are more commonly used in the literature.
+Given the Ensembl identifiers, we obtain the corresponding gene symbols using annotation packages available through Bioconductor.
+Henceforth, we will use gene symbols (where available) to refer to genes in our analysis and otherwise use the Ensembl-style gene identifiers^[Some care is taken to account for missing and duplicate gene symbols; missing symbols are replaced with the Ensembl identifier and duplicated symbols are concatenated with the (unique) Ensembl identifiers.].
+
+```{r}
+library(scater)
+library(AnnotationHub)
+ah <- AnnotationHub()
+EnsDb.Hsapiens.v94 <- query(ah, c("EnsDb", "Homo Sapiens", 94))[[1]]
+rownames(sce) <- uniquifyFeatureNames(rowData(sce)$ID, rowData(sce)$Symbol)
+# Add chromosome location so we can filter on mitochondrial genes.
+location <- mapIds(
+  x = EnsDb.Hsapiens.v94, 
+  # NOTE: Need to remove gene version number prior to lookup.
+  keys = rowData(sce)$ID,
+  keytype = "GENEID",
+  column = "SEQNAME")
+rowData(sce)$CHR <- location
+```
+
+
+# Quality control of cells
+
+## Defining the quality control metrics
+
+Low-quality cells need to be removed to ensure that technical effects do not distort downstream analysis results.
+We use several quality control (QC) metrics to measure the quality of the cells:
+
+- `log10_total_counts`: This measures the library size of the cells, which is the total sum of counts across both genes and spike-in transcripts. We want cells to have high library sizes as this means more RNA has been successfully captured during library preparation. 
+- `total_features_by_counts`: This is the number of expressed features^[The number of expressed genes refers to the number of genes which have non-zero counts (ie. they have been identified in the cell at least once)] in each cell. Cells with few expressed features are likely to be of poor quality, as the diverse transcript population has not been successfull captured. 
+- `pct_counts_Mt`: This measures the proportion of reads which are mapped to mitochondrial RNA. If there is a higher than expected proportion of mitochondrial RNA this is often symptomatic of a cell which is under stress and is therefore of low quality and will not be used for the analysis. 
+
+In summary, we aim to remove cells with low library sizes, few expressed genes, and very high percentages of spike-in transcripts or mitochondrial DNA.
+
+```{r, results = "hide"}
+is_mito <- rowData(sce)$CHR == "MT"
+summary(is_mito)
+sce <- calculateQCMetrics(
+  sce, 
+  feature_controls = list(Mt = which(is_mito)))
+```
+
+## Visualizing the QC metrics
+
+The distributions of these metrics are shown in Figure \@ref(fig:qcplot-by-sample), stratified by sample
+
+```{r qcplot-by-sample, fig.cap = "Distributions of various QC metrics for all cells in the dataset. This includes the library sizes, number of expressed genes, and proportion of reads mapped to spike-in transcripts or mitochondrial genes.", layout = "l-body-outset", fig.asp = 0.7}
+multiplot(
+  plotColData(
+    object = sce, 
+    y = "log10_total_counts",
+    x = "Sample",
+    colour_by = "Treatment",
+    theme_size = 6) + 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+    ylim(c(0, NA)) +
+    scale_fill_manual(values = treatment_colours, name = "Treatment"),
+  plotColData(
+    object = sce,
+    y = "log10_total_features_by_counts", 
+    x = "Sample",
+    colour_by = "Treatment",
+    theme_size = 6) + 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+    ylim(c(0, NA)) +
+    scale_fill_manual(values = treatment_colours, name = "Treatment"),
+  plotColData(
+    object = sce,
+    y = "pct_counts_Mt", 
+    x = "Sample",
+    colour_by = "Treatment",
+    theme_size = 6) + 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+    ylim(c(0, 100)) +
+    scale_fill_manual(values = treatment_colours, name = "Treatment"),
+  cols = 2)
+```
+
+Figure \@ref(fig:qcplot-by-sample) shows that the vast majority of samples are good-quality; the library sizes are in the thousands^[This is consistent with the use of UMI counts rather than read counts, as each transcript molecule can only produce one UMI count but can yield many reads after fragmentation.], we observe around two thousand expressed genes per cell, and moderate mitochondrial percentages per cell.
+
+It is notable that the `Unknown` samples have much smaller library sizes and fewer genes detected than the other samples.
+
+**TODO:** What is the interpretation of the above result?
+
+It is also valuable to examine how the other QC metrics behave with respect to each other (Figure \@ref(fig:qcbiplot)). 
+Generally, they will be in rough agreement, i.e., cells with low total counts will also have low numbers of expressed features and mitochondrial proportions.
+Clear discrepancies may correspond to technical differences between batches of cells or genuine biological differences in RNA content.
+
+```{r qcbiplot, fig.cap = "Behaviour of each QC metric compared to the total number of expressed features. Each point represents a cell in the data set.", fig.width = 10, fig.asp = 0.5}
+par(mfrow = c(1, 2))
+plot(
+  x = sce$total_features_by_counts, 
+  y = sce$total_counts / 1e3,
+  xlab = "Number of expressed genes",
+  ylab = "Library size (thousands)")
+plot(
+  x = sce$total_features_by_counts, 
+  y = sce$pct_counts_Mt,
+  xlab = "Number of expressed genes",
+  ylab = "Mitochondrial proportion (%)")
+```
+
+For now, we retain the samples of `Unknown` origin because it may be interesting to see if these are from specific cell types.
+
+## Identifying outliers by each metric
+
+Outliers are defined based on the median absolute deviation (MADs) from the median value of each metric across all cells. 
+We remove small and large outliers for the library size and the number of expressed features, and large outliers for the spike-in proportions. 
+Removal of low-quality cells is then performed by combining the filters for all of the metrics.
+
+In order to avoid removing all the `Unknown` cells, we identify and remove outliers using sample-specific metrics.
+
+```{r}
+libsize_drop <- isOutlier(
+  metric = sce$total_counts, 
+  nmads = 3,
+  type = "lower", 
+  log = TRUE,
+  batch = sce$Sample)
+libsize_drop_df <- data.frame(
+  Sample = colnames(attributes(libsize_drop)$thresholds),
+  lower = attributes(libsize_drop)$thresholds["lower", ])
+feature_drop <- isOutlier(
+  metric = sce$total_features_by_counts,
+  nmads = 3, 
+  type = "lower", 
+  log = TRUE,
+  batch = sce$Sample)
+feature_drop_df <- data.frame(
+  Sample = colnames(attributes(feature_drop)$thresholds),
+  lower = attributes(feature_drop)$thresholds["lower", ])
+mito_drop <- isOutlier(
+  metric = sce$pct_counts_Mt, 
+  nmads = 3, 
+  type = "higher",
+  batch = sce$Sample)
+mito_drop_df <- data.frame(
+  Sample = colnames(attributes(mito_drop)$thresholds),
+  lower = attributes(mito_drop)$thresholds["higher", ])
+```
+
+The following table summarises the QC cutoffs:
+
+```{r}
+qc_cutoffs_df <- Reduce(
+  function(x, y) dplyr::inner_join(x, y, by = "Sample"),
+  list(libsize_drop_df, feature_drop_df, mito_drop_df))
+colnames(qc_cutoffs_df) <- c(
+  "Sample", "total counts", "total features", "%mito")
+qc_cutoffs_df %>%
+  dplyr::inner_join(
+    dplyr::distinct(
+      as.data.frame(colData(sce))[, c("Sample"), drop = FALSE]),
+    by = "Sample") %>%
+  dplyr::select(Sample, dplyr::everything()) %>%
+  dplyr::arrange(Sample) %>%
+  knitr::kable(caption = "Sample-specific QC metric cutoffs", digits = 1)
+```
+
+The vast majority of cells are retained for all samples.
+
+```{r}
+sce_pre_QC_outlier_removal <- sce
+sce <- sce[, !(libsize_drop | feature_drop | mito_drop)]
+data.frame(
+  ByLibSize = tapply(
+    libsize_drop, 
+    sce_pre_QC_outlier_removal$Sample, 
+    sum),
+  ByFeature = tapply(
+    feature_drop, 
+    sce_pre_QC_outlier_removal$Sample, 
+    sum), 
+  ByMito = tapply(
+    mito_drop, 
+    sce_pre_QC_outlier_removal$Sample, 
+    sum,
+    na.rm = TRUE),
+  Remaining = as.vector(unname(table(sce$Sample))),
+  PercRemaining = round(
+    100 * as.vector(unname(table(sce$Sample))) /
+      as.vector(
+        unname(
+          table(sce_pre_QC_outlier_removal$Sample))), 1)) %>%
+  tibble::rownames_to_column("Sample") %>%
+  knitr::kable(
+    caption = "Number of samples removed by each QC step and the number of samples remaining.")
+```
+
+## Summary
+
+Finally, we look at the QC metrics for the cells remaining after outlier removal.
+Figure \@ref(fig:qcplot-post-outlier-removal-by-sample) shows the samples have similar QC metrics and the extreme values have been removed, as is to be expected following quality control.
+
+```{r qcplot-post-outlier-removal-by-sample, fig.cap = "Distributions of various QC metrics for all cells in the data set. This includes the library sizes, number of expressed genes, and proportion of reads mapped to spike-in transcripts or mitochondrial genes.", layout = "l-body-outset", fig.asp = 0.7}
+multiplot(
+  plotColData(
+    object = sce, 
+    y = "log10_total_counts",
+    x = "Sample",
+    colour_by = "Treatment",
+    theme_size = 6) + 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+    ylim(c(0, NA)) +
+    scale_fill_manual(values = treatment_colours, name = "Treatment"),
+  plotColData(
+    object = sce,
+    y = "log10_total_features_by_counts", 
+    x = "Sample",
+    colour_by = "Treatment",
+    theme_size = 6) + 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+    ylim(c(0, NA)) +
+    scale_fill_manual(values = treatment_colours, name = "Treatment"),
+  plotColData(
+    object = sce,
+    y = "pct_counts_Mt", 
+    x = "Sample",
+    colour_by = "Treatment",
+    theme_size = 6) + 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+    ylim(c(0, 100)) +
+    scale_fill_manual(values = treatment_colours, name = "Treatment"),
+  cols = 2)
+```
+
+Some basic summaries of the quality-controlled data are shown in the following table.
+The quality controlled data maintain a reasonable representation of each cytokine type.
+
+```{r}
+sce_start <- readRDS(here("data", "SCEs", "C057_Cooney.demultiplexed.SCE.rds"))
+colData(sce_start) <- endoapply(colData(sce_start), function(x) {
+  x[is.na(x)] <- "Unknown"
+  factor(x)
+})
+colnames(sce_start) <- sce_start$Barcode
+
+dplyr::left_join(
+  .adf(colData(sce_start)) %>%
+    dplyr::group_by(Sample) %>%
+    dplyr::summarise(Total = dplyr::n()),
+  .adf(colData(sce)) %>%
+    dplyr::group_by(Sample) %>%
+    dplyr::summarise(total = dplyr::n())) %>%
+  dplyr::mutate(
+    total = ifelse(is.na(total), 0L, total),
+    percent_remaining = 100 * total / Total) %>%
+  dplyr::rename(number_remaining = total) %>%
+  dplyr::select(
+    Sample,
+    number_remaining,
+    percent_remaining) %>%
+  dplyr::arrange(Sample) %>%
+  knitr::kable(
+    caption = "Number and percentage of single-cells passing QC cross-tabulated by sample.",
+    digits = 0)
+```
+
+Figure \@ref(fig:breakdown-by-sample-post-QC) shows this visually. 
+
+```{r breakdown-by-sample-post-QC, fig.asp = 1/4, fig.cap = "Breakdown of sample types after QC."}
+plot_grid(
+  ggplot(as.data.frame(colData(sce))) + 
+    geom_bar(
+      aes(x = Treatment, fill = Sample),
+      position = position_fill(reverse = TRUE)) +
+    coord_flip() +
+    ylab("Frequency") +
+    scale_fill_manual(values = sample_colours) +
+    theme_cowplot(font_size = 6),
+  ggplot(as.data.frame(colData(sce))) + 
+    geom_bar(aes(x = Treatment, fill = Treatment)) +
+    coord_flip() +
+    ylab("Number of droplets") +
+    scale_fill_manual(values = treatment_colours) +
+    theme_cowplot(font_size = 6),
+  align = "h",
+  ncol = 2)
+```
+
+# Examining gene-level metrics
+
+## Inspecting the most highly expressed genes
+
+Figure \@ref(fig:topgenes) shows the most highly expressed genes across the cell population in the combined data set.
+Some of them are mitochondrial genes, matching what we've already seen in the QC metrics, and ribosomal protein genes, which commonly are amongst the most highly expressed genes in scRNA-seq data.
+
+```{r topgenes, fig.asp = 1, fig.cap = "Percentage of total counts assigned to the top 50 most highly-abundant features in the combined data set. For each feature, each bar represents the percentage assigned to that feature for a single cell, while the circle represents the average across all cells. Bars are coloured by the total number of expressed features in each cell, while circles are coloured according to whether the feature is labelled as a control feature."}
+plotHighestExprs(sce, n = 50)
+```
+
+Figure \@ref(fig:topgenes-filtered) shows the most highly expressed endogeneous genes after excluding the mitochondrial and ribosomal protein genes.
+
+```{r topgenes-filtered, fig.asp = 1, fig.cap = "Percentage of total counts assigned to the top 50 most highly-abundant features in the combined data set. For each feature, each bar represents the percentage assigned to that feature for a single cell, while the circle represents the average across all cells. Bars are coloured by the total number of expressed features in each cell, while circles are coloured according to whether the feature is labelled as a control feature."}
+plotHighestExprs(sce[!grepl("^RPL|^RPS|^MT-", rownames(sce)), ], n = 50)
+```
+
+Reassuringly, the most highly expressed genes are those we might expect to see in T cells (e.g., *ACTB*, *B2M*, *TMSB4X*).
+
+## Filtering out low-abundance genes
+
+Low-abundance genes are problematic as zero or near-zero counts do not contain much information for reliable statistical inference [@bourgon2010independent].
+These genes typically do not provide enough evidence to reject the null hypothesis during testing, yet they still increase the severity of the multiple testing correction.
+In addition, the discreteness of the counts may interfere with statistical procedures, e.g., by compromising the accuracy of continuous approximations.
+Thus, low-abundance genes are often removed in many RNA-seq analysis pipelines before the application of downstream methods.
+
+The 'optimal' choice of filtering strategy depends on the downstream application.
+A more aggressive filter is usually required to remove discreteness (e.g., for normalization) compared to that required for removing underpowered tests.
+For hypothesis testing, the filter statistic should also be independent of the test statistic under the null hypothesis.
+Thus, we (or the relevant function) will filter at each step as needed, rather than applying a single filter for the entire analysis.
+
+Several metrics can be used to define low-abundance genes.
+The most obvious is the average count for each gene, computed across all cells in the data set.
+We typically observe a peak of moderately expressed genes following a plateau of lowly expressed genes (Figure \@ref(fig:abhist)).
+
+```{r abhist, fig.cap = "Histogram of log-average counts for all genes in the combined data set.", results = "hide"}
+ave_counts <- calcAverage(sce, use_size_factors = FALSE)
+par(mfrow = c(1, 1))
+hist(
+  x = log10(ave_counts), 
+  breaks = 100, 
+  main = "", 
+  col = "grey",
+  xlab = expression(Log[10] ~ "average count"))
+to_keep <- ave_counts > 0
+sce <- sce[to_keep, ]
+```
+
+We remove `r sum(!to_keep)` genes that are not expressed in any cell.
+Such genes provide no information and would be removed by any filtering strategy.
+We retain `r sum(to_keep)` for downstream analysis.
+
+# Normalization of cell-specific biases
+
+Read counts are subject to differences in capture efficiency and sequencing depth between cells [@stegle2015computational].
+Normalization is required to eliminate these cell-specific biases prior to downstream quantitative analyses.
+This is often done by assuming that most genes are not differentially expressed (DE) between cells.
+Any systematic difference in count size across the non-DE majority of genes between two cells is assumed to represent bias and is removed by scaling.
+More specifically, 'size factors' are calculated that represent the extent to which counts should be scaled in each library.
+
+## Using the deconvolution method to deal with zero counts
+
+Size factors can be computed with several different approaches, e.g., using the `estimateSizeFactorsFromMatrix` function in the `r Biocpkg("DESeq2")` package [@anders2010differential;@love2014moderated], or with the `calcNormFactors` function [@robinson2010scaling] in the `r Biocpkg("edgeR")` package.
+However, single-cell data can be problematic for these bulk data-based methods due to the dominance of low and zero counts.
+To overcome this, we pool counts from many cells to increase the count size for accurate size factor estimation [@lun2016pooling].
+Pool-based size factors are then 'deconvolved' into cell-based factors for cell-specific normalization.
+This removes scaling biases associated with cell-specific differences in capture efficiency, sequencing depth and composition biases.
+
+```{r, results = "hide"}
+library(scran)
+set.seed(100)
+clusters <- quickCluster(
+  sce, 
+  use.ranks = FALSE,
+  block = sce$sample,
+  BSPARAM = BiocSingular::IrlbaParam())
+# NOTE: Some of these clusters are 'Unknown'-specific.
+round(prop.table(table(clusters, sce$Sample), 1), 2)
+sce <- computeSumFactors(sce, clusters = clusters, min.mean = 0.1)
+summary(sizeFactors(sce))
+```
+
+
+We check that the size factors are roughly aligned with the total library sizes (Figure \@ref(fig:normplot)).
+Deviations from the diagonal correspond to composition biases due to differential expression between cell subpopulations.
+
+```{r normplot, fig.cap = "Size factors from deconvolution, plotted against library sizes for all cells in each dataset. Axes are shown on a log-scale.", results = "hide", fig.asp = 3}
+xlim <- c(0.5, max(sce$total_counts) / 1e3)
+ylim <- range(sizeFactors(sce))
+
+par(mfrow = c(3, 3))
+lapply(levels(sce$Sample), function(s) {
+  sce <- sce[, sce$Sample == s]
+  plot(
+  x = sce$total_counts / 1e3, 
+  y = sizeFactors(sce), 
+  log = "xy",
+  xlab = "Library size (thousands)", 
+  ylab = "Size factor",
+  xlim = xlim,
+  ylim = ylim,
+  main = s,
+  pch = 16,
+  cex = 0.5)
+})
+```
+
+## Applying the size factors to normalize gene expression
+
+The count data are used to compute normalized log-expression values for use in downstream analyses.
+Each value is defined as the log~2~-ratio of each count to the size factor for the corresponding cell, after adding a prior count of 1 to avoid undefined values at zero counts.
+Division by the size factor ensures that any cell-specific biases are removed.
+
+```{r, results = "hide"}
+# NOTE: No need for multiBatchNorm() since the size factors were computed 
+#       jointly using all samples.
+sce <- normalize(sce)
+```
+
+# Concluding remarks
+
+```{r}
+saveRDS(
+  sce, 
+  here("data", "SCEs", "C057_Cooney.processed.SCE.rds"),
+  compress = "xz")
+```
+
+The processed *SingleCellExperiment* object is available (see [`data/SCEs/C057_Cooney.processed.SCE.rds`](../data/SCEs/C057_Cooney.processed.SCE.rds)).
+This will be used in downstream analyses, e.g. when merging the different samples onto the same coordinate system.
+
+# Additional information {.appendix}
+
+The following are available on request:
+
+- Full CSV tables of any data presented.
+- PDF/PNG files of any static plots.
+
+# Session info {.appendix}
+
+The analysis and this document were prepared using the following software:
+
+```{r}
+sessionInfo()
+```

@@ -1,0 +1,28 @@
+name: "C059_Cooney"
+output_dir: "../docs"
+navbar:
+  title: "C059"
+  left:
+    - text: "Introduction"
+      href: index.html
+    - text: "Preprocessing"
+      href: C059_Cooney_preprocess.html
+    - text: "Merging batches"
+      href: C059_Cooney_merge.html
+    - text: "Annotating cells"
+      href: C059_Cooney_annotate.html
+    - text: "Supplementary files"
+      menu:
+        - text: "FastQC reports"
+          href: ../output/FastQC/
+        - text: "scPipe reports"
+          href: ../output/scPipe/
+        - text: "Marker gene tables"
+          href: ../output/marker_genes/
+  right:
+    - icon: fa-github
+      href: https://github.com/WEHISCORE/C059_Cooney
+output:
+  distill::distill_article:
+    toc: true
+    toc_depth: 1
