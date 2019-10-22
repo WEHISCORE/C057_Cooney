@@ -529,7 +529,7 @@ sce <- normalize(sce)
 ```{r}
 saveRDS(
   sce, 
-  here("data", "SCEs", "C057_Cooney.processed.SCE.rds"),
+  here("data", "SCEs", "C057_Cooney.preprocessed.SCE.rds"),
   compress = "xz")
 ```
 
