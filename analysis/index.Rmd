@@ -1,0 +1,44 @@
+---
+title: "Analysis of Cooney (C057) memory CD4 T-cell data set"
+description: |
+author:
+  - name: Peter Hickey 
+    url: https://peterhickey.org
+    affiliation: Single Cell Open Research Endeavour (SCORE), WEHI
+    affiliation_url: https://www.wehi.edu.au/people/shalin-naik/3310/score
+date: "`r Sys.Date()`"
+output: distill::distill_article
+editor_options: 
+  chunk_output_type: console
+bibliography: ref.bib
+---
+
+```{r setup}
+library(BiocStyle)
+library(here)
+
+source(here("analysis", "helper_functions.R"))
+
+knitr::opts_chunk$set(fig.path = "C078_Wang_intro/")
+```
+
+# Overview
+
+**TODO:** Write overview of experiment
+
+This experiment used 6 samples.
+With each sample, FACS was performed to enrich for memory CD4 T-cells.
+
+Cell from each sample were barcoded using the 'Cell Hashing' technique using a hashtag oligonucleotide (HTO), then pooled and run on the 10X Chromium Single Cell 5' gene expression and VDJ kit.
+
+After sequencing, expression was quantified by aligning, filtering, barcode counting, and counting the number of UMIs mapped to each gene using [**CellRanger**](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger).
+[Version `3.1.0` of the **CellRanger** reference files](https://support.10xgenomics.com/single-cell-gene-expression/software/release-notes/build#GRCh38mm10_3.1.0) was used, which maps against GRCh38 of the reference genome and quantifies expression using gene models from Ensembl release 93.
+Count data for all endogeneous genes, as well as the HTOs and the VDJ regions, are available in this repository.
+
+This analysis is adapted from the `r BiocStyle::Biocpkg("simpleSingleCell")` workflow as well as the [**Orchestrating Single-Cell Analysis with Bioconductor book**](https://osca.bioconductor.org).
+
+# Analysis version information  {.appendix}
+
+**R version**: `r R.version.string`
+
+**Bioconductor version**: `r BiocManager::version()`

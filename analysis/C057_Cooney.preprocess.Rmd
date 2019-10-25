@@ -205,9 +205,7 @@ multiplot(
 
 Figure \@ref(fig:qcplot-by-sample) shows that the vast majority of samples are good-quality; the library sizes are in the thousands^[This is consistent with the use of UMI counts rather than read counts, as each transcript molecule can only produce one UMI count but can yield many reads after fragmentation.], we observe around two thousand expressed genes per cell, and moderate mitochondrial percentages per cell.
 
-It is notable that the `Unknown` samples have much smaller library sizes and fewer genes detected than the other samples.
-
-**TODO:** What is the interpretation of the above result?
+It is notable that the `Unknown` samples have much smaller library sizes and fewer genes detected on average than the other samples.
 
 It is also valuable to examine how the other QC metrics behave with respect to each other (Figure \@ref(fig:qcbiplot)). 
 Generally, they will be in rough agreement, i.e., cells with low total counts will also have low numbers of expressed features and mitochondrial proportions.
@@ -479,14 +477,12 @@ set.seed(100)
 clusters <- quickCluster(
   sce, 
   use.ranks = FALSE,
-  block = sce$sample,
   BSPARAM = BiocSingular::IrlbaParam())
 # NOTE: Some of these clusters are 'Unknown'-specific.
 round(prop.table(table(clusters, sce$Sample), 1), 2)
 sce <- computeSumFactors(sce, clusters = clusters, min.mean = 0.1)
 summary(sizeFactors(sce))
 ```
-
 
 We check that the size factors are roughly aligned with the total library sizes (Figure \@ref(fig:normplot)).
 Deviations from the diagonal correspond to composition biases due to differential expression between cell subpopulations.
@@ -534,7 +530,7 @@ saveRDS(
 ```
 
 The processed *SingleCellExperiment* object is available (see [`data/SCEs/C057_Cooney.processed.SCE.rds`](../data/SCEs/C057_Cooney.processed.SCE.rds)).
-This will be used in downstream analyses, e.g. when merging the different samples onto the same coordinate system.
+This will be used in downstream analyses, e.g. when performing dimensionality reduction and clustering of cells.
 
 # Additional information {.appendix}
 
