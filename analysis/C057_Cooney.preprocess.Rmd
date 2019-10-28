@@ -1,5 +1,5 @@
 ---
-title: "Preprocessing the Cooney (C057) memory CD4 T-cell data set"
+title: "Preprocessing the Cooney (C057) memory CD+ T-cell data set"
 description: |
 author:
   - name: Peter Hickey 
@@ -144,7 +144,6 @@ location <- mapIds(
   column = "SEQNAME")
 rowData(sce)$CHR <- location
 ```
-
 
 # Quality control of cells
 
