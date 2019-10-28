@@ -1,5 +1,5 @@
 ---
-title: "Annotating the Cooney (C057)  memory CD4+ T-cell data set"
+title: "Annotating the Cooney (C057) memory CD4+ T-cell data set"
 description: |
 author:
   - name: Peter Hickey 
@@ -35,7 +35,7 @@ knitr::opts_chunk$set(fig.path = "C057_Cooney_annotate_files/")
 # Introduction
 
 ```{r}
-sce <- readRDS(here("data", "SCEs", "C057_Cooney.preprocessed.SCE.rds"))
+sce <- readRDS(here("data", "SCEs", "C057_Cooney.merged.SCE.rds"))
 ```
 
 ```{r}
@@ -209,6 +209,54 @@ plot_grid(
     scale_colour_manual(values = sample_colours),
   ncol = 2, 
   align = "v")
+```
+
+# Doublet detection
+
+**TODO:** UP TO HERE. Migrate doublet detection.
+
+## Overview
+
+In single-cell RNA sequencing (scRNA-seq) experiments, doublets are artifactual libraries generated from two cells. 
+They typically arise due to errors in cell sorting or capture, especially in droplet-based protocols [@zheng2017massively] involving thousands of cells.
+Doublets are obviously undesirable when the aim is to characterize populations at the single-cell level.
+In particular, doublets can be mistaken for intermediate populations or transitory states that do not actually exist.
+Thus, it is desirable to identify and remove doublet libraries so that they do not compromise interpretation of the results.
+
+Several experimental strategies are available for doublet removal.
+One approach, used here, is to mark a subset of cells (e.g., all cells from one sample) with an antibody conjugated to a different oligonucleotide [@zheng2017massively, @stoeckius2017hashing].
+Upon pooling, libraries that are observed to have different oligonucleotides are considered to be doublets and removed.
+This approaches can be highly effective but made more difficult for this dataset by one of the samples being labelled with all five HTOs (see ['Demultiplexing the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney_demultiplex.html)).
+
+A more general approach is to infer doublets from the expression profiles alone [@dahlin2018single].
+Here, we will apply two purely computational approaches for detecting doublets from scRNA-seq data.
+The main difference between these two methods is whether or not they need cluster information beforehand.
+
+## Doublet detection with clusters
+
+The `doubletCluster()` function identifes from `r BiocStyle::Biocpkg("scran")` clusters with expression profiles lying between two other clusters [@bach2017differentiation].
+We consider every possible triplet of clusters consisting of a query cluster and two putative "source" clusters. 
+Under the null hypothesis that the query consists of doublets from the two sources, we then compute a number of statistics:
+
+- `N`: The number of genes that are differentially expressed in the same direction in the query cluster compared to both of the source clusters. Such genes would be unique markers for the query cluster and provide evidence against the null hypothesis. Clusters with few unique genes are more likely to be composed of doublets.
+- `lib.size` fields: The ratio of the median library size in each source to the median library size in the query. Doublet libraries are generated from a larger initial pool of RNA compared to libraries for single cells, and thus the former should have larger library sizes. Library size ratios much greater than unity are inconsistent with a doublet identity for the query.
+- `prop`: The proportion of cells in the query cluster should also be reasonable - typically less than 5% of all cells, depending on how many cells were loaded onto the 10X Genomics device.
+
+For each query cluster, the best pair of sources is identified based solely on the lowest `N`^[This means that any `lib.size` field above unity is not definitive evidence against a doublet identity for a query cluster, as there may be a pair of sources with slightly higher N but both lib.size* values below unity.].
+If more detail is necessary, the `all.pairs` field contains statistics on all possible source pairs for a given query cluster.
+
+```{r}
+dbl_out <- doubletCluster(sce, sce$cluster)
+dbl_out
+```
+
+Clusters are then ranked by `N` in the output of `doubletClusters()`, allowing us to prioritize high-risk clusters that require careful investigation.
+
+```{r}
+library(scater)
+chosen_doublet <- rownames(
+  dbl_out)[isOutlier(dbl_out$N, type = "lower", log = TRUE, nmads = 3)]
+stopifnot(identical(chosen_doublet, c("11", "5")))
 ```
 
 # Marker gene detection
