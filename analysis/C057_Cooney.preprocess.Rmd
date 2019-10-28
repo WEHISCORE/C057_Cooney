@@ -35,7 +35,7 @@ knitr::opts_chunk$set(fig.path = "C057_Cooney_preprocess_files/")
 
 # Setting up the data
 
-We start from the demultiplexed *SingleCellExperiment* object created in ['Demultiplexing the Cooney (C057) memory CD4 T-cell'](C057_Cooney_demultiplex.html).
+We start from the demultiplexed *SingleCellExperiment* object created in ['Demultiplexing the Cooney (C057) memory CD4+ T-cell'](C057_Cooney_demultiplex.html).
 
 ```{r}
 sce <- readRDS(here("data", "SCEs", "C057_Cooney.demultiplexed.SCE.rds"))

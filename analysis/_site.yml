@@ -13,8 +13,6 @@ navbar:
       href: C057_Cooney.merge.html
     - text: "Annotating cells"
       href: C057_Cooney.annotate.html
-    - text: "Annotating cells"
-      href: C057_Cooney.annotate.html
     - text: "Differential analyses"
       href: C057_Cooney_multi-sample_comparisons.html
     - text: "Supplementary files"

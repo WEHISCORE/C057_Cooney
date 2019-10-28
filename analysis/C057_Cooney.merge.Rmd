@@ -33,8 +33,7 @@ knitr::opts_chunk$set(fig.path = "C057_Cooney_merge_files/")
 
 # Setting up the data
 
-We start from the preprocessed *SingleCellExperiment* object created in ['Preprocessing the Cooney (C057) memory CD4 T-cell data set'](C057_Cooney_preprocess.html).
-
+We start from the preprocessed *SingleCellExperiment* object created in ['Preprocessing the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney_preprocess.html).
 
 ```{r}
 sce <- readRDS(here("data", "SCEs", "C057_Cooney.preprocessed.SCE.rds"))
