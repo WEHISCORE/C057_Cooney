@@ -1,3 +1,3 @@
-- [ ] Write up `demultiplexing.R` into a proper `C057_Cooney.demultiplex.Rmd`
-- [ ] Write `index.Rmd`
+- [x] Write up `demultiplexing.R` into a proper `C057_Cooney.demultiplex.Rmd`
+- [x] Write `index.Rmd`
 - [ ] Doublet detection
