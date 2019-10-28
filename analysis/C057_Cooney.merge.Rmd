@@ -1,5 +1,5 @@
 ---
-title: "Dimensionality reduction of the Cooney (C057) memory CD4 T-cell data set"
+title: "Dimensionality reduction of the Cooney (C057) memory CD4+ T-cell data set"
 description: |
 author:
   - name: Peter Hickey 
