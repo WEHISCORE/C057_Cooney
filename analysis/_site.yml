@@ -5,6 +5,8 @@ navbar:
   left:
     - text: "Introduction"
       href: index.html
+    - text: "Demultiplexing"
+      href: C057_Cooney.demultiplex.html
     - text: "Preprocessing"
       href: C057_Cooney.preprocess.html
     - text: "Dimensionality reduction"
