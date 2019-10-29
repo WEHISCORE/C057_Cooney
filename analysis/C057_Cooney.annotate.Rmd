@@ -88,7 +88,7 @@ In practice, some combination of manual and automated classification methods are
 
 # Preparing the data
 
-We start from the preprocessed *SingleCellExperiment* object created in ['Merging the Cooney (C057) M-cell data set'](C057_Cooney_merge.html).
+We start from the preprocessed *SingleCellExperiment* object created in ['Merging the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney_merge.html).
 
 # Clustering cells
 
@@ -213,8 +213,6 @@ plot_grid(
 
 # Doublet detection
 
-**TODO:** UP TO HERE. Migrate doublet detection.
-
 ## Overview
 
 In single-cell RNA sequencing (scRNA-seq) experiments, doublets are artifactual libraries generated from two cells. 
@@ -243,20 +241,84 @@ Under the null hypothesis that the query consists of doublets from the two sourc
 - `prop`: The proportion of cells in the query cluster should also be reasonable - typically less than 5% of all cells, depending on how many cells were loaded onto the 10X Genomics device.
 
 For each query cluster, the best pair of sources is identified based solely on the lowest `N`^[This means that any `lib.size` field above unity is not definitive evidence against a doublet identity for a query cluster, as there may be a pair of sources with slightly higher N but both lib.size* values below unity.].
-If more detail is necessary, the `all.pairs` field contains statistics on all possible source pairs for a given query cluster.
+Clusters are then ranked by `N` in the output of `doubletClusters()`, allowing us to prioritize high-risk clusters that require careful investigation.
 
 ```{r}
 dbl_out <- doubletCluster(sce, sce$cluster)
-dbl_out
 ```
 
-Clusters are then ranked by `N` in the output of `doubletClusters()`, allowing us to prioritize high-risk clusters that require careful investigation.
+```{r}
+.adf(dbl_out[, 1:8]) %>%
+  knitr::kable(caption = "Results of running `doubletClusters()`.", digits = Inf)
+```
+
+### Summary
 
 ```{r}
 library(scater)
 chosen_doublet <- rownames(
   dbl_out)[isOutlier(dbl_out$N, type = "lower", log = TRUE, nmads = 3)]
 stopifnot(identical(chosen_doublet, c("11", "5")))
+```
+
+Based on the results of running `doubletClusters()`, none of the clusters stand out as being an obvious doublet cluster.
+
+## Doublet detection by simulation
+
+The other doublet detection strategy involves in silico simulation of doublets from the single-cell expression profiles [@dahlin2018single]. 
+This is performed using the `doubletCells()` function from the `r BiocStyle::Biocpkg("scran")`, which will:
+
+1. Simulate thousands of doublets by adding together two randomly chosen single-cell profiles.
+2. For each original cell, compute the density of simulated doublets in the surrounding neighbourhood.
+3. For each original cell, compute the density of other observed cells in the neighbourhood.
+4. Return the ratio between the two densities as a "doublet score" for each cell.
+
+This approach assumes that the simulated doublets are good approximations for real doublets.
+The use of random selection accounts for the relative abundances of different subpopulations, which affect the likelihood of their involvement in doublets; and the calculation of a ratio avoids high scores for non-doublet cells in highly abundant subpopulations.
+
+```{r}
+dbl_dens <- doubletCells(sce, BSPARAM = BiocSingular::IrlbaParam())
+summary(dbl_dens)
+sce$DoubletScore <- log10(dbl_dens+1)
+```
+
+Figures \@ref(fig:tsne-doublet-score) and \@ref(fig:doublet-score) reveal no concentration of the highest doublets scores in a single cluster(s) of cells.
+
+```{r tsne-doublet-score, fig.cap = "t-SNE plot of the data set. Each point is a cell coloured according to its doublet density."}
+plotTSNE(sce, colour_by = "DoubletScore")
+```
+
+```{r doublet-score, fig.cap = "Distribution of doublet scores for each cluster in the data set. Each point is a cell."}
+plotColData(sce, x = "cluster", y = "DoubletScore", colour_by = "cluster")
+```
+
+### Summary
+
+The advantage of `doubletCells()` is that it does not depend on clusters, reducing the sensitivity of the results to clustering quality.
+The downside is that it requires some strong assumptions about how doublets form, such as the combining proportions and the sampling from pure subpopulations.
+In particular, `doubletCells()` treats the library size of each cell as an accurate proxy for its total RNA content.
+If this is not true, the simulation will not combine expression profiles from different cells in the correct proportions.
+This means that the simulated doublets will be systematically shifted away from the real doublets, resulting in doublet scores that are too low.
+
+Simply removing cells with high doublet scores will not be sufficient to eliminate real doublets from the data set.
+In some cases, only a subset of the cells in the putative doublet cluster actually have high scores, and removing these would still leave enough cells in that cluster to mislead downstream analyses.
+In fact, even defining a threshold on the doublet score is difficult as the interpretation of the score is relative.
+There is no general definition for a fixed threshold above which libraries are to be considered doublets.
+
+We recommend interpreting the `doubletCells()` scores in the context of cluster annotation.
+All cells from a cluster with a large average doublet score should be considered suspect, and close neighbours of problematic clusters should also be treated with caution.
+In contrast, a cluster containing a small proportion of high-scoring cells is probably safe provided that any interesting results are not being driven by those cells (e.g., checking that DE in an interesting gene is not driven solely by cells with high doublet scores).
+While clustering is still required, this approach is more robust than `doubletClusters()` to the quality of the clustering as the scores are computed on a per-cell basis.
+
+## Summary
+
+Based on the results of running `doubletClusters()` and `doubletCells()`, none of the clusters stand out as being an obvious doublet cluster.
+This does not mean that there aren't doublets; in fact, we strongly suspect that some of the droplets in the 'unknown' HTO cluster are doublets because they are stained with multiple HTOs (see ['Demultiplexing the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney_demultiplex.html)).
+However, these same cells have notably small library sizes (Figure \@ref(fig:library-size-by-hto-cluster)), which means neither `doubletCells()` nor `doubletClusters()` is well-suited to identifying doublets.
+
+```{r library-size-by-hto-cluster, fig.cap = "Library size for each HTO cluster."}
+plotColData(sce, x = "hto_cluster", y = "log10_total_counts", colour_by = "hto_cluster") +
+  scale_fill_manual(values = hto_cluster_colours)
 ```
 
 # Marker gene detection
@@ -373,8 +435,6 @@ library(scater)
   fontsize = 8)
 ```
 
-**TODO:** Re-write: some inspection of Figures \@ref(fig:heat-logFC) and \@ref(fig:heat-logExp) suggest that cluster `r chosen` contains
-
 Similar figures showing the top 10 marker genes for each cluster are available in [`output/marker_genes/union_any/heatmaps.union_any.pdf`](../output/marker_genes/union_any/heatmaps.union_any.pdf).
 
 ```{r, results = "hide"}
@@ -460,10 +520,6 @@ for (n in names(markers_union_up)) {
 ```{r}
 interesting_up <- markers_union_up[[chosen]]
 ```
-
-**TODO:** Re-write this paragraph.
-For cluster `r chosen` it will not make much difference because the marker genes are mostly upregulated to begin with.
-However, for other clusters this will be more useful.
 
 The $t$-test also allows us to specify a non-zero log-fold change as the null hypothesis.
 This allows us to consider the magnitude of the log-fold change in our $p$-value calculations, in a manner that is more rigorous than simply filtering directly on the log-fold changes^[Specifically, a simple threshold does not consider the variance and can enrich for genes that have both large log-fold changes and large variances [@mccarthy2009treat]]. 
@@ -775,7 +831,7 @@ Specifically, for each test cell:
 1. We compute the Spearman correlation between its expression profile and that of each reference sample. 
 2. We define the per-label score as a fixed quantile (by default, 0.8) of the distribution of correlations.
 3. We repeat this for all labels and we take the label with the highest score as the annotation for this cell.
-4. Fianlly, we perform a fine-tuning step:
+4. Finally, we perform a fine-tuning step:
 - The reference data set is subsetted to only include labels with scores close to the maximum.
 - Scores are recomputed using only marker genes for the subset of labels.
 - This is iterated until one label remains.
@@ -783,8 +839,13 @@ For visualization purposes we use the normalized scores, which are the scores li
 This is followed by cubing of the adjusted scores to improve dynamic range near 1. 
 Automatic annotation provides a convenient way of transferring biological knowledge across data sets.
 In this manner, the burden of interpreting clusters and defining marker genes only has to be done once (i.e. for the reference set).
-I use `r Biocpkg("SingleR")` to annotate the data set against 2 reference data sets:
-**TODO:** Describe reference data sets.
+I use `r Biocpkg("SingleR")` to annotate the data set against 5 reference data sets:
+
+- `HumanPrimaryCellAtlasData`: This reference set entails 713 microarray samples of the Human Primary Cell Atlas (HPCA) [@hpcaRef].
+- `BlueprintEncodeData`: This reference set entails 259 RNA-seq samples of pure stroma and immune cells as generated and supplied by Blueprint and ENCODE.
+- `DatabaseImmuneCellExpressionData`: This reference set entails 1561 bulk RNA-seq samples of sorted cell populations from the DICE database.
+- `MonacoImmuneData`: This reference set entails 114 bulk RNA-seq samples of sorted immune cell populations that can be found in [GSE107011](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE107011).
+- `NovershternHematopoieticData`: This reference set entails 211 bulk human microarray samples of sorted hematopoietic cell populations that can be found in [GSE24759](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE24759)
 
 `r Biocpkg("SingleR")` can be used to annotate at the cell-level or the cluster-level.
 The latter is generally used to speed-up calculations, which is not necessary for this sized data set.
@@ -796,10 +857,10 @@ Therefore, I have annotated at the cell-level to obtain a higher resolution anal
 ```{r}
 hpcad <- HumanPrimaryCellAtlasData()
 ```
-The `HumanPrimaryCellAtlasData` reference set entails 830 microarray samples generated by ImmGen from pure populations of murine immune cells [@ImmGenRef] ([http://www.hpcad.org/](http://www.hpcad.org/)) and processed and normalized as described in [@aran2019reference].
-Each sample has a 'main' and a 'fine' cell type label, summarised below.
 
-**TODO:** Describe putatively relevant cell types in reference set.
+The `HumanPrimaryCellAtlasData` reference set entails 713 microarray samples of the Human Primary Cell Atlas (HPCA) [@hpcaRef].
+These 713 samples were processed and normalized as described in [@aran2019reference] and each sample has been assigned to one of 37 main cell types and 157 subtypes.
+Each sample has a 'main' and a 'fine' cell type label, summarised below.
 
 ```{r}
 .adf(colData(hpcad)) %>%
@@ -955,10 +1016,9 @@ plotScoreReducedDim(
 ```{r}
 bed <- BlueprintEncodeData()
 ```
-The `BlueprintEncodeData` reference set entails 830 microarray samples generated by ImmGen from pure populations of murine immune cells [@ImmGenRef] ([http://www.bed.org/](http://www.bed.org/)) and processed and normalized as described in [@aran2019reference].
-Each sample has a 'main' and a 'fine' cell type label, summarised below.
 
-**TODO:** Describe putatively relevant cell types in reference set.
+The `BlueprintEncodeData` reference set entails 259 RNA-seq samples of pure stroma and immune cells as generated and supplied by Blueprint and ENCODE.
+Each sample has a 'main' and a 'fine' cell type label, summarised below.
 
 ```{r}
 .adf(colData(bed)) %>%
@@ -997,7 +1057,7 @@ tabyl(data.frame(label.main = pred_bed_cell_main$labels), label.main) %>%
 
 Heatmaps of the normalized scores are shown, with and without clustering by these normalized scores, in Figures \@ref(fig:heat-bed-main-clustered) and \@ref(fig:heat-bed-main).
 
-```{r heat-bed-main-clustered, fig.cap = "Heatmap of normalized scores using the main labels from the `bedRNAseqData` reference set. Cells are columns, rows are labels. Columns are ordered by clustering the normalized scores.", fig.asp = 0.9, layout = "l-body-outset"}
+```{r heat-bed-main-clustered, fig.cap = "Heatmap of normalized scores using the main labels from the `BlueprintEncodeData` reference set. Cells are columns, rows are labels. Columns are ordered by clustering the normalized scores.", fig.asp = 0.9, layout = "l-body-outset"}
 stopifnot(identical(rownames(pred_bed_cell_main), colnames(sce)))
 plotScoreHeatmap(
   pred_bed_cell_main,
@@ -1013,7 +1073,7 @@ plotScoreHeatmap(
   fontsize = 6)
 ```
 
-```{r heat-bed-main, fig.cap = "Heatmap of normalized scores using the main labels from the `bedRNAseqData` reference set. Cells are columns, rows are labels. Columns are ordered by and annotated by the column labels.", fig.asp = 0.9, layout = "l-body-outset"}
+```{r heat-bed-main, fig.cap = "Heatmap of normalized scores using the main labels from the `BlueprintEncodeData` reference set. Cells are columns, rows are labels. Columns are ordered by and annotated by the column labels.", fig.asp = 0.9, layout = "l-body-outset"}
 stopifnot(identical(rownames(pred_bed_cell_main), colnames(sce)))
 plotScoreHeatmap(
   pred_hpcad_cell_main,
@@ -1064,7 +1124,7 @@ tabyl(data.frame(label.fine = pred_bed_cell_fine$labels), label.fine) %>%
 
 Heatmaps of the normalized scores are shown, with and without clustering by these normalized scores, in Figures \@ref(fig:heat-bed-fine-clustered) and \@ref(fig:heat-bed-fine).
 
-```{r heat-bed-fine-clustered, fig.cap = "Heatmap of normalized scores using the fine labels from the `bedRNAseqData` reference set. Cells are columns, rows are labels. Columns are ordered by clustering the normalized scores.", fig.asp = 0.9, layout = "l-body-outset"}
+```{r heat-bed-fine-clustered, fig.cap = "Heatmap of normalized scores using the fine labels from the `BlueprintEncodeData` reference set. Cells are columns, rows are labels. Columns are ordered by clustering the normalized scores.", fig.asp = 0.9, layout = "l-body-outset"}
 stopifnot(identical(rownames(pred_bed_cell_fine), colnames(sce)))
 plotScoreHeatmap(
   pred_bed_cell_fine,
@@ -1080,7 +1140,7 @@ plotScoreHeatmap(
   fontsize = 6)
 ```
 
-```{r heat-bed-fine, fig.cap = "Heatmap of normalized scores using the fine labels from the `bedRNAseqData` reference set. Cells are columns, rows are labels. Columns are ordered by and annotated by the column labels.", fig.asp = 0.9, layout = "l-body-outset"}
+```{r heat-bed-fine, fig.cap = "Heatmap of normalized scores using the fine labels from the `BlueprintEncodeData` reference set. Cells are columns, rows are labels. Columns are ordered by and annotated by the column labels.", fig.asp = 0.9, layout = "l-body-outset"}
 stopifnot(identical(rownames(pred_bed_cell_fine), colnames(sce)))
 plotScoreHeatmap(
   pred_bed_cell_fine,
@@ -1114,10 +1174,9 @@ plotScoreReducedDim(
 ```{r}
 diced <- DatabaseImmuneCellExpressionData()
 ```
-The `DatabaseImmuneCellExpressionData` reference set entails 830 microarray samples generated by ImmGen from pure populations of murine immune cells [@ImmGenRef] ([http://www.diced.org/](http://www.diced.org/)) and processed and normalized as described in [@aran2019reference].
-Each sample has a 'main' and a 'fine' cell type label, summarised below.
 
-**TODO:** Describe putatively relevant cell types in reference set.
+The `DatabaseImmuneCellExpressionData` reference set entails 1561 bulk RNA-seq samples of sorted cell populations from the DICE database.
+Each sample has a 'main' and a 'fine' cell type label, summarised below.
 
 ```{r}
 .adf(colData(diced)) %>%
@@ -1156,7 +1215,7 @@ tabyl(data.frame(label.main = pred_diced_cell_main$labels), label.main) %>%
 
 Heatmaps of the normalized scores are shown, with and without clustering by these normalized scores, in Figures \@ref(fig:heat-diced-main-clustered) and \@ref(fig:heat-diced-main).
 
-```{r heat-diced-main-clustered, fig.cap = "Heatmap of normalized scores using the main labels from the `dicedRNAseqData` reference set. Cells are columns, rows are labels. Columns are ordered by clustering the normalized scores.", fig.asp = 0.9, layout = "l-body-outset"}
+```{r heat-diced-main-clustered, fig.cap = "Heatmap of normalized scores using the main labels from the `DatabaseImmuneCellExpressionData` reference set. Cells are columns, rows are labels. Columns are ordered by clustering the normalized scores.", fig.asp = 0.9, layout = "l-body-outset"}
 stopifnot(identical(rownames(pred_diced_cell_main), colnames(sce)))
 plotScoreHeatmap(
   pred_diced_cell_main,
@@ -1172,7 +1231,7 @@ plotScoreHeatmap(
   fontsize = 6)
 ```
 
-```{r heat-diced-main, fig.cap = "Heatmap of normalized scores using the main labels from the `dicedRNAseqData` reference set. Cells are columns, rows are labels. Columns are ordered by and annotated by the column labels.", fig.asp = 0.9, layout = "l-body-outset"}
+```{r heat-diced-main, fig.cap = "Heatmap of normalized scores using the main labels from the `DatabaseImmuneCellExpressionData` reference set. Cells are columns, rows are labels. Columns are ordered by and annotated by the column labels.", fig.asp = 0.9, layout = "l-body-outset"}
 stopifnot(identical(rownames(pred_diced_cell_main), colnames(sce)))
 plotScoreHeatmap(
   pred_diced_cell_main,
@@ -1204,8 +1263,6 @@ plotScoreReducedDim(
 ### Fine label
 
 ```{r}
-# TODO: This blows up memory usage, so may need to run this on server (or just 
-#       quit Chrome and Slack ...).
 pred_diced_cell_fine <- SingleR(
   test = sce,
   ref = diced, 
@@ -1225,7 +1282,7 @@ tabyl(data.frame(label.fine = pred_diced_cell_fine$labels), label.fine) %>%
 
 Heatmaps of the normalized scores are shown, with and without clustering by these normalized scores, in Figures \@ref(fig:heat-diced-fine-clustered) and \@ref(fig:heat-diced-fine).
 
-```{r heat-diced-fine-clustered, fig.cap = "Heatmap of normalized scores using the fine labels from the `dicedRNAseqData` reference set. Cells are columns, rows are labels. Columns are ordered by clustering the normalized scores.", fig.asp = 0.9, layout = "l-body-outset"}
+```{r heat-diced-fine-clustered, fig.cap = "Heatmap of normalized scores using the fine labels from the `DatabaseImmuneCellExpressionData` reference set. Cells are columns, rows are labels. Columns are ordered by clustering the normalized scores.", fig.asp = 0.9, layout = "l-body-outset"}
 stopifnot(identical(rownames(pred_diced_cell_fine), colnames(sce)))
 plotScoreHeatmap(
   pred_diced_cell_fine,
@@ -1241,7 +1298,7 @@ plotScoreHeatmap(
   fontsize = 6)
 ```
 
-```{r heat-diced-fine, fig.cap = "Heatmap of normalized scores using the fine labels from the `dicedRNAseqData` reference set. Cells are columns, rows are labels. Columns are ordered by and annotated by the column labels.", fig.asp = 0.9, layout = "l-body-outset"}
+```{r heat-diced-fine, fig.cap = "Heatmap of normalized scores using the fine labels from the `DatabaseImmuneCellExpressionData` reference set. Cells are columns, rows are labels. Columns are ordered by and annotated by the column labels.", fig.asp = 0.9, layout = "l-body-outset"}
 stopifnot(identical(rownames(pred_diced_cell_fine), colnames(sce)))
 plotScoreHeatmap(
   pred_diced_cell_fine,
@@ -1275,10 +1332,9 @@ plotScoreReducedDim(
 ```{r}
 mid <- MonacoImmuneData()
 ```
-The `MonacoImmuneData` reference set entails 830 microarray samples generated by ImmGen from pure populations of murine immune cells [@ImmGenRef] ([http://www.mid.org/](http://www.mid.org/)) and processed and normalized as described in [@aran2019reference].
-Each sample has a 'main' and a 'fine' cell type label, summarised below.
 
-**TODO:** Describe putatively relevant cell types in reference set.
+The `MonacoImmuneData` reference set entails 114 bulk RNA-seq samples of sorted immune cell populations that can be found in [GSE107011](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE107011).
+Each sample has a 'main' and a 'fine' cell type label, summarised below.
 
 ```{r}
 .adf(colData(mid)) %>%
@@ -1317,7 +1373,7 @@ tabyl(data.frame(label.main = pred_mid_cell_main$labels), label.main) %>%
 
 Heatmaps of the normalized scores are shown, with and without clustering by these normalized scores, in Figures \@ref(fig:heat-mid-main-clustered) and \@ref(fig:heat-mid-main).
 
-```{r heat-mid-main-clustered, fig.cap = "Heatmap of normalized scores using the main labels from the `midRNAseqData` reference set. Cells are columns, rows are labels. Columns are ordered by clustering the normalized scores.", fig.asp = 0.9, layout = "l-body-outset"}
+```{r heat-mid-main-clustered, fig.cap = "Heatmap of normalized scores using the main labels from the `MonacoImmuneData` reference set. Cells are columns, rows are labels. Columns are ordered by clustering the normalized scores.", fig.asp = 0.9, layout = "l-body-outset"}
 stopifnot(identical(rownames(pred_mid_cell_main), colnames(sce)))
 plotScoreHeatmap(
   pred_mid_cell_main,
@@ -1333,10 +1389,10 @@ plotScoreHeatmap(
   fontsize = 6)
 ```
 
-```{r heat-mid-main, fig.cap = "Heatmap of normalized scores using the main labels from the `midRNAseqData` reference set. Cells are columns, rows are labels. Columns are ordered by and annotated by the column labels.", fig.asp = 0.9, layout = "l-body-outset"}
+```{r heat-mid-main, fig.cap = "Heatmap of normalized scores using the main labels from the `MonacoImmuneData` reference set. Cells are columns, rows are labels. Columns are ordered by and annotated by the column labels.", fig.asp = 0.9, layout = "l-body-outset"}
 stopifnot(identical(rownames(pred_mid_cell_main), colnames(sce)))
 plotScoreHeatmap(
-  pred_diced_cell_main,
+  pred_mid_cell_main,
   annotation_col = data.frame(
     cluster = sce$cluster, 
     Treatment = sce$Treatment, 
@@ -1384,7 +1440,7 @@ tabyl(data.frame(label.fine = pred_mid_cell_fine$labels), label.fine) %>%
 
 Heatmaps of the normalized scores are shown, with and without clustering by these normalized scores, in Figures \@ref(fig:heat-mid-fine-clustered) and \@ref(fig:heat-mid-fine).
 
-```{r heat-mid-fine-clustered, fig.cap = "Heatmap of normalized scores using the fine labels from the `midRNAseqData` reference set. Cells are columns, rows are labels. Columns are ordered by clustering the normalized scores.", fig.asp = 0.9, layout = "l-body-outset"}
+```{r heat-mid-fine-clustered, fig.cap = "Heatmap of normalized scores using the fine labels from the `MonacoImmuneData` reference set. Cells are columns, rows are labels. Columns are ordered by clustering the normalized scores.", fig.asp = 0.9, layout = "l-body-outset"}
 stopifnot(identical(rownames(pred_mid_cell_fine), colnames(sce)))
 plotScoreHeatmap(
   pred_mid_cell_fine,
@@ -1400,10 +1456,10 @@ plotScoreHeatmap(
   fontsize = 6)
 ```
 
-```{r heat-mid-fine, fig.cap = "Heatmap of normalized scores using the fine labels from the `midRNAseqData` reference set. Cells are columns, rows are labels. Columns are ordered by and annotated by the column labels.", fig.asp = 0.9, layout = "l-body-outset"}
+```{r heat-mid-fine, fig.cap = "Heatmap of normalized scores using the fine labels from the `MonacoImmuneData` reference set. Cells are columns, rows are labels. Columns are ordered by and annotated by the column labels.", fig.asp = 0.9, layout = "l-body-outset"}
 stopifnot(identical(rownames(pred_mid_cell_fine), colnames(sce)))
 plotScoreHeatmap(
-  pred_diced_cell_fine,
+  pred_mid_cell_fine,
   annotation_col = data.frame(
     cluster = sce$cluster, 
     Treatment = sce$Treatment, 
@@ -1422,7 +1478,7 @@ Figure \@ref(fig:tsne-mid-fine) overlays the normalized scores for the 10 labels
 
 ```{r tsne-mid-fine, fig.cap = "t-SNE overlaid with normalized scores using the fine labels from the `MonacoImmuneData` reference set. Only the 10 labels with the largest maximum scores are shown.", fig.asp = 2}
 plotScoreReducedDim(
-  pred_diced_cell_fine, 
+  pred_mid_cell_fine, 
   sce,
   max.labels = 10,
   ncol = 2,
@@ -1434,10 +1490,8 @@ plotScoreReducedDim(
 ```{r}
 nhd <- NovershternHematopoieticData()
 ```
-The `NovershternHematopoieticData` reference set entails 830 microarray samples generated by ImmGen from pure populations of murine immune cells [@ImmGenRef] ([http://www.nhd.org/](http://www.nhd.org/)) and processed and normalized as described in [@aran2019reference].
-Each sample has a 'main' and a 'fine' cell type label, summarised below.
 
-**TODO:** Describe putatively relevant cell types in reference set.
+The `NovershternHematopoieticData` reference set entails 211 bulk human microarray samples of sorted hematopoietic cell populations that can be found in [GSE24759](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE24759).
 
 ```{r}
 .adf(colData(nhd)) %>%
@@ -1476,7 +1530,7 @@ tabyl(data.frame(label.main = pred_nhd_cell_main$labels), label.main) %>%
 
 Heatmaps of the normalized scores are shown, with and without clustering by these normalized scores, in Figures \@ref(fig:heat-nhd-main-clustered) and \@ref(fig:heat-nhd-main).
 
-```{r heat-nhd-main-clustered, fig.cap = "Heatmap of normalized scores using the main labels from the `nhdRNAseqData` reference set. Cells are columns, rows are labels. Columns are ordered by clustering the normalized scores.", fig.asp = 0.9, layout = "l-body-outset"}
+```{r heat-nhd-main-clustered, fig.cap = "Heatmap of normalized scores using the main labels from the `NovershternHematopoieticData` reference set. Cells are columns, rows are labels. Columns are ordered by clustering the normalized scores.", fig.asp = 0.9, layout = "l-body-outset"}
 stopifnot(identical(rownames(pred_nhd_cell_main), colnames(sce)))
 plotScoreHeatmap(
   pred_nhd_cell_main,
@@ -1484,7 +1538,7 @@ plotScoreHeatmap(
     cluster = sce$cluster, 
     Treatment = sce$Treatment, 
     Sample = sce$Sample,
-    row.names = rownames(pred_mid_cell_main)),
+    row.names = rownames(pred_nhd_cell_main)),
   annotation_colors = list(
     cluster = cluster_colours,
     Treatment = treatment_colours,
@@ -1492,15 +1546,15 @@ plotScoreHeatmap(
   fontsize = 6)
 ```
 
-```{r heat-nhd-main, fig.cap = "Heatmap of normalized scores using the main labels from the `nhdRNAseqData` reference set. Cells are columns, rows are labels. Columns are ordered by and annotated by the column labels.", fig.asp = 0.9, layout = "l-body-outset"}
-stopifnot(identical(rownames(pred_mid_cell_main), colnames(sce)))
+```{r heat-nhd-main, fig.cap = "Heatmap of normalized scores using the main labels from the `NovershternHematopoieticData` reference set. Cells are columns, rows are labels. Columns are ordered by and annotated by the column labels.", fig.asp = 0.9, layout = "l-body-outset"}
+stopifnot(identical(rownames(pred_nhd_cell_main), colnames(sce)))
 plotScoreHeatmap(
-  pred_diced_cell_main,
+  pred_nhd_cell_main,
   annotation_col = data.frame(
     cluster = sce$cluster, 
     Treatment = sce$Treatment, 
     Sample = sce$Sample,
-    row.names = rownames(pred_mid_cell_main)),
+    row.names = rownames(pred_nhd_cell_main)),
   order.by.clusters = TRUE,
   clusters = sce$cluster,
   annotation_colors = list(
@@ -1543,7 +1597,7 @@ tabyl(data.frame(label.fine = pred_nhd_cell_fine$labels), label.fine) %>%
 
 Heatmaps of the normalized scores are shown, with and without clustering by these normalized scores, in Figures \@ref(fig:heat-nhd-fine-clustered) and \@ref(fig:heat-nhd-fine).
 
-```{r heat-nhd-fine-clustered, fig.cap = "Heatmap of normalized scores using the fine labels from the `nhdRNAseqData` reference set. Cells are columns, rows are labels. Columns are ordered by clustering the normalized scores.", fig.asp = 0.9, layout = "l-body-outset"}
+```{r heat-nhd-fine-clustered, fig.cap = "Heatmap of normalized scores using the fine labels from the `NovershternHematopoieticData` reference set. Cells are columns, rows are labels. Columns are ordered by clustering the normalized scores.", fig.asp = 0.9, layout = "l-body-outset"}
 stopifnot(identical(rownames(pred_nhd_cell_fine), colnames(sce)))
 plotScoreHeatmap(
   pred_nhd_cell_fine,
@@ -1551,7 +1605,7 @@ plotScoreHeatmap(
     cluster = sce$cluster, 
     Treatment = sce$Treatment, 
     Sample = sce$Sample,
-    row.names = rownames(pred_mid_cell_fine)),
+    row.names = rownames(pred_nhd_cell_fine)),
   annotation_colors = list(
     cluster = cluster_colours,
     Treatment = treatment_colours,
@@ -1559,15 +1613,15 @@ plotScoreHeatmap(
   fontsize = 6)
 ```
 
-```{r heat-nhd-fine, fig.cap = "Heatmap of normalized scores using the fine labels from the `nhdRNAseqData` reference set. Cells are columns, rows are labels. Columns are ordered by and annotated by the column labels.", fig.asp = 0.9, layout = "l-body-outset"}
-stopifnot(identical(rownames(pred_mid_cell_fine), colnames(sce)))
+```{r heat-nhd-fine, fig.cap = "Heatmap of normalized scores using the fine labels from the `NovershternHematopoieticData` reference set. Cells are columns, rows are labels. Columns are ordered by and annotated by the column labels.", fig.asp = 0.9, layout = "l-body-outset"}
+stopifnot(identical(rownames(pred_nhd_cell_fine), colnames(sce)))
 plotScoreHeatmap(
-  pred_diced_cell_fine,
+  pred_nhd_cell_fine,
   annotation_col = data.frame(
     cluster = sce$cluster, 
     Treatment = sce$Treatment, 
     Sample = sce$Sample,
-    row.names = rownames(pred_mid_cell_fine)),
+    row.names = rownames(pred_nhd_cell_fine)),
   order.by.clusters = TRUE,
   clusters = sce$cluster,
   annotation_colors = list(
@@ -1591,13 +1645,6 @@ plotScoreReducedDim(
 ## Summary
 
 Any automated cell type annotation method is only as good as its reference set.
-A few points on each reference set with respect to the test data set bear repeating:
-
-**TODO:** Re-write these points
-
-- The `ImmGenData` includes multiple types of haematopoietic stem cells but does not include any cells from the erythroid lineage.
-- The `HaemopediaMouseRNAseqData` includes multiple types of haematopoietic progenitor cells, although not stem cells *per se*, and includes cells from the erythroid lineage.
-
 Any cell type present in the test set but with no good match in the reference set will be misannotated to some degree.
 We will need to consider the cell types available in each reference set and the appropriateness of annotating embroyonic cells using reference sets that likely mostly comprise adult cells.
 
@@ -1618,12 +1665,11 @@ cyclin_genes
 ```
 
 The cyclins control progression through the cell cycle and have well-characterized patterns of expression across cell cycle phases.
+The cyclins available in this dataset are as follows: `r glue::glue_collapse(cyclin_genes, ", ", last = ", and ")`.
 Cyclin D is expressed throughout but peaks at G1; cyclin E is expressed highest in the G1/S transition; cyclin A is expressed across S and G2; and cyclin B is expressed highest in late G2 and mitosis.
 Inspection of the relative expression of cyclins across the population can often be sufficient to determine the relative cell cycle activity in each cluster.
 
-**TODO:** Re-write
-
-For example, Figure \@ref(fig:cyclin-heatmap) shows that cluster 1 is likely to be in G2/M phase while the other clusters are scattered across the later phases.
+For example, Figure \@ref(fig:cyclin-heatmap) shows that cluster 7 may be in G2/M phase while the other clusters are scattered across the later phases.
 
 ```{r cyclin-heatmap, fig.cap = "Heatmap of the log-normalized expression values of the cyclin genes in the dataset."}
 plotHeatmap(
@@ -1663,26 +1709,12 @@ Theoverlap proportion is defined as the probability that a randomly selected cel
 Overlap proportions near 0 ($A$ is lower than $B$) or 1 ($A$ is higher than $B$) indicate that the expression distributions are well-separated.
 The Wilcoxon rank sum test effectively tests for significant deviations from an overlap proportion of 0.5.
 
-**TODO:** Re-write and re-do tables.
-
-We can infer that cluster 1 has more cells in G2/M than the other clusters, based on higher expression of the cyclin B's.
+We can infer that cluster 7 likely has more cells in G2/M than the other clusters, based on higher expression of the cyclin B's.
 
 ```{r}
 knitr::kable(
-  .adf(markers[[1]]),
-  caption = "Cyclin DE analysis comparing cluster 1 to clusters 2 and 3.")
-```
-
-```{r}
-knitr::kable(
-  .adf(markers[[2]]),
-  caption = "Cyclin DE analysis comparing cluster 2 to clusters 1 and 3.")
-```
-
-```{r}
-knitr::kable(
-  .adf(markers[[3]]),
-  caption = "Cyclin DE analysis comparing cluster 3 to clusters 1 and 2.")
+  .adf(markers[[7]]),
+  caption = "Cyclin DE analysis comparing cluster 7 to all other clusters.")
 ```
 
 Direct examination of cyclin expression is easily understood, interpreted and validated with other technologies.
@@ -1707,14 +1739,16 @@ This approach is implemented in the `cyclone()` function from the `R BiocStyle::
 hs_pairs <- readRDS(
   system.file("exdata", "human_cycle_markers.rds", package = "scran"))
 # Using Ensembl IDs to match up with the annotation in 'mm.pairs'.
-# TODO: This takes ages, so perhaps run on server.
 set.seed(100)
 assignments <- cyclone(sce, hs_pairs, gene.names = rowData(sce)$ID)
+sce$cyclone_phases <- assignments$phases
+sce$cyclone_scores <- assignments$scores
+sce$cyclone_normalized.scores <- assignments$normalized.scores
 ```
 
 The phase assignment result for each cell in the dataset is shown in Figure \@ref(fig:cyclone). 
 
-```{r cyclone, fig.cap = "Cell cycle phase scores from applying the pair-based classifier on the dataset. Each point represents a cell, plotted according to its scores for G1 and G2/M phases, and coloured according to cluster.", fig.asp = 0.5}
+```{r cyclone, fig.cap = "Cell cycle phase scores from applying the pair-based classifier on the dataset. Each point represents a cell, plotted according to its scores for G1 and G2/M phases, and coloured according to cluster.", fig.asp = 1}
 plot(
   x = assignments$score$G1, 
   y = assignments$score$G2M,
@@ -1730,6 +1764,66 @@ legend(
   title = "Cluster")
 ```
 
-# TODOs
+For each cell, a higher score for a phase corresponds to a higher probability that the cell is in that phase.
+We focus on the G1 and G2/M scores as these are the most informative for classification.
 
-- [ ] Cell cycle (see C011)
+Cells are classified as being in G1 phase if the G1 score is above 0.5 and greater than the G2/M score; in G2/M phase if the G2/M score is above 0.5 and greater than the G1 score; and in S phase if neither score is above 0.5.
+
+Figure \@ref(fig:clusters-by-cyclone-phase) shows an enrichment of cells in G2/M phase in cluster 7 and 11, with cells from the remaining clusters mostly classified as G1.
+
+```{r clusters-by-cyclone-phase, fig.asp = 2 / 5, fig.cap = "Breakdown of clusters by phase (as predicted using cyclone)."}
+phase_colours <- setNames(
+  RColorBrewer::brewer.pal(3, "Accent"),
+  sort(unique(assignments$phases)))
+plot_grid(
+  ggplot(data.frame(phase = assignments$phases, cluster = sce$cluster)) +
+  geom_bar(
+    aes(x = cluster, fill = phase),
+    position = position_fill(reverse = TRUE)) + 
+  coord_flip() +
+  ylab("Frequency") +
+  scale_fill_manual(values = phase_colours) +
+  theme_cowplot(font_size = 6),
+  ggplot(as.data.frame(colData(sce))) + 
+    geom_bar(aes(x = cluster, fill = cluster)) +
+    coord_flip() +
+    ylab("Number of cells") +
+    scale_fill_manual(values = cluster_colours) +
+    theme_cowplot(font_size = 6),
+  align = "h",
+  ncol = 2)
+```
+
+The key assumption here is that the cell cycle is orthogonal to cell type and other aspects of cell behavior.
+However, it is not difficult to find routine violations of this assumption.
+
+Thus, a healthy dose of skepticism is required when interpreting these assignments.
+Our hope is that any systematic assignment error is consistent across clusters and conditions such that they cancel out in comparisons of phase frequencies, which is the more interesting analysis anyway.
+Indeed, while the availability of absolute phase calls may be more appealing, it may not make much practical difference to the conclusions if the frequencies are ultimately interpreted in a relative sense (e.g., using a chi-squared test).
+
+# Concluding remarks
+
+```{r}
+saveRDS(
+  sce,
+  here("data", "SCEs", "C057_Cooney.annotated.SCE.rds"),
+  compress = "xz")
+```
+
+The processed *SingleCellExperiment* object is available (see [`data/SCEs/C057_Cooney.annotated.SCE.rds`](../data/SCEs/C057_Cooney.annotated.SCE.rds)).
+This will be used in downstream analyses, e.g., differential expression analysis between conditions within each cluster and differential abundance analyses between conditions for each cluster.
+
+# Additional information {.appendix}
+
+The following are available on request:
+
+- Full CSV tables of any data presented.
+- PDF/PNG files of any static plots.
+
+# Session info {.appendix}
+
+The analysis and this document were prepared using the following software:
+
+```{r}
+sessionInfo()
+```
