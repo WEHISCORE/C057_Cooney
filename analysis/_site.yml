@@ -14,7 +14,7 @@ navbar:
     - text: "Annotating cells"
       href: C057_Cooney.annotate.html
     - text: "Differential analyses"
-      href: C057_Cooney_multi-sample_comparisons.html
+      href: C057_Cooney.multi-sample_comparisons.html
     - text: "Supplementary files"
       menu:
         - text: "FastQC reports"
@@ -23,6 +23,8 @@ navbar:
           href: ../output/scPipe/
         - text: "Marker gene tables"
           href: ../output/marker_genes/
+        - text: "Differentially expressed genes"
+          href: ../output/DEGs/
   right:
     - icon: fa-github
       href: https://github.com/WEHISCORE/C057_Cooney
