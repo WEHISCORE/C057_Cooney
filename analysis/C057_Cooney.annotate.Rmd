@@ -127,7 +127,7 @@ clusters <- igraph::cluster_louvain(snn_gr)
 sce$cluster <- factor(clusters$membership)
 tsne_df$cluster <- sce$cluster
 cluster_colours <- setNames(
-  Polychrome::dark.colors(nlevels(sce$cluster)),
+  Polychrome::green.armytage.colors(nlevels(sce$cluster)),
   levels(sce$cluster))
 ```
 
