@@ -10,11 +10,23 @@ navbar:
     - text: "Preprocessing"
       href: C057_Cooney.preprocess.html
     - text: "Dimensionality reduction"
-      href: C057_Cooney.merge.html
+      menu:
+        - text: "All samples"
+          href: C057_Cooney.merge.html
+        - text: "Ignoring 'unknown' samples"
+          href: C057_Cooney_ignoring_unknowns.merge.html
     - text: "Annotating cells"
-      href: C057_Cooney.annotate.html
+      menu:
+        - text: "All samples"
+          href: C057_Cooney.annotate.html
+        - text: "Ignoring 'unknown' samples"
+          href: C057_Cooney_ignoring_unknowns.annotate.html
     - text: "Differential analyses"
-      href: C057_Cooney.multi-sample_comparisons.html
+      menu:
+        - text: "All samples"
+          href: C057_Cooney.multi-sample_comparisons.html
+        - text: "Ignoring 'unknown' samples"
+          href: C057_Cooney_ignorning_unknowns.multi-sample_comparisons.html
     - text: "Supplementary files"
       menu:
         - text: "FastQC reports"
