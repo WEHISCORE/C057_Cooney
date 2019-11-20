@@ -24,8 +24,8 @@
   
   
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2019-10-28"/>
-  <meta property="article:created" itemprop="dateCreated" content="2019-10-28"/>
+  <meta property="article:published" itemprop="datePublished" content="2019-11-20"/>
+  <meta property="article:created" itemprop="dateCreated" content="2019-11-20"/>
   <meta name="article:author" content="Peter Hickey"/>
   
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
@@ -42,11 +42,11 @@
   
   <meta name="citation_reference" content="citation_title=Visualizing data using t-sne;citation_publication_date=2008;citation_volume=9;citation_author=L. Van der Maaten;citation_author=G. Hinton"/>
   <meta name="citation_reference" content="citation_title=Distinguishing cells from empty droplets in droplet-based single-cell rna sequencing data;citation_publication_date=2018;citation_publisher=Cold Spring Harbor Laboratory;citation_doi=10.1101/234872;citation_author=A. Lun;citation_author=S. Riesenfeld;citation_author=T. Andrews;citation_author=T. P. Dao;citation_author=T. Gomes;citation_author=J. Marioni;citation_author=Distinguishing cells from empty droplets in droplet-based single-cell rna sequencing data"/>
-  <meta name="citation_reference" content="citation_title=UMAP: Uniform manifold approximation and projection for dimension reduction;citation_publication_date=2018;citation_author=Leland McInnes;citation_author=John Healy;citation_author=James Melville"/>
+  <meta name="citation_reference" content="citation_title=SoupX removes ambient rna contamination from droplet based single cell rna sequencing data. BioRxiv. 2018;citation_volume=10;citation_author=MD Young;citation_author=S Behjati"/>
   <!--radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","editor_options","bibliography"]}},"value":[{"type":"character","attributes":{},"value":["Demultiplexing the Cooney (C057) memory CD4+ T-cell data set"]},{"type":"NULL"},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Peter Hickey"]},{"type":"character","attributes":{},"value":["https://peterhickey.org"]},{"type":"character","attributes":{},"value":["WEHI SCORE"]},{"type":"character","attributes":{},"value":["https://www.wehi.edu.au/people/shalin-naik/3310/score"]}]}]},{"type":"character","attributes":{},"value":["2019-10-28"]},{"type":"character","attributes":{},"value":["distill::distill_article"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]},{"type":"character","attributes":{},"value":["ref.bib"]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","editor_options","bibliography"]}},"value":[{"type":"character","attributes":{},"value":["Demultiplexing the Cooney (C057) memory CD4+ T-cell data set"]},{"type":"NULL"},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Peter Hickey"]},{"type":"character","attributes":{},"value":["https://peterhickey.org"]},{"type":"character","attributes":{},"value":["WEHI SCORE"]},{"type":"character","attributes":{},"value":["https://www.wehi.edu.au/people/shalin-naik/3310/score"]}]}]},{"type":"character","attributes":{},"value":["2019-11-20"]},{"type":"character","attributes":{},"value":["distill::distill_article"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]},{"type":"character","attributes":{},"value":["ref.bib"]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   <!--radix_placeholder_navigation_in_header-->
@@ -1277,7 +1277,7 @@
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Demultiplexing the Cooney (C057) memory CD4+ T-cell data set","authors":[{"author":"Peter Hickey","authorURL":"https://peterhickey.org","affiliation":"WEHI SCORE","affiliationURL":"https://www.wehi.edu.au/people/shalin-naik/3310/score"}],"publishedDate":"2019-10-28T00:00:00.000+11:00","citationText":"Hickey, 2019"}
+{"title":"Demultiplexing the Cooney (C057) memory CD4+ T-cell data set","authors":[{"author":"Peter Hickey","authorURL":"https://peterhickey.org","affiliation":"WEHI SCORE","affiliationURL":"https://www.wehi.edu.au/people/shalin-naik/3310/score"}],"publishedDate":"2019-11-20T00:00:00.000+11:00","citationText":"Hickey, 2019"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -1289,9 +1289,39 @@
 <a href="index.html">Introduction</a>
 <a href="C057_Cooney.demultiplex.html">Demultiplexing</a>
 <a href="C057_Cooney.preprocess.html">Preprocessing</a>
-<a href="C057_Cooney.merge.html">Dimensionality reduction</a>
-<a href="C057_Cooney.annotate.html">Annotating cells</a>
-<a href="C057_Cooney_multi-sample_comparisons.html">Differential analyses</a>
+<div class="nav-dropdown">
+<button class="nav-dropbtn">
+Dimensionality reduction
+ 
+<span class="down-arrow">&#x25BE;</span>
+</button>
+<div class="nav-dropdown-content">
+<a href="C057_Cooney.merge.html">All samples</a>
+<a href="C057_Cooney_ignoring_unknowns.merge.html">Ignoring 'unknown' samples</a>
+</div>
+</div>
+<div class="nav-dropdown">
+<button class="nav-dropbtn">
+Annotating cells
+ 
+<span class="down-arrow">&#x25BE;</span>
+</button>
+<div class="nav-dropdown-content">
+<a href="C057_Cooney.annotate.html">All samples</a>
+<a href="C057_Cooney_ignoring_unknowns.annotate.html">Ignoring 'unknown' samples</a>
+</div>
+</div>
+<div class="nav-dropdown">
+<button class="nav-dropbtn">
+Differential analyses
+ 
+<span class="down-arrow">&#x25BE;</span>
+</button>
+<div class="nav-dropdown-content">
+<a href="C057_Cooney.multi-sample_comparisons.html">All samples</a>
+<a href="C057_Cooney_ignorning_unknowns.multi-sample_comparisons.html">Ignoring 'unknown' samples</a>
+</div>
+</div>
 <div class="nav-dropdown">
 <button class="nav-dropbtn">
 Supplementary files
@@ -1302,6 +1332,7 @@ Supplementary files
 <a href="../output/FastQC/">FastQC reports</a>
 <a href="../output/scPipe/">scPipe reports</a>
 <a href="../output/marker_genes/">Marker gene tables</a>
+<a href="../output/DEGs/">Differentially expressed genes</a>
 </div>
 </div>
 </div>
@@ -1325,7 +1356,7 @@ Supplementary files
 <div class="d-byline">
   Peter Hickey <a href="https://peterhickey.org" class="uri">https://peterhickey.org</a> (WEHI SCORE)<a href="https://www.wehi.edu.au/people/shalin-naik/3310/score" class="uri">https://www.wehi.edu.au/people/shalin-naik/3310/score</a>
   
-<br/>2019-10-28
+<br/>2019-11-20
 </div>
 
 <div class="d-article">
@@ -1364,7 +1395,7 @@ Figure 1: Total UMI count for each barcode in the dataset, plotted against its r
 </p>
 </div>
 </div>
-<p>We use the <code>emptyDrops()</code> function from the <em><a href="https://bioconductor.org/packages/3.9/DropletUtils">DropletUtils</a></em> package to test whether the expression profile for each cell barcode is significantly different from the ambient RNA pool <span class="citation" data-cites="lun2018distinguishing">(Lun et al. <a href="#ref-lun2018distinguishing">2018</a>)</span>. This tends to be less conservative than the cell calling algorithm from the <strong>CellRanger</strong> pipeline, which often discards genuine cells with low RNA content (and thus low total counts). Any significant deviation indicates that the barcode corresponds to a cell-containing droplet. We call cells at a false discovery rate (FDR) of 1%, meaning that no more than 1% of our called barcodes should be empty droplets on average.</p>
+<p>We use the <code>emptyDrops()</code> function from the <em><a href="https://bioconductor.org/packages/3.9/DropletUtils">DropletUtils</a></em> package to test whether the expression profile for each cell barcode is significantly different from the ambient RNA pool <span class="citation" data-cites="lun2018distinguishing">(Lun et al. <a href="#ref-lun2018distinguishing">2018</a>)</span>. This tends to be less conservative than the cell calling algorithm from the <strong>CellRanger</strong> pipeline, which often discards genuine cells with low RNA content (and thus low total counts). Any significant deviation indicates that the barcode corresponds to a cell-containing droplet. We call cells at a false discovery rate (FDR) of 0.1%, meaning that no more than 0.1% of our called barcodes should be empty droplets on average.</p>
 <div class="layout-chunk" data-layout="l-body">
 <table>
 <caption><span id="tab:unnamed-chunk-2">Table 1: </span>Number of droplets kept and removed after filtering empty drops.</caption>
@@ -1378,12 +1409,13 @@ Figure 1: Total UMI count for each barcode in the dataset, plotted against its r
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">HTLV_GEX_HTO</td>
-<td style="text-align: right;">14452</td>
-<td style="text-align: right;">722828</td>
+<td style="text-align: right;">14002</td>
+<td style="text-align: right;">723278</td>
 </tr>
 </tbody>
 </table>
 </div>
+<p>It is worth pointing out that, at this point, we do not attempt to remove the ambient contamination from the remaining libraries. Accurate quantification of the contamination rate in each cell is difficult as it generally requires some prior biological knowledge about genes that are expected to have mutually exclusive expression profiles and are highly abundant in the ambient solution <span class="citation" data-cites="young10soupx">(Young and Behjati, <a href="#ref-young10soupx">n.d.</a>)</span>. Fortunately, ambient contamination usually has little effect on the downstream conclusions for routine analyses; cell type identities are usually easy enough to determine from the affected genes, notwithstanding a (mostly harmless) low background level of expression for marker genes that should be unique to a cell type.</p>
 <h1 id="demultiplexing-with-hashtag-oligos-htos">Demultiplexing with hashtag oligos (HTOs)</h1>
 <p>We only use the droplets identified as non-empty in <a href="#calling-cells-from-empty-droplets">Calling cells from empty droplets</a>.</p>
 <div class="layout-chunk" data-layout="l-body">
@@ -1399,7 +1431,7 @@ Figure 2: Distribution of HTO counts in the dataset. Only those HTOs with more d
 </p>
 </div>
 </div>
-<p>We therefore focus on assigning cells to just the <code>mouse_1</code>, <code>mouse_3</code>, and <code>mouse_4</code> HTOs.</p>
+<p>We therefore focus on assigning cells to just the <code>human_1</code>, <code>human_2</code>, <code>human_3</code>, <code>human_4</code>, and <code>human_5</code> HTOs, along with the combination of all five HTOs.</p>
 <div class="layout-chunk" data-layout="l-body">
 
 </div>
@@ -1408,33 +1440,50 @@ Figure 2: Distribution of HTO counts in the dataset. Only those HTOs with more d
 
 </div>
 <h2 id="visualize-demultiplexing-results">Visualize demultiplexing results</h2>
+<p>Figures <a href="#fig:pca">3</a> and <a href="#fig:pca-faceted">4</a> use principal component analysis (PCA) to show that five clusters are fairly distinguishable from each other and that there are two additional clusters that are more difficult to resolve.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="figure"><span id="fig:pca"></span>
+<img src="C057_Cooney_demultiplex_files/pca-1.png" alt="PCA plot of the HTO data. Each point represents a cell with the colour explained in the legend." width="624" />
+<p class="caption">
+Figure 3: PCA plot of the HTO data. Each point represents a cell with the colour explained in the legend.
+</p>
+</div>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<div class="figure"><span id="fig:pca-faceted"></span>
+<img src="C057_Cooney_demultiplex_files/pca-faceted-1.png" alt="PCA plot of the HTO data. Each panel highlights cells from a particular cluster." width="624" />
+<p class="caption">
+Figure 4: PCA plot of the HTO data. Each panel highlights cells from a particular cluster.
+</p>
+</div>
+</div>
+<p>As an alternative to PCA, we can use a <span class="math inline">\(t\)</span>-stochastic neighbour embedding (t-SNE) <span class="citation" data-cites="van2008visualizing">(Van der Maaten and Hinton <a href="#ref-van2008visualizing">2008</a>)</span> to visualise the HTO data in 2-dimensions, overlaying the assigned cluster labels.</p>
 <div class="layout-chunk" data-layout="l-body">
 
 </div>
-<p>We use <span class="math inline">\(t\)</span>-stochastic neighbour embedding (t-SNE) plots <span class="citation" data-cites="van2008visualizing">(Van der Maaten and Hinton <a href="#ref-van2008visualizing">2008</a>)</span> () and uniform manifold approximation and projection (UMAP) plots <span class="citation" data-cites="McInnes2018-hy">(McInnes, Healy, and Melville <a href="#ref-McInnes2018-hy">2018</a>)</span> (Figure <a href="#fig:umap">4</a>) to visualise the HTO data in 2-dimensions, overlaying the assigned cluster labels.</p>
-<p>Figure <a href="#fig:tsne">3</a> and Figure <a href="#fig:umap">4</a>, in particular, show that five clusters are clearly distinguishable from each other and two additional clusters taht are more difficult to resolve.</p>
+<p>Figures <a href="#fig:tsne">5</a> and <a href="#fig:tsne-faceted">6</a> show that five clusters are clearly distinguishable from each other and that the two additional clusters are a little easier to visually resolve.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="figure"><span id="fig:tsne"></span>
 <img src="C057_Cooney_demultiplex_files/tsne-1.png" alt="t-SNE plot of the HTO data. Each point represents a cell with the colour explained in the legend." width="624" />
 <p class="caption">
-Figure 3: t-SNE plot of the HTO data. Each point represents a cell with the colour explained in the legend.
+Figure 5: t-SNE plot of the HTO data. Each point represents a cell with the colour explained in the legend.
 </p>
 </div>
 </div>
 <div class="layout-chunk" data-layout="l-body">
-<div class="figure"><span id="fig:umap"></span>
-<img src="C057_Cooney_demultiplex_files/umap-1.png" alt="UMAP plot of the HTO data. Each point represents a cell with the colour explained in the legend." width="624" />
+<div class="figure"><span id="fig:tsne-faceted"></span>
+<img src="C057_Cooney_demultiplex_files/tsne-faceted-1.png" alt="t-SNE plot of the HTO data. Each panel highlights cells from a particular cluster." width="624" />
 <p class="caption">
-Figure 4: UMAP plot of the HTO data. Each point represents a cell with the colour explained in the legend.
+Figure 6: t-SNE plot of the HTO data. Each panel highlights cells from a particular cluster.
 </p>
 </div>
 </div>
-<p>Figure <a href="#fig:heatmap-average">5</a> and <a href="#fig:heatmap">6</a> show that the five clearly distinguishable clusters correspond to the cells uniquely labelled with a single HTO while the two remaining clusters correspond to the sample labelled with all 5 HTOs and cells labelled with two or more HTOs.</p>
+<p>Figure <a href="#fig:heatmap-average">7</a> and <a href="#fig:heatmap">8</a> show that the five clearly distinguishable clusters correspond to the cells uniquely labelled with a single HTO while the two remaining clusters correspond to the sample labelled with all 5 HTOs and cells labelled with two or more HTOs.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="figure"><span id="fig:heatmap-average"></span>
 <img src="C057_Cooney_demultiplex_files/heatmap-average-1.png" alt="Heatmap of row-nomralized average log-expression of HTOs." width="624" />
 <p class="caption">
-Figure 5: Heatmap of row-nomralized average log-expression of HTOs.
+Figure 7: Heatmap of row-nomralized average log-expression of HTOs.
 </p>
 </div>
 </div>
@@ -1442,16 +1491,16 @@ Figure 5: Heatmap of row-nomralized average log-expression of HTOs.
 <div class="figure"><span id="fig:heatmap"></span>
 <img src="C057_Cooney_demultiplex_files/heatmap-1.png" alt="Heatmap of row-normalized log-expression of HTOs." width="624" />
 <p class="caption">
-Figure 6: Heatmap of row-normalized log-expression of HTOs.
+Figure 8: Heatmap of row-normalized log-expression of HTOs.
 </p>
 </div>
 </div>
-<p>Figure <a href="#fig:violin">7</a> plots the expression of each HTO by cluster and confirms that the expression of each HTO is highest in the samples uniquely labelled with that HTO. Figure <a href="#fig:violin">7</a> also reveals that the distribution of expression is very tight (i.e. low variability) for these samples labelled uniquely with that HTO as well as in the samples that were labelled with all 5 HTOs (cluster 4). In contrast, the samples in cluster 7 often have high expression of each HTO but this expression is much more variable than those samples in cluster 4.</p>
+<p>Figure <a href="#fig:violin">9</a> plots the expression of each HTO by cluster and confirms that the expression of each HTO is highest in the samples uniquely labelled with that HTO. Figure <a href="#fig:violin">9</a> also reveals that the distribution of expression is very tight (i.e. low variability) for these samples labelled uniquely with that HTO as well as in the samples that were labelled with all 5 HTOs (cluster 5). In contrast, the samples in cluster 4 often have high expression of each HTO but this expression is much more variable than those samples in cluster 5.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="figure"><span id="fig:violin"></span>
 <img src="C057_Cooney_demultiplex_files/violin-1.png" alt="Expression of HTOs by cluster." width="624" />
 <p class="caption">
-Figure 7: Expression of HTOs by cluster.
+Figure 9: Expression of HTOs by cluster.
 </p>
 </div>
 </div>
@@ -1508,7 +1557,7 @@ Figure 7: Expression of HTOs by cluster.
 </tbody>
 </table>
 </div>
-<p>James was targetting ~2000 cells / sample. The table below shows that we largely hit that target for the uninfected samples but not so for the infected samples. It also shows that proportion of droplets that are ‘unassigned’ (i.e. those in cluster (7) is larger than we would like.</p>
+<p>James was targetting ~2000 cells / sample. The table below shows that we largely hit that target for the uninfected samples but not so for the infected samples. It also shows that proportion of droplets that are ‘unassigned’ (i.e. those in cluster (3) is larger than we would like.</p>
 <div class="layout-chunk" data-layout="l-body">
 <table>
 <caption><span id="tab:unnamed-chunk-8">Table 3: </span>Tabulation of samples by treatment and replicate (mouse). The samples are unpaired. ‘NA’ values are those samples who HTOs could not be demultiplexed.</caption>
@@ -1525,31 +1574,49 @@ Figure 7: Expression of HTOs by cluster.
 </thead>
 <tbody>
 <tr class="odd">
+<td style="text-align: left;">7</td>
+<td style="text-align: left;">human_1</td>
+<td style="text-align: left;">infected_1</td>
+<td style="text-align: left;">Infected</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1652</td>
+<td style="text-align: left;">11.8%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">human_2</td>
+<td style="text-align: left;">infected_2</td>
+<td style="text-align: left;">Infected</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1408</td>
+<td style="text-align: left;">10.1%</td>
+</tr>
+<tr class="odd">
 <td style="text-align: left;">1</td>
 <td style="text-align: left;">human_3</td>
 <td style="text-align: left;">infected_3</td>
 <td style="text-align: left;">Infected</td>
 <td style="text-align: right;">3</td>
-<td style="text-align: right;">1515</td>
-<td style="text-align: left;">10.5%</td>
+<td style="text-align: right;">1509</td>
+<td style="text-align: left;">10.8%</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2</td>
-<td style="text-align: left;">human_1</td>
-<td style="text-align: left;">infected_1</td>
-<td style="text-align: left;">Infected</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">human_4</td>
+<td style="text-align: left;">uninfected_1</td>
+<td style="text-align: left;">Uninfected</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">1659</td>
-<td style="text-align: left;">11.5%</td>
+<td style="text-align: right;">2142</td>
+<td style="text-align: left;">15.3%</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">3</td>
-<td style="text-align: left;">human_2</td>
-<td style="text-align: left;">infected_2</td>
-<td style="text-align: left;">Infected</td>
+<td style="text-align: left;">6</td>
+<td style="text-align: left;">human_5</td>
+<td style="text-align: left;">uninfected_2</td>
+<td style="text-align: left;">Uninfected</td>
 <td style="text-align: right;">2</td>
-<td style="text-align: right;">1416</td>
-<td style="text-align: left;">9.8%</td>
+<td style="text-align: right;">2471</td>
+<td style="text-align: left;">17.6%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">4</td>
@@ -1557,43 +1624,29 @@ Figure 7: Expression of HTOs by cluster.
 <td style="text-align: left;">uninfected_3</td>
 <td style="text-align: left;">Uninfected</td>
 <td style="text-align: right;">3</td>
-<td style="text-align: right;">1728</td>
-<td style="text-align: left;">12.0%</td>
+<td style="text-align: right;">1701</td>
+<td style="text-align: left;">12.1%</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">5</td>
-<td style="text-align: left;">human_4</td>
-<td style="text-align: left;">uninfected_1</td>
-<td style="text-align: left;">Uninfected</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">2153</td>
-<td style="text-align: left;">14.9%</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">6</td>
-<td style="text-align: left;">human_5</td>
-<td style="text-align: left;">uninfected_2</td>
-<td style="text-align: left;">Uninfected</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">2483</td>
-<td style="text-align: left;">17.2%</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">7</td>
+<td style="text-align: left;">3</td>
 <td style="text-align: left;">NA</td>
 <td style="text-align: left;">NA</td>
 <td style="text-align: left;">NA</td>
 <td style="text-align: right;">NA</td>
-<td style="text-align: right;">3498</td>
-<td style="text-align: left;">24.2%</td>
+<td style="text-align: right;">3119</td>
+<td style="text-align: left;">22.3%</td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>Most of these unassigned droplets likely comprise true doublets and mis-assigned singlets from the cells labelled with all five HTOs. We will keep these as their own category to see if these cells are transcriptomically distinct, which may indicate an issue with cell hashing for certain types of cells.</p>
+<p>These unassigned droplets likely include true doublets, mis-assigned singlets from the cells labelled with all five HTOs, and samples comparising ambient RNAs/HTOs (aka the ‘soup’ <span class="citation" data-cites="young10soupx">(Young and Behjati, <a href="#ref-young10soupx">n.d.</a>)</span>).</p>
 <div class="layout-chunk" data-layout="l-body">
 
 </div>
+<div class="layout-chunk" data-layout="l-body">
+
+</div>
+<p>We will keep these ‘unknown’ droplets as their own category to see if these cells are transcriptomically distinct, which may indicate an issue with cell hashing for certain types of cells.</p>
 <h1 id="concluding-remarks">Concluding remarks</h1>
 <div class="layout-chunk" data-layout="l-body">
 
@@ -1611,88 +1664,84 @@ Figure 7: Expression of HTOs by cluster.
 <pre><code>
 R version 3.6.1 (2019-07-05)
 Platform: x86_64-pc-linux-gnu (64-bit)
-Running under: Ubuntu 18.04.3 LTS
+Running under: CentOS Linux 7 (Core)
 
 Matrix products: default
-BLAS:   /usr/lib/x86_64-linux-gnu/openblas/libblas.so.3
-LAPACK: /usr/lib/x86_64-linux-gnu/libopenblasp-r0.2.20.so
+BLAS/LAPACK: /stornext/System/data/tools/openBLAS/openBLAS-0.3.6-gcc-9.1.0/lib/libopenblas_haswellp-r0.3.6.so
 
 locale:
- [1] LC_CTYPE=en_AU.UTF-8       LC_NUMERIC=C              
- [3] LC_TIME=en_AU.UTF-8        LC_COLLATE=en_AU.UTF-8    
- [5] LC_MONETARY=en_AU.UTF-8    LC_MESSAGES=en_AU.UTF-8   
- [7] LC_PAPER=en_AU.UTF-8       LC_NAME=C                 
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-[11] LC_MEASUREMENT=en_AU.UTF-8 LC_IDENTIFICATION=C       
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
 
 attached base packages:
 [1] parallel  stats4    stats     graphics  grDevices utils    
 [7] datasets  methods   base     
 
 other attached packages:
- [1] pheatmap_1.0.12             cowplot_1.0.0              
- [3] scran_1.12.1                scater_1.12.2              
- [5] ggplot2_3.2.1               DropletUtils_1.4.3         
- [7] SingleCellExperiment_1.6.0  SummarizedExperiment_1.14.1
- [9] DelayedArray_0.10.0         BiocParallel_1.18.1        
-[11] matrixStats_0.55.0          Biobase_2.44.0             
-[13] GenomicRanges_1.36.1        GenomeInfoDb_1.20.0        
-[15] IRanges_2.18.3              S4Vectors_0.22.1           
-[17] BiocGenerics_0.30.0         janitor_1.2.0              
+ [1] pheatmap_1.0.12             scran_1.12.1               
+ [3] scater_1.12.2               ggplot2_3.2.1              
+ [5] DropletUtils_1.4.3          SingleCellExperiment_1.6.0 
+ [7] SummarizedExperiment_1.14.1 DelayedArray_0.10.0        
+ [9] BiocParallel_1.18.1         matrixStats_0.55.0         
+[11] Biobase_2.44.0              GenomicRanges_1.36.1       
+[13] GenomeInfoDb_1.20.0         IRanges_2.18.3             
+[15] S4Vectors_0.22.1            BiocGenerics_0.30.0        
+[17] cowplot_1.0.0               janitor_1.2.0              
 [19] dplyr_0.8.3                 BiocStyle_2.12.0           
 [21] magrittr_1.5                here_0.1                   
 
 loaded via a namespace (and not attached):
- [1] bitops_1.0-6             RcppAnnoy_0.0.13        
- [3] RColorBrewer_1.1-2       rprojroot_1.3-2         
- [5] dynamicTreeCut_1.63-1    tools_3.6.1             
- [7] backports_1.1.5          R6_2.4.0                
- [9] irlba_2.3.3              HDF5Array_1.12.3        
-[11] vipor_0.4.5              uwot_0.1.4              
-[13] lazyeval_0.2.2           colorspace_1.4-1        
-[15] withr_2.1.2              tidyselect_0.2.5        
-[17] gridExtra_2.3            compiler_3.6.1          
-[19] BiocNeighbors_1.3.3      labeling_0.3            
-[21] scales_1.0.0             stringr_1.4.0           
-[23] digest_0.6.21            rmarkdown_1.16          
-[25] R.utils_2.9.0            XVector_0.24.0          
-[27] pkgconfig_2.0.3          htmltools_0.4.0         
-[29] limma_3.40.6             highr_0.8               
-[31] rlang_0.4.0              DelayedMatrixStats_1.6.1
-[33] distill_0.7              R.oo_1.22.0             
-[35] RCurl_1.95-4.12          BiocSingular_1.0.0      
-[37] GenomeInfoDbData_1.2.1   Matrix_1.2-17           
-[39] Rcpp_1.0.2               ggbeeswarm_0.6.0        
-[41] munsell_0.5.0            Rhdf5lib_1.6.3          
-[43] viridis_0.5.1            lifecycle_0.1.0         
-[45] R.methodsS3_1.7.1        stringi_1.4.3           
-[47] yaml_2.2.0               edgeR_3.26.8            
-[49] zlibbioc_1.30.0          rhdf5_2.28.1            
-[51] Rtsne_0.15               grid_3.6.1              
-[53] dqrng_0.2.1              crayon_1.3.4            
-[55] lattice_0.20-38          locfit_1.5-9.1          
-[57] zeallot_0.1.0            knitr_1.25              
-[59] pillar_1.4.2             igraph_1.2.4.1          
-[61] codetools_0.2-16         glue_1.3.1              
-[63] evaluate_0.14            BiocManager_1.30.8      
-[65] RcppParallel_4.4.4       colorblindr_0.1.0       
-[67] vctrs_0.2.0              tidyr_1.0.0             
-[69] gtable_0.3.0             purrr_0.3.2             
-[71] assertthat_0.2.1         xfun_0.10               
-[73] rsvd_1.0.2               RSpectra_0.15-0         
-[75] viridisLite_0.3.0        tibble_2.1.3            
-[77] beeswarm_0.2.3           statmod_1.4.32          
-[79] ellipsis_0.3.0          </code></pre>
+ [1] dynamicTreeCut_1.63-1    viridis_0.5.1           
+ [3] tidyr_1.0.0              edgeR_3.26.8            
+ [5] BiocSingular_1.0.0       viridisLite_0.3.0       
+ [7] DelayedMatrixStats_1.6.1 R.utils_2.9.0           
+ [9] assertthat_0.2.1         statmod_1.4.32          
+[11] BiocManager_1.30.9       highr_0.8               
+[13] dqrng_0.2.1              GenomeInfoDbData_1.2.1  
+[15] vipor_0.4.5              yaml_2.2.0              
+[17] pillar_1.4.2             backports_1.1.5         
+[19] lattice_0.20-38          glue_1.3.1              
+[21] limma_3.40.6             digest_0.6.22           
+[23] RColorBrewer_1.1-2       XVector_0.24.0          
+[25] colorspace_1.4-1         htmltools_0.4.0         
+[27] Matrix_1.2-17            R.oo_1.22.0             
+[29] pkgconfig_2.0.3          zlibbioc_1.30.0         
+[31] purrr_0.3.3              scales_1.0.0            
+[33] HDF5Array_1.12.3         Rtsne_0.15              
+[35] distill_0.7              tibble_2.1.3            
+[37] ellipsis_0.3.0           withr_2.1.2             
+[39] lazyeval_0.2.2           crayon_1.3.4            
+[41] evaluate_0.14            R.methodsS3_1.7.1       
+[43] beeswarm_0.2.3           tools_3.6.1             
+[45] lifecycle_0.1.0          stringr_1.4.0           
+[47] Rhdf5lib_1.6.3           munsell_0.5.0           
+[49] locfit_1.5-9.1           irlba_2.3.3             
+[51] compiler_3.6.1           rsvd_1.0.2              
+[53] rlang_0.4.1              rhdf5_2.28.1            
+[55] grid_3.6.1               RCurl_1.95-4.12         
+[57] BiocNeighbors_1.3.3      igraph_1.2.4.1          
+[59] labeling_0.3             colorblindr_0.1.0       
+[61] bitops_1.0-6             rmarkdown_1.16          
+[63] gtable_0.3.0             R6_2.4.0                
+[65] gridExtra_2.3            knitr_1.25              
+[67] zeallot_0.1.0            rprojroot_1.3-2         
+[69] stringi_1.4.3            ggbeeswarm_0.6.0        
+[71] Rcpp_1.0.2               vctrs_0.2.0             
+[73] tidyselect_0.2.5         xfun_0.10               </code></pre>
 </div>
 <div id="refs" class="references">
 <div id="ref-lun2018distinguishing">
 <p>Lun, A., S. Riesenfeld, T. Andrews, T. P. Dao, T. Gomes, participants in the 1<sup>st</sup> Human Cell Atlas Jamboree, and J. Marioni. 2018. “Distinguishing Cells from Empty Droplets in Droplet-Based Single-Cell Rna Sequencing Data.” <em>bioRxiv</em>. Cold Spring Harbor Laboratory. <a href="https://doi.org/10.1101/234872">https://doi.org/10.1101/234872</a>.</p>
 </div>
-<div id="ref-McInnes2018-hy">
-<p>McInnes, Leland, John Healy, and James Melville. 2018. “UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction,” February. <a href="http://arxiv.org/abs/1802.03426">http://arxiv.org/abs/1802.03426</a>.</p>
-</div>
 <div id="ref-van2008visualizing">
 <p>Van der Maaten, L., and G. Hinton. 2008. “Visualizing Data Using T-Sne.” <em>J. Mach. Learn. Res.</em> 9 (2579-2605): 85. <a href="http://www.jmlr.org/papers/v9/vandermaaten08a.html">http://www.jmlr.org/papers/v9/vandermaaten08a.html</a>.</p>
+</div>
+<div id="ref-young10soupx">
+<p>Young, MD, and S Behjati. n.d. “SoupX Removes Ambient Rna Contamination from Droplet Based Single Cell Rna Sequencing Data. BioRxiv. 2018.” <em>DOI</em> 10: 303727.</p>
 </div>
 </div>
 <!--radix_placeholder_article_footer-->
@@ -2795,6 +2844,14 @@ issn = {14764687},
 journal = {Nature},
 title = {{An integrated encyclopedia of DNA elements in the human genome}},
 year = {2012}
+}
+
+@article{young10soupx,
+  title={SoupX removes ambient RNA contamination from droplet based single cell RNA sequencing data. bioRxiv. 2018},
+  author={Young, MD and Behjati, S},
+  journal={DOI},
+  volume={10},
+  pages={303727}
 }
 </script>
 <!--/radix_placeholder_appendices-->

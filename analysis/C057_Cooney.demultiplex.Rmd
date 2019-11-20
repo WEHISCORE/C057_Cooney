@@ -19,6 +19,7 @@ library(magrittr)
 library(BiocStyle)
 library(dplyr)
 library(janitor)
+library(cowplot)
 
 source(here("analysis", "helper_functions.R"))
 # NOTE: Using >= 4 cores siezes up my laptop. Can use more on unix box.
@@ -84,28 +85,33 @@ abline(h = metadata(bcrank)$knee, col = "dodgerblue", lty = 2)
 We use the `emptyDrops()` function from the `r Biocpkg("DropletUtils")` package to test whether the expression profile for each cell barcode is significantly different from the ambient RNA pool [@lun2018distinguishing].
 This tends to be less conservative than the cell calling algorithm from the **CellRanger** pipeline, which often discards genuine cells with low RNA content (and thus low total counts).
 Any significant deviation indicates that the barcode corresponds to a cell-containing droplet.
-We call cells at a false discovery rate (FDR) of 1%, meaning that no more than 1% of our called barcodes should be empty droplets on average.
+We call cells at a false discovery rate (FDR) of 0.1%, meaning that no more than 0.1% of our called barcodes should be empty droplets on average.
 
 ```{r}
 empties <- readRDS(here("data", "emptyDrops", "empties.rds"))
+fdr <- 0.001
 dplyr::mutate(
   as.data.frame(empties),
   Sample = rep("HTLV_GEX_HTO", nrow(empties))) %>%
   dplyr::group_by(Sample) %>%
   dplyr::summarise(
-    keep = sum(FDR < 0.01, na.rm = TRUE), 
+    keep = sum(FDR < fdr, na.rm = TRUE), 
     n = n(),
     remove = n - keep) %>%
   dplyr::mutate(library = factor(Sample)) %>%
   dplyr::select(library, keep, remove) %>%
   knitr::kable(
     caption = "Number of droplets kept and removed after filtering empty drops.")
-sce <- sce[, which(empties$FDR <= 0.01)]
+sce <- sce[, which(empties$FDR <= fdr)]
 # Re-split the data up into RNA and HTOs
 rna <- sce[grepl("ENS", rownames(sce)), ]
 hto <- sce[!grepl("ENS", rownames(sce)), ]
 counts(hto) <- as.matrix(counts(hto))
 ```
+
+It is worth pointing out that, at this point, we do not attempt to remove the ambient contamination from the remaining libraries.
+Accurate quantification of the contamination rate in each cell is difficult as it generally requires some prior biological knowledge about genes that are expected to have mutually exclusive expression profiles and are highly abundant in the ambient solution [@young10soupx].
+Fortunately, ambient contamination usually has little effect on the downstream conclusions for routine analyses; cell type identities are usually easy enough to determine from the affected genes, notwithstanding a (mostly harmless) low background level of expression for marker genes that should be unique to a cell type.
 
 # Demultiplexing with hashtag oligos (HTOs)
 
@@ -145,7 +151,7 @@ for (i in o) {
 }
 ```
 
-We therefore focus on assigning cells to just the `mouse_1`, `mouse_3`, and `mouse_4` HTOs.
+We therefore focus on assigning cells to just the `human_1`, `human_2`, `human_3`, `human_4`, and `human_5` HTOs, along with the combination of all five HTOs.
 
 ```{r}
 hto <- hto[paste0("human_", 1:5), ]
@@ -166,16 +172,6 @@ hto <- normalizeSCE(hto)
 #       clusters that avoided overclustering the multi-HTO samples.
 g <- buildSNNGraph(hto, k = 100, d = NA)
 clusters <- igraph::cluster_louvain(g)$membership
-```
-
-## Visualize demultiplexing results
-
-```{r}
-set.seed(1010010)
-hto <- runTSNE(hto)
-set.seed(4657)
-hto <- runUMAP(hto)
-
 hto$cluster <- factor(clusters)
 cluster_colours <- setNames(
   colorblindr::palette_OkabeIto,
@@ -183,14 +179,50 @@ cluster_colours <- setNames(
 cluster_colours <- cluster_colours[!is.na(names(cluster_colours))]
 ```
 
-We use $t$-stochastic neighbour embedding (t-SNE) plots [@van2008visualizing] () and uniform manifold approximation and projection (UMAP) plots [@McInnes2018-hy] (Figure \@ref(fig:umap)) to visualise the HTO data in 2-dimensions, overlaying the assigned cluster labels.
+## Visualize demultiplexing results
 
-Figure \@ref(fig:tsne) and Figure \@ref(fig:umap), in particular, show that five clusters are clearly distinguishable from each other and two additional clusters taht are more difficult to resolve.
+Figures \@ref(fig:pca) and \@ref(fig:pca-faceted) use principal component analysis (PCA) to show that five clusters are fairly distinguishable from each other and that there are two additional clusters that are more difficult to resolve.
 
+```{r pca, fig.cap = "PCA plot of the HTO data. Each point represents a cell with the colour explained in the legend.", fig.asp = 1}
+set.seed(666)
+hto <- runPCA(hto)
 
-```{r tsne, fig.cap = "t-SNE plot of the HTO data. Each point represents a cell with the colour explained in the legend."}
-library(cowplot)
+plotPCA(hto, colour_by = "cluster", point_size = 0) +
+  geom_point(aes(colour = colour_by), size = 0.5) +
+  scale_colour_manual(values = cluster_colours, name = "cluster") +
+  ggtitle("PCA: HTOs") +
+  theme_cowplot()
+```
 
+```{r pca-faceted, fig.cap = "PCA plot of the HTO data. Each panel highlights cells from a particular cluster.", fig.asp = 1}
+pca <- cbind(
+  as.data.frame(colData(hto)),
+  x = reducedDim(hto, "PCA")[, 1],
+  y = reducedDim(hto, "PCA")[, 2])
+bg <- dplyr::select(pca, -cluster)
+ggplot(aes(x = x, y = y), data = pca) +
+  geom_point(data = bg, colour = scales::alpha("grey", 0.7), size = 0.1) +
+  geom_point(aes(colour = cluster), alpha = 1, size = 0.5) +
+  scale_fill_manual(values = cluster_colours, name = "Cluster") + 
+  scale_colour_manual(values = cluster_colours, name = "Cluster") +
+  theme_cowplot(font_size = 10) + 
+  xlab("Dimension 1") + 
+  ylab("Dimension 2") +
+  facet_wrap(~cluster, ncol = 3, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none")
+```
+
+As an alternative to PCA, we can  use a $t$-stochastic neighbour embedding (t-SNE) [@van2008visualizing] to visualise the HTO data in 2-dimensions, overlaying the assigned cluster labels.
+
+```{r}
+set.seed(666)
+hto <- runTSNE(hto)
+```
+
+Figures \@ref(fig:tsne) and \@ref(fig:tsne-faceted) show that five clusters are clearly distinguishable from each other and that the two additional clusters are a little easier to visually resolve.
+
+```{r tsne, fig.cap = "t-SNE plot of the HTO data. Each point represents a cell with the colour explained in the legend.", fig.asp = 1}
 plotTSNE(hto, colour_by = "cluster", point_size = 0) +
   geom_point(aes(colour = colour_by), size = 0.5) +
   scale_colour_manual(values = cluster_colours, name = "cluster") +
@@ -198,12 +230,23 @@ plotTSNE(hto, colour_by = "cluster", point_size = 0) +
   theme_cowplot()
 ```
 
-```{r umap, fig.cap = "UMAP plot of the HTO data. Each point represents a cell with the colour explained in the legend."}
-plotUMAP(hto, colour_by = "cluster", point_size = 0) +
-  geom_point(aes(colour = colour_by), size = 0.5) +
-  scale_colour_manual(values = cluster_colours, name = "cluster") +
-  ggtitle("UMAP: HTOs") +
-  theme_cowplot()
+```{r tsne-faceted, fig.cap = "t-SNE plot of the HTO data. Each panel highlights cells from a particular cluster.", fig.asp = 1}
+tsne <- cbind(
+  as.data.frame(colData(hto)),
+  x = reducedDim(hto, "TSNE")[, 1],
+  y = reducedDim(hto, "TSNE")[, 2])
+bg <- dplyr::select(tsne, -cluster)
+ggplot(aes(x = x, y = y), data = tsne) +
+  geom_point(data = bg, colour = scales::alpha("grey", 0.7), size = 0.1) +
+  geom_point(aes(colour = cluster), alpha = 1, size = 0.5) +
+  scale_fill_manual(values = cluster_colours, name = "Cluster") + 
+  scale_colour_manual(values = cluster_colours, name = "Cluster") +
+  theme_cowplot(font_size = 10) + 
+  xlab("Dimension 1") + 
+  ylab("Dimension 2") +
+  facet_wrap(~cluster, ncol = 3, labeller = label_both) +
+  theme_cowplot() +
+  theme(legend.position = "none")
 ```
 
 Figure \@ref(fig:heatmap-average) and \@ref(fig:heatmap) show that the five clearly distinguishable clusters correspond to the cells uniquely labelled with a single HTO while the two remaining clusters correspond to the sample labelled with all 5 HTOs and cells labelled with two or more HTOs.
@@ -215,7 +258,7 @@ averaged <- sweep(
   table(hto$cluster),
   "/")
 # Sanity check
-stopifnot(all(apply(averaged, 2, which.max) == c(3, 1, 2, 1, 4, 5, 1)))
+stopifnot(all(apply(averaged, 2, which.max) == c(3, 2, 1, 1, 4, 5, 1)))
 
 library(pheatmap)
 mat <- averaged - rowMeans(averaged)
@@ -249,8 +292,8 @@ pheatmap(
 ```
 
 Figure \@ref(fig:violin) plots the expression of each HTO by cluster and confirms that the expression of each HTO is highest in the samples uniquely labelled with that HTO.
-Figure \@ref(fig:violin) also reveals that the distribution of expression is very tight (i.e. low variability) for these samples labelled uniquely with that HTO as well as in the samples that were labelled with all 5 HTOs (cluster 4).
-In contrast, the samples in cluster 7 often have high expression of each HTO but this expression is much more variable than those samples in cluster 4.
+Figure \@ref(fig:violin) also reveals that the distribution of expression is very tight (i.e. low variability) for these samples labelled uniquely with that HTO as well as in the samples that were labelled with all 5 HTOs (cluster 5).
+In contrast, the samples in cluster 4 often have high expression of each HTO but this expression is much more variable than those samples in cluster 5.
 
 ```{r violin, fig.cap = "Expression of HTOs by cluster."}
 plotExpression(
@@ -283,11 +326,13 @@ It also shows that proportion of droplets that are 'unassigned' (i.e. those in c
 
 ```{r}
 # Map clusters to HTOs to samples
+# NOTE: This is made by visually inspecting the above heatmaps.
 cluster_to_hto_df <- data.frame(
   cluster = levels(hto$cluster),
   HTO = c(
-    paste0("human_", c(3, 1, 2, paste0(1:5, collapse = "_"), 4, 5)),
-    NA_character_),
+    paste0("human_", c(3, 2)),
+    NA_character_, 
+    paste0("human_", c(paste0(1:5, collapse = "_"), 4, 5, 1))),
   stringsAsFactors = FALSE)
 
 hto_df <- left_join(cluster_to_hto_df, hto_to_sample_df)
@@ -295,12 +340,12 @@ knitr::kable(
   hto_df %>%
     left_join(
     tabyl(data.frame(cluster = hto$cluster), cluster) %>%
-      adorn_pct_formatting(1)), 
+      adorn_pct_formatting(1)) %>%
+    dplyr::arrange(Sample), 
   caption = "Tabulation of samples by treatment and replicate (mouse). The samples are unpaired. 'NA' values are those samples who HTOs could not be demultiplexed.")
 ```
 
-Most of these unassigned droplets likely comprise true doublets and mis-assigned singlets from the cells labelled with all five HTOs.
-We will keep these as their own category to see if these cells are transcriptomically distinct, which may indicate an issue with cell hashing for certain types of cells.
+These unassigned droplets likely include true doublets, mis-assigned singlets from the cells labelled with all five HTOs, and samples comparising ambient RNAs/HTOs (aka the 'soup' [@young10soupx]).
 
 ```{r}
 stopifnot(identical(colnames(sce), colnames(hto)))
@@ -312,6 +357,25 @@ colData(sce) <- colData(sce) %>%
   dplyr::rename(hto_cluster = cluster) %>%
   DataFrame(row.names = colnames(sce))
 ```
+
+```{r pairs, fig.cap = "Pairwise expression of HTOs coloured by assigned by cluster.", eval = FALSE}
+# NOTE: Not using this figure (it's really a poor man's PCA or tSNE). It shows
+#       in most panels that there is a small group of cells that express 2 HTOs
+#       but have been assigned to one of the single HTO clusters.
+pairs(
+  t(logcounts(hto)),
+  col = scales::alpha(cluster_colours, c(0.1, 0.1, 0.1, 1, 0.1, 0.1, 0.1))[hto$cluster],
+  pch = 16,
+  cex = 0.5,
+  text.panel = function(x = 0.5, y = 0.5, txt, cex, font) {
+    col <- cluster_colours[cluster_to_hto_df[which(
+      cluster_to_hto_df$HTO == txt), "cluster"]]
+    text(x, y, txt, cex = cex, font = font, col = col)
+  },
+  upper.panel = NULL)
+```
+
+We will keep these 'unknown' droplets as their own category to see if these cells are transcriptomically distinct, which may indicate an issue with cell hashing for certain types of cells.
 
 # Concluding remarks
 
