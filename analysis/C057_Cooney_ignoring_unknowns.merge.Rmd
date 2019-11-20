@@ -1,0 +1,280 @@
+---
+title: "Dimensionality reduction of the Cooney (C057) memory CD4+ T-cell data set after ignoring 'unknown' samples"
+description: |
+author:
+  - name: Peter Hickey 
+    url: https://peterhickey.org
+    affiliation: Single Cell Open Research Endeavour (SCORE), WEHI
+    affiliation_url: https://www.wehi.edu.au/people/shalin-naik/3310/score
+date: "`r Sys.Date()`"
+output: radix::radix_article
+editor_options: 
+  chunk_output_type: console
+bibliography: ref.bib
+---
+
+```{r setup}
+library(SingleCellExperiment)
+library(here)
+library(rmarkdown)
+library(BiocStyle)
+library(scran)
+library(janitor)
+library(ggplot2)
+library(cowplot)
+source(here("analysis", "helper_functions.R"))
+# NOTE: Using >= 4 cores siezes up my laptop. Can use more on RStudio server.
+options(
+  "mc.cores" = 
+    ifelse(Sys.info()[["nodename"]] == "rstudio-2.hpc.wehi.edu.au", 8L, 2L))
+register(MulticoreParam(workers = getOption("mc.cores")))
+knitr::opts_chunk$set(fig.path = "C057_Cooney_ignoring_unknowns_merge_files/")
+```
+
+# Setting up the data
+
+We start from the preprocessed *SingleCellExperiment* object created in ['Preprocessing the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney_preprocess.html), subsetted to exclude the 'unknown' samples.
+
+```{r}
+sce <- readRDS(here("data", "SCEs", "C057_Cooney.preprocessed.SCE.rds"))
+```
+
+```{r}
+hto_to_sample_df <- as.data.frame(colData(sce)) %>%
+  dplyr::select(hto_cluster, HTO, Sample, Treatment, Replicate) %>%
+  dplyr::distinct()
+
+# Some useful colours
+hto_cluster_colours <- setNames(
+  colorblindr::palette_OkabeIto,
+  levels(sce$hto_cluster))
+hto_cluster_colours <- hto_cluster_colours[!is.na(names(hto_cluster_colours))]
+hto_colours <- hto_cluster_colours
+names(hto_colours) <- dplyr::inner_join(
+  data.frame(hto_cluster = names(hto_cluster_colours)),
+  hto_to_sample_df) %>%
+  dplyr::pull(HTO)
+sample_colours <- hto_cluster_colours
+names(sample_colours) <- dplyr::inner_join(
+  data.frame(hto_cluster = names(sample_colours)),
+  hto_to_sample_df) %>%
+  dplyr::pull(Sample)
+treatment_colours <- c(
+  "Infected" = "#e41a1c",
+  "Uninfected" = "#377eb8",
+  "Unknown" = "grey70")
+# NOTE: No replicate_colours because we won't ever colour by this.
+```
+
+```{r}
+sce <- sce[, sce$Sample != "Unknown"]
+# NOTE: Need to re-do gene removal and normalization(?)
+```
+
+# Feature selection
+
+## Motivation
+
+We often use scRNA-seq data in exploratory analyses to characterize heterogeneity across cells.
+Procedures like clustering and dimensionality reduction compare cells based on their gene expression profiles, which involves aggregating per-gene differences into a single (dis)similarity metric between a pair of cells.
+The choice of genes to use in this calculation has a major impact on the behavior of the metric and the performance of downstream methods.
+We want to select genes that contain useful information about the biology of the system while removing genes that contain random noise.
+This aims to preserve interesting biological structure without the variance that obscures that structure.
+It also reduces the size of the dataset to improve computational efficiency of later steps.
+
+## Quantifying per-gene variation
+
+The simplest approach to feature selection is to select the most variable genes based on their expression across the population.
+This assumes that genuine biological differences will manifest as increased variation in the affected genes, compared to other genes that are only affected by technical noise or a baseline level of 'uninteresting' biological variation (e.g., from transcriptional bursting).
+
+Key to this approach is estimating the 'uninteresting' variation.
+For droplet-based scRNA-seq, like 10X Genomics, we do not have spike-in RNAs that we could use to estimate the technical variation.
+In the absence of spike-in data, one can attempt to create a trend by making some distributional assumptions about the noise.
+For example, UMI counts typically exhibit near-Poisson variation if we only consider technical noise from library preparation and sequencing.
+This is the approach we use in the below.
+
+```{r}
+# Fit a mean-variance trend to the endogenous genes.
+var_fit <- trendVar(
+  sce,
+  parametric = FALSE,
+  loess.args = list(span = 0.05),
+  use.spikes = FALSE)
+# Estimate a mean-variance under the assumption of Poisson variation.
+var_fit$trend <- makeTechTrend(x = sce)
+```
+
+Figure \@ref(fig:mean-var-plot) shows the mean-variance relationship for each gene in the dataset and the estimated trend.
+Interestingly, trends based purely on technical noise tend to yield large biological components for highly-expressed genes. 
+This often includes so-called "house-keeping" genes coding for essential cellular components such as ribosomal proteins, which are often considered uninteresting for characterizing cellular heterogeneity.
+However, one should keep an open mind with respect to the 'interesting-ness' of house-keeping genes because these are regularly differentially expressed in a variety of conditions and the fact that they have large biological components indicates that there is strong variation across cells that may not be completely irrelevant.
+
+```{r mean-var-plot, fig.cap = "Variance of normalized log-expression values for each gene in the dataset, plotted against the mean log-expression. The blue line represents represents the mean-variance relationship corresponding to Poisson noise."}
+plot(var_fit$means, var_fit$vars)
+curve(var_fit$trend(x), col ="dodgerBlue", add = TRUE, lwd = 2)
+```
+
+We decompose the variance for each gene using the Poisson-based trend, and examine the genes with the highest biological components.
+This ensures that the variance estimate is not driven by one or two outlier cell.
+Figure \@ref(fig:hvgvioplot) shows this for the combined dataset.
+
+```{r hvgvioplot, fig.cap = "Violin plots of normalized log-expression values for the top 10 genes with the largest biological components in the combined dataset. Each point represents the log-expression value in a single cell."}
+var_out <- decomposeVar(sce, var_fit)
+chosen_genes <- order(var_out$bio, decreasing = TRUE)[1:10]
+
+library(scater)
+plotExpression(
+  object = sce, 
+  features = rownames(var_out)[chosen_genes])
+```
+
+## Selecting highly variable genes
+
+We define the features of interest as those with net biological components greater than zero.
+
+```{r}
+to_use <- var_out$bio > 0
+```
+
+This enriches for genes that contain some biological variation, reducing the effect of uninteresting Poisson noise on downstream analyses.
+There are `r sum(to_use)` such genes.
+
+# Dimensionality reduction
+
+## Overview
+
+Many scRNA-seq analysis procedures involve comparing cells based on their expression values across multiple genes.
+For example, clustering aims to identify cells with similar transcriptomic profiles by computing 'distances' across genes.
+In these applications, each individual gene represents a dimension of the data.
+More intuitively, if we had a scRNA-seq data set with two genes, we could make a two-dimensional plot where each axis represents the expression of one gene and each point in the plot represents a cell.
+This concept can be extended to data sets with thousands of genes where each cell’s expression profile defines its location in the high-dimensional expression space.
+
+As the name suggests, dimensionality reduction aims to reduce the number of separate dimensions in the data.
+This is possible because different genes are correlated if they are affected by the same biological process.
+Thus, we do not need to store separate information for individual genes, but can instead compress multiple features into a single dimension.
+This has several benefits:
+
+- It reduces computational work in downstream analyses, as calculations only need to be performed for a few dimensions rather than thousands of genes
+- It reduces noise by averaging across multiple genes to obtain a more precise representation of the patterns in the data
+- It enables effective plotting of the data
+
+## Principal components analysis
+
+Principal components analysis (PCA) discovers axes in high-dimensional space that capture the largest amount of variation. 
+This is best understood by imagining each axis as a line.
+Say we draw a line anywhere, and we move all cells in our data set onto this line by the shortest path.
+The variance captured by this axis is defined as the variance across cells along that line.
+In PCA, the first axis (or "principal component", PC) is chosen such that it captures the greatest variance across cells.
+The next PC is chosen such that it is orthogonal to the first and captures the greatest remaining amount of variation, and so on.
+
+By definition, the top PCs capture the dominant factors of heterogeneity in the data set.
+Thus, we can perform dimensionality reduction by restricting downstream analyses to the top PCs.
+This strategy is simple, highly effective and widely used throughout the data sciences.
+It takes advantage of the well-studied theoretical properties of the PCA - namely, that a low-rank approximation formed from the top PCs is the optimal approximation of the original data for a given matrix rank.
+It also allows us to use a wide range of fast PCA implementations for scalable and efficient data analysis.
+
+When applying PCA to scRNA-seq data, our assumption is that biological processes affect multiple genes in a coordinated manner.
+This means that the earlier PCs are likely to represent biological structure as more variation can be captured by considering the correlated behaviour of many genes.
+By comparison, random technical or biological noise is expected to affect each gene independently.
+There is unlikely to be an axis that can capture random variation across many genes, meaning that noise should mostly be concentrated in the later PCs.
+This motivates the use of the earlier PCs in our downstream analyses, which concentrates the biological signal to simultaneously reduce computational work and remove noise.
+
+We perform the PCA on the log-normalized expression values.
+
+```{r}
+set.seed(1618)
+sce <- denoisePCA(
+  sce, 
+  technical = var_out, 
+  BSPARAM = BiocSingular::IrlbaParam(deferred = TRUE))
+```
+
+## Dimensionality reduction for visualization
+
+Another application of dimensionality reduction is to compress the data into 2 (sometimes 3) dimensions for plotting.
+This serves a separate purpose to the PCA-based dimensionality reduction described above.
+
+### $t$-stochastic neighbor embedding
+
+The de facto standard for visualization of scRNA-seq data is the $t$-stochastic neighbour embedding [@van2008visualizing]. 
+This attempts to find a low-dimensional representation of the data that preserves the distances between each point and its neighbours in the high-dimensional space.
+Unlike PCA, it is not restricted to linear transformations, nor is it obliged to accurately represent distances between distance populations.
+This means that it has much more freedom in how it arranges cells in low-dimensional space, enabling it to separate many distinct clusters in a complex population.
+Figure \@ref(fig:tsne) shows the $t$-SNE plot for the dataset, coloured by `Sample.
+
+```{r tsne, fig.cap = "t-SNE plot constructed from the top PCs in the dataset. Each point represents a cell, coloured according to the `Sample`.", fig.asp = 0.8}
+set.seed(7468)
+sce <- runTSNE(sce, use_dimred = "PCA")
+tsne_df <- cbind(
+  data.frame(
+    x = reducedDim(sce, "TSNE")[, 1],
+    y = reducedDim(sce, "TSNE")[, 2]),
+  as.data.frame(colData(sce)))
+
+ggplot(aes(x = x, y = y), data = tsne_df) +
+  geom_point(aes(colour = Sample), size = 0.5) +
+  scale_colour_manual(values = sample_colours) +
+  theme_cowplot(font_size = 10) + 
+  ggtitle("t-SNE") +
+  xlab("Dimension 1") + 
+  ylab("Dimension 2")
+```
+
+### Interpreting the plots
+
+We can start to explore what biological factors might be $t$-SNE results.
+Figure \@ref(fig:tsne-more-factors) shows a strong separation of the `Treated` samples from the `Untreated` samples.
+
+```{r tsne-more-factors, fig.cap = "t-SNE plot constructed from the top PCs in the dataset. Each point represents a cell, coloured to highlight the effect of various factors.", fig.asp = 1.5, layout = "l-body"}
+bg <- dplyr::select(tsne_df, -Treatment, -Sample)
+ggplot(aes(x = x, y = y), data = tsne_df) +
+  geom_point(data = bg, colour = scales::alpha("grey", 0.5), size = 0.125) +
+  geom_point(aes(colour = Sample), alpha = 1, size = 0.25) +
+  scale_fill_manual(values = sample_colours, name = "Sample") + 
+  scale_colour_manual(values = sample_colours, name = "Sample") +
+  theme_cowplot() + 
+  xlab("Dimension 1") + 
+  ylab("Dimension 2") +
+  facet_grid(Sample ~ Treatment)
+```
+
+Dimensionality reduction for visualization necessarily involves discarding information and distorting the distances between cells in order to fit high-dimensional data into a 2-dimensional space.
+One might wonder whether the results of such extreme data compression can be trusted.
+
+As a general rule, we would not perform clustering on the $t$-SNE coordinates.
+Rather, we would cluster on the first 10-50 PCs and then visualize the cluster identities on the $t$-SNE plot.
+This ensures that clustering makes use of the information that was lost during compression into two dimensions.
+The $t$-SNE plot can then be used for a diagnostic inspection of the clustering output.
+In particular, the plot is most useful for checking whether two clusters are actually neighboring subclusters or whether a cluster can be split into further subclusters, which are generally safe interpretations of $t$-SNE coordinates.
+
+It is worth elaborating on why we should not perform downstream analyses directly on the $t$-SNE coordinates.
+Let us put aside the fact that operating on the high-dimensional representations preserves more information; from a naive perspective, using the $t$-SNE coordinates is very tempting as it ensures that any results are immediately consistent with the visualizations (regardless of whether they are right).
+However, this can actually be considered a disservice as it masks the uncertainty of the results, leading us to place more confidence in them than is warranted.
+Rather than being errors, major discrepancies can instead be useful for motivating further investigation into the more ambiguous parts of the dataset; conversely, the lack of discrepancies increases trust in the results.
+
+# Concluding remarks
+
+```{r}
+saveRDS(
+  sce,
+  here("data", "SCEs", "C057_Cooney_ignoring_clusters.merged.SCE.rds"),
+  compress = "xz")
+```
+
+The processed *SingleCellExperiment* object is available (see [`data/SCEs/C057_Cooney_ignoring_clusters.merged.SCE.rds`](../data/SCEs/C057_Cooney_ignoring_clusters.merged.SCE.rds)).
+This will be used in downstream analyses, e.g., annotating cell types, differential expression analysis between conditions within each cluster, and differential abundance analyses between conditions for each cluster.
+
+# Additional information {.appendix}
+
+The following are available on request:
+
+- Full CSV tables of any data presented.
+- PDF/PNG files of any static plots.
+
+# Session info {.appendix}
+
+The analysis and this document were prepared using the following software:
+
+```{r}
+sessionInfo()
+```
