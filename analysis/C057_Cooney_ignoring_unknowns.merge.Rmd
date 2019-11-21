@@ -257,11 +257,11 @@ Rather than being errors, major discrepancies can instead be useful for motivati
 ```{r}
 saveRDS(
   sce,
-  here("data", "SCEs", "C057_Cooney_ignoring_clusters.merged.SCE.rds"),
+  here("data", "SCEs", "C057_Cooney_ignoring_unknowns.merged.SCE.rds"),
   compress = "xz")
 ```
 
-The processed *SingleCellExperiment* object is available (see [`data/SCEs/C057_Cooney_ignoring_clusters.merged.SCE.rds`](../data/SCEs/C057_Cooney_ignoring_clusters.merged.SCE.rds)).
+The processed *SingleCellExperiment* object is available (see [`data/SCEs/C057_Cooney_ignoring_unknowns.merged.SCE.rds`](../data/SCEs/C057_Cooney_ignoring_unknowns.merged.SCE.rds)).
 This will be used in downstream analyses, e.g., annotating cell types, differential expression analysis between conditions within each cluster, and differential abundance analyses between conditions for each cluster.
 
 # Additional information {.appendix}
