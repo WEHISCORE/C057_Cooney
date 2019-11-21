@@ -258,7 +258,7 @@ dbl_out <- doubletCluster(sce, sce$cluster)
 library(scater)
 chosen_doublet <- rownames(
   dbl_out)[isOutlier(dbl_out$N, type = "lower", log = TRUE, nmads = 3)]
-stopifnot(identical(chosen_doublet, c("11", "5")))
+stopifnot(identical(chosen_doublet, c("5")))
 ```
 
 Based on the results of running `doubletClusters()`, none of the clusters stand out as being an obvious doublet cluster.
@@ -279,7 +279,7 @@ The use of random selection accounts for the relative abundances of different su
 ```{r}
 dbl_dens <- doubletCells(sce, BSPARAM = BiocSingular::IrlbaParam())
 summary(dbl_dens)
-sce$DoubletScore <- log10(dbl_dens+1)
+sce$DoubletScore <- log10(dbl_dens + 1)
 ```
 
 Figures \@ref(fig:tsne-doublet-score) and \@ref(fig:doublet-score) reveal no concentration of the highest doublets scores in a single cluster(s) of cells.
@@ -729,7 +729,6 @@ colnames(logFCs) <- sub("logFC.", "", colnames(logFCs))
 pheatmap(logFCs, breaks = seq(-5, 5, length.out = 101))
 ```
 
-
 ```{r heat-uniquely-up-logExp, fig.wide = TRUE, fig.cap = sprintf("Heatmap of log-expression values in each sample for the top 10 uniquely upregulated marker genes in cluster %s. Each column is a sample, each row a gene. Colours are capped at -5 and 5 to preserve dynamic range.", chosen), fig.asp = 0.9}
 .plotHeatmap(
   sce,
@@ -802,7 +801,7 @@ dev.off()
 
 ## Summary
 
-The tables of marker genes are available as CSV files in [`output/marker_genes`] and are named as follows:
+The tables of marker genes are available as CSV files in [`output/marker_genes`](../output/marker_genes) and are named as follows:
 
 - `union_any`: Marker genes from [Standard application] whereby marker genes are formed from the **union** of genes differentially expressed in **any** direction.
 - `union_up`: Marker genes from [Using the log-fold change] whereby marker genes are formed from the **union** of genes differentially expressed that are **up**regulated.
@@ -1076,7 +1075,7 @@ plotScoreHeatmap(
 ```{r heat-bed-main, fig.cap = "Heatmap of normalized scores using the main labels from the `BlueprintEncodeData` reference set. Cells are columns, rows are labels. Columns are ordered by and annotated by the column labels.", fig.asp = 0.9, layout = "l-body-outset"}
 stopifnot(identical(rownames(pred_bed_cell_main), colnames(sce)))
 plotScoreHeatmap(
-  pred_hpcad_cell_main,
+  pred_bed_cell_main,
   annotation_col = data.frame(
     cluster = sce$cluster, 
     Treatment = sce$Treatment, 
