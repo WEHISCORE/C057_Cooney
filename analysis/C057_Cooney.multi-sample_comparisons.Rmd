@@ -259,21 +259,21 @@ degs_infected_vs_uninfected <- lapply(
     fit <- glmQLFTest(x, coef = "Infected")
     gzout <- gzfile(
       description = here(
-        "output", 
-        "DEGs", 
+        "output",
+        "DEGs",
         "cluster_labels",
         paste0(n, ".DEGs.infected_vs_uninfected.csv.gz")),
       open = "wb")
     write.table(
       x = topTags(
-        fit, 
+        fit,
         n = Inf,
         p.value = 1) %>%
         as.data.frame() %>%
-        tibble::rownames_to_column("gene_ID"), 
-      file = gzout, 
-      sep = ",", 
-      quote = FALSE, 
+        tibble::rownames_to_column("gene_ID"),
+      file = gzout,
+      sep = ",",
+      quote = FALSE,
       row.names = FALSE,
       col.names = TRUE)
     close(gzout)
@@ -476,7 +476,6 @@ chosen <- 7
 ```
 
 An example is given in the below table, highlighting the top-20 GO terms for genes that are up-regulated in cluster `r chosen`, after filtering.
-
 
 ```{r}
 tmp <- data.table::fread(
