@@ -1,3 +1,5 @@
-- [x] Write up `demultiplexing.R` into a proper `C057_Cooney.demultiplex.Rmd`
-- [x] Write `index.Rmd`
 - [ ] Doublet detection
+  - [ ] From the HTO data, can see doublets. Are these picked up by looking at RNA?
+- [ ] Exclude TCR genes from downstream analyses?
+- [ ] Fix aspect ratio of t-SNE in annotation
+- [ ] Marry up HTO cluster colours and sample colours
