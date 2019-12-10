@@ -220,7 +220,70 @@ ggplot(aes(x = x, y = y), data = tsne_df) +
   ylab("Dimension 2")
 ```
 
-### Interpreting the plots
+# Removal of monocytes / dendritic cells
+
+There is a small cluster of cells that are almost only found in uninfected samples (left-side of Figure \@ref(fig:tsne-by-treatment)).
+
+```{r tsne-by-treatment, fig.cap = "t-SNE plot constructed from the top PCs in the dataset. Each point represents a cell, coloured according to the `Treatment`.", fig.asp = 0.8}
+ggplot(aes(x = x, y = y), data = tsne_df) +
+  geom_point(aes(colour = Treatment), size = 0.5) +
+  scale_colour_manual(values = treatment_colours) +
+  theme_cowplot(font_size = 10) + 
+  ggtitle("t-SNE") +
+  xlab("Dimension 1") + 
+  ylab("Dimension 2")
+```
+
+Some inspection of the genes expressed by these cells strongly suggests that these are monocytes / dendritic cells and not T-cells (Figure \@ref(fig:tsne-monocytes)).
+
+```{r tsne-monocytes, fig.cap = "t-SNE plot constructed from the top PCs in the dataset. Each point represents a cell, coloured to highlight the expression of selected monocyte / dendritic cell and T-cell marker genes.", fig.asp = 1.5, layout = "l-body"}
+plot_grid(
+  plotTSNE(sce, colour_by = "LYZ"),
+  plotTSNE(sce, colour_by = "CD74"),
+  plotTSNE(sce, colour_by = "CST3"),
+  plotTSNE(sce, colour_by = "FGL2"),
+  plotTSNE(sce, colour_by = "CD3D"),
+  plotTSNE(sce, colour_by = "IL32"),
+  plotTSNE(sce, colour_by = "LAT"),
+  plotTSNE(sce, colour_by = "CD2"),
+  ncol = 2)
+```
+
+These cells likely slipped through in the FACS gating and are not of interest to James, so we remove these cells and repeat the above steps to construct new t-SNE co-ordinates.
+
+```{r}
+j <- reducedDim(sce, "TSNE")[, 1] < -40
+# NOTE: This is a crude sanity check that we've excluded the right cells.
+stopifnot(sum(j) == 157)
+sce <- sce[, !j]
+
+var_fit <- trendVar(
+  sce,
+  parametric = FALSE,
+  loess.args = list(span = 0.05),
+  use.spikes = FALSE)
+var_fit$trend <- makeTechTrend(x = sce)
+var_out <- decomposeVar(sce, var_fit)
+to_use <- var_out$bio > 0
+
+set.seed(572)
+sce <- denoisePCA(
+  sce, 
+  technical = var_out, 
+  BSPARAM = BiocSingular::IrlbaParam(deferred = TRUE))
+
+# TODO: Look at PCA plot
+
+set.seed(7468)
+sce <- runTSNE(sce, use_dimred = "PCA")
+tsne_df <- cbind(
+  data.frame(
+    x = reducedDim(sce, "TSNE")[, 1],
+    y = reducedDim(sce, "TSNE")[, 2]),
+  as.data.frame(colData(sce)))
+```
+
+# Interpreting the t-SNE plots
 
 We can start to explore what biological factors might be $t$-SNE results.
 Figure \@ref(fig:tsne-more-factors) shows a strong separation of the `Treated` samples from the `Untreated` samples.
