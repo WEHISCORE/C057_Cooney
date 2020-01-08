@@ -443,7 +443,7 @@ library(scater)
   fontsize = 8)
 ```
 
-Similar figures showing the top 10 marker genes for each cluster are available in [`output/marker_genes/union_any/heatmaps.union_any.pdf`](../output/marker_genes/union_any/heatmaps.union_any.pdf).
+Similar figures showing the top 10 marker genes for each cluster are available in [`output/marker_genes/ignoring_unknowns/union_any/heatmaps.union_any.pdf`](../output/marker_genes/ignoring_unknowns/union_any/heatmaps.union_any.pdf).
 
 ```{r, results = "hide"}
 dev.off() # Needed to ensure next figure saves properly.
@@ -612,7 +612,7 @@ pheatmap(logFCs, breaks = seq(-5, 5, length.out = 101))
   fontsize = 8)
 ```
 
-Similar figures showing the top 10 upregulated and 'upregulated with a log-fold change > 1' marker genes for each cluster are available in [`output/marker_genes/union_up/heatmaps.union_up.pdf`](../output/marker_genes/union_up/heatmaps.union_up.pdf). and [`output/marker_genes/union_up_lfc1/heatmaps.union_up_lfc1.pdf`](../output/marker_genes/union_up_lfc1/heatmaps.union_up_lfc1.pdf).
+Similar figures showing the top 10 upregulated and 'upregulated with a log-fold change > 1' marker genes for each cluster are available in [`output/marker_genes/ignoring_unknowns/union_up/heatmaps.union_up.pdf`](../output/marker_genes/ignoring_unknowns/union_up/heatmaps.union_up.pdf). and [`output/marker_genes/ignoring_unknowns/union_up_lfc1/heatmaps.union_up_lfc1.pdf`](../output/marker_genes/ignoring_unknowns/union_up_lfc1/heatmaps.union_up_lfc1.pdf).
 
 ```{r, results = "hide"}
 dev.off() # Needed to ensure next figure saves properly.
@@ -780,7 +780,7 @@ pheatmap(logFCs, breaks = seq(-5, 5, length.out = 101))
   fontsize = 8)
 ```
 
-Similar figures showing the top 100 uniquely upregulated marker genes for each cluster are available in [`output/marker_genes/uniquely_up/heatmaps.uniquely_up.pdf`](../output/marker_genes/uniquely_up/heatmaps.uniquely_up.pdf).
+Similar figures showing the top 100 uniquely upregulated marker genes for each cluster are available in [`output/marker_genes/ignoring_unknowns/uniquely_up/heatmaps.uniquely_up.pdf`](../output/marker_genes/ignoring_unknowns/uniquely_up/heatmaps.uniquely_up.pdf).
 Recall that the stringency of the 'cluster-specific marker' criteria is such that a cluster may only have a small number of statistically significant marker genes or indeed none at all.
 Therefore, these plots include an row annotation highlighting if the gene is a statisticially significant cluster-specific marker (i.e. $FDR < 0.05$).
 
@@ -854,13 +854,15 @@ library(SingleR)
 `r Biocpkg("SingleR")` is an automatic annotation method for scRNAseq data [@aran2019reference].
 Given a reference data set of samples^[This can be individual cells or bulk samples.] with known labels, it labels new cells from a test data set based on similarity to the reference set.
 Specifically, for each test cell:
+
 1. We compute the Spearman correlation between its expression profile and that of each reference sample. 
 2. We define the per-label score as a fixed quantile (by default, 0.8) of the distribution of correlations.
 3. We repeat this for all labels and we take the label with the highest score as the annotation for this cell.
 4. Finally, we perform a fine-tuning step:
-- The reference data set is subsetted to only include labels with scores close to the maximum.
-- Scores are recomputed using only marker genes for the subset of labels.
-- This is iterated until one label remains.
+  - The reference data set is subsetted to only include labels with scores close to the maximum.
+  - Scores are recomputed using only marker genes for the subset of labels.
+  - This is iterated until one label remains.
+
 For visualization purposes we use the normalized scores, which are the scores linearly adjusted for each cell so that the smallest score is 0 and the largest score is 1.
 This is followed by cubing of the adjusted scores to improve dynamic range near 1. 
 Automatic annotation provides a convenient way of transferring biological knowledge across data sets.
@@ -1735,12 +1737,12 @@ Theoverlap proportion is defined as the probability that a randomly selected cel
 Overlap proportions near 0 ($A$ is lower than $B$) or 1 ($A$ is higher than $B$) indicate that the expression distributions are well-separated.
 The Wilcoxon rank sum test effectively tests for significant deviations from an overlap proportion of 0.5.
 
-We can infer that cluster 11 likely has more cells in G2/M than the other clusters, based on higher expression of the cyclin B's.
+We can infer that cluster 10 likely has more cells in G2/M than the other clusters, based on higher expression of the cyclin B's.
 
 ```{r}
 knitr::kable(
-  .adf(markers[[11]]),
-  caption = "Cyclin DE analysis comparing cluster 11 to all other clusters.")
+  .adf(markers[[10]]),
+  caption = "Cyclin DE analysis comparing cluster 10 to all other clusters.")
 ```
 
 Direct examination of cyclin expression is easily understood, interpreted and validated with other technologies.
@@ -1795,7 +1797,7 @@ We focus on the G1 and G2/M scores as these are the most informative for classif
 
 Cells are classified as being in G1 phase if the G1 score is above 0.5 and greater than the G2/M score; in G2/M phase if the G2/M score is above 0.5 and greater than the G1 score; and in S phase if neither score is above 0.5.
 
-Figure \@ref(fig:clusters-by-cyclone-phase) shows an enrichment of cells in G2/M phase in cluster 7 and 11, with cells from the remaining clusters mostly classified as G1.
+Figure \@ref(fig:clusters-by-cyclone-phase) shows an enrichment of cells in G2/M phase in cluster 9, with cells from the remaining clusters mostly classified as G1.
 
 ```{r clusters-by-cyclone-phase, fig.asp = 2 / 5, fig.cap = "Breakdown of clusters by phase (as predicted using cyclone)."}
 phase_colours <- setNames(

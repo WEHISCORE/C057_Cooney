@@ -24,8 +24,8 @@
   
   
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2019-11-12"/>
-  <meta property="article:created" itemprop="dateCreated" content="2019-11-12"/>
+  <meta property="article:published" itemprop="datePublished" content="2019-11-22"/>
+  <meta property="article:created" itemprop="dateCreated" content="2019-11-22"/>
   <meta name="article:author" content="Peter Hickey"/>
   
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
@@ -55,7 +55,7 @@
   <!--radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","editor_options","bibliography"]}},"value":[{"type":"character","attributes":{},"value":["Annotating the Cooney (C057) memory CD4+ T-cell data set"]},{"type":"NULL"},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Peter Hickey"]},{"type":"character","attributes":{},"value":["https://peterhickey.org"]},{"type":"character","attributes":{},"value":["Single Cell Open Research Endeavour (SCORE), WEHI"]},{"type":"character","attributes":{},"value":["https://www.wehi.edu.au/people/shalin-naik/3310/score"]}]}]},{"type":"character","attributes":{},"value":["2019-11-12"]},{"type":"character","attributes":{},"value":["radix::radix_article"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]},{"type":"character","attributes":{},"value":["ref.bib"]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","editor_options","bibliography"]}},"value":[{"type":"character","attributes":{},"value":["Annotating the Cooney (C057) memory CD4+ T-cell data set"]},{"type":"NULL"},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Peter Hickey"]},{"type":"character","attributes":{},"value":["https://peterhickey.org"]},{"type":"character","attributes":{},"value":["Single Cell Open Research Endeavour (SCORE), WEHI"]},{"type":"character","attributes":{},"value":["https://www.wehi.edu.au/people/shalin-naik/3310/score"]}]}]},{"type":"character","attributes":{},"value":["2019-11-22"]},{"type":"character","attributes":{},"value":["radix::radix_article"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]},{"type":"character","attributes":{},"value":["ref.bib"]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   <!--radix_placeholder_navigation_in_header-->
@@ -1288,7 +1288,7 @@
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Annotating the Cooney (C057) memory CD4+ T-cell data set","authors":[{"author":"Peter Hickey","authorURL":"https://peterhickey.org","affiliation":"Single Cell Open Research Endeavour (SCORE), WEHI","affiliationURL":"https://www.wehi.edu.au/people/shalin-naik/3310/score"}],"publishedDate":"2019-11-12T00:00:00.000+11:00","citationText":"Hickey, 2019"}
+{"title":"Annotating the Cooney (C057) memory CD4+ T-cell data set","authors":[{"author":"Peter Hickey","authorURL":"https://peterhickey.org","affiliation":"Single Cell Open Research Endeavour (SCORE), WEHI","affiliationURL":"https://www.wehi.edu.au/people/shalin-naik/3310/score"}],"publishedDate":"2019-11-22T00:00:00.000+11:00","citationText":"Hickey, 2019"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -1300,9 +1300,39 @@
 <a href="index.html">Introduction</a>
 <a href="C057_Cooney.demultiplex.html">Demultiplexing</a>
 <a href="C057_Cooney.preprocess.html">Preprocessing</a>
-<a href="C057_Cooney.merge.html">Dimensionality reduction</a>
-<a href="C057_Cooney.annotate.html">Annotating cells</a>
-<a href="C057_Cooney.multi-sample_comparisons.html">Differential analyses</a>
+<div class="nav-dropdown">
+<button class="nav-dropbtn">
+Dimensionality reduction
+ 
+<span class="down-arrow">&#x25BE;</span>
+</button>
+<div class="nav-dropdown-content">
+<a href="C057_Cooney.merge.html">All samples</a>
+<a href="C057_Cooney_ignoring_unknowns.merge.html">Ignoring 'unknown' samples</a>
+</div>
+</div>
+<div class="nav-dropdown">
+<button class="nav-dropbtn">
+Annotating cells
+ 
+<span class="down-arrow">&#x25BE;</span>
+</button>
+<div class="nav-dropdown-content">
+<a href="C057_Cooney.annotate.html">All samples</a>
+<a href="C057_Cooney_ignoring_unknowns.annotate.html">Ignoring 'unknown' samples</a>
+</div>
+</div>
+<div class="nav-dropdown">
+<button class="nav-dropbtn">
+Differential analyses
+ 
+<span class="down-arrow">&#x25BE;</span>
+</button>
+<div class="nav-dropdown-content">
+<a href="C057_Cooney.multi-sample_comparisons.html">All samples</a>
+<a href="C057_Cooney_ignorning_unknowns.multi-sample_comparisons.html">Ignoring 'unknown' samples</a>
+</div>
+</div>
 <div class="nav-dropdown">
 <button class="nav-dropbtn">
 Supplementary files
@@ -1337,7 +1367,7 @@ Supplementary files
 <div class="d-byline">
   Peter Hickey <a href="https://peterhickey.org" class="uri">https://peterhickey.org</a> (Single Cell Open Research Endeavour (SCORE), WEHI)<a href="https://www.wehi.edu.au/people/shalin-naik/3310/score" class="uri">https://www.wehi.edu.au/people/shalin-naik/3310/score</a>
   
-<br/>2019-11-12
+<br/>2019-11-22
 </div>
 
 <div class="d-article">
@@ -1389,7 +1419,7 @@ Supplementary files
 <div class="layout-chunk" data-layout="l-body">
 
 </div>
-<p>There are 12 clusters detected, summarised in Figure <a href="#fig:cluster-barplot">1</a>.</p>
+<p>There are 11 clusters detected, summarised in Figure <a href="#fig:cluster-barplot">1</a>.</p>
 <div class="layout-chunk" data-layout="l-page">
 <div class="figure"><span id="fig:cluster-barplot"></span>
 <img src="C057_Cooney_annotate_files/cluster-barplot-1.png" alt="Breakdown of clusters by experimental factors." width="624" />
@@ -1452,136 +1482,125 @@ Figure 3: t-SNE plot of the t-SNE data, where each point represents a cell and i
 </thead>
 <tbody>
 <tr class="odd">
-<td>11</td>
-<td style="text-align: left;">10</td>
-<td style="text-align: left;">7</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: left;">LTB</td>
-<td style="text-align: right;">9.400548e-06</td>
-<td style="text-align: right;">0.44912094</td>
-<td style="text-align: right;">7.0069259</td>
-<td style="text-align: right;">0.016592262</td>
-</tr>
-<tr class="even">
 <td>5</td>
-<td style="text-align: left;">12</td>
+<td style="text-align: left;">9</td>
 <td style="text-align: left;">4</td>
-<td style="text-align: right;">8</td>
-<td style="text-align: left;">AL138963.3</td>
-<td style="text-align: right;">5.915298e-10</td>
-<td style="text-align: right;">3.47275405</td>
-<td style="text-align: right;">0.5088365</td>
-<td style="text-align: right;">0.052306548</td>
-</tr>
-<tr class="odd">
-<td>4</td>
-<td style="text-align: left;">10</td>
-<td style="text-align: left;">5</td>
-<td style="text-align: right;">26</td>
-<td style="text-align: left;">TRBV10-2</td>
-<td style="text-align: right;">7.617921e-10</td>
-<td style="text-align: right;">0.81331404</td>
-<td style="text-align: right;">1.9652677</td>
-<td style="text-align: right;">0.169940476</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">CST3</td>
+<td style="text-align: right;">6.679721e-13</td>
+<td style="text-align: right;">0.8626348</td>
+<td style="text-align: right;">2.5574308</td>
+<td style="text-align: right;">0.04873011</td>
 </tr>
 <tr class="even">
-<td>2</td>
-<td style="text-align: left;">8</td>
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">250</td>
-<td style="text-align: left;">CCL5</td>
-<td style="text-align: right;">9.018327e-22</td>
-<td style="text-align: right;">0.66605166</td>
-<td style="text-align: right;">0.9704797</td>
-<td style="text-align: right;">0.207663690</td>
+<td>3</td>
+<td style="text-align: left;">10</td>
+<td style="text-align: left;">9</td>
+<td style="text-align: right;">34</td>
+<td style="text-align: left;">CST3</td>
+<td style="text-align: right;">1.147010e-37</td>
+<td style="text-align: right;">3.9066112</td>
+<td style="text-align: right;">1.7013407</td>
+<td style="text-align: right;">0.15192778</td>
 </tr>
 <tr class="odd">
-<td>3</td>
-<td style="text-align: left;">12</td>
-<td style="text-align: left;">8</td>
-<td style="text-align: right;">326</td>
-<td style="text-align: left;">C12orf75</td>
-<td style="text-align: right;">2.515584e-46</td>
-<td style="text-align: right;">1.28082564</td>
-<td style="text-align: right;">0.6863118</td>
-<td style="text-align: right;">0.093154762</td>
+<td>9</td>
+<td style="text-align: left;">7</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: right;">117</td>
+<td style="text-align: left;">HIST1H1E</td>
+<td style="text-align: right;">6.185276e-34</td>
+<td style="text-align: right;">7.1456522</td>
+<td style="text-align: right;">1.1592391</td>
+<td style="text-align: right;">0.01545288</td>
 </tr>
 <tr class="even">
 <td>8</td>
 <td style="text-align: left;">10</td>
 <td style="text-align: left;">2</td>
-<td style="text-align: right;">340</td>
+<td style="text-align: right;">247</td>
 <td style="text-align: left;">GNLY</td>
-<td style="text-align: right;">1.507558e-17</td>
-<td style="text-align: right;">0.22239810</td>
-<td style="text-align: right;">1.5013850</td>
-<td style="text-align: right;">0.011309524</td>
+<td style="text-align: right;">6.480404e-27</td>
+<td style="text-align: right;">0.7438380</td>
+<td style="text-align: right;">0.9713028</td>
+<td style="text-align: right;">0.20815483</td>
 </tr>
 <tr class="odd">
-<td>9</td>
-<td style="text-align: left;">12</td>
-<td style="text-align: left;">8</td>
-<td style="text-align: right;">421</td>
-<td style="text-align: left;">CRIP2</td>
-<td style="text-align: right;">7.360078e-47</td>
-<td style="text-align: right;">1.28548065</td>
-<td style="text-align: right;">0.6888061</td>
-<td style="text-align: right;">0.083407738</td>
+<td>2</td>
+<td style="text-align: left;">10</td>
+<td style="text-align: left;">6</td>
+<td style="text-align: right;">365</td>
+<td style="text-align: left;">C12orf75</td>
+<td style="text-align: right;">7.586821e-45</td>
+<td style="text-align: right;">0.7658148</td>
+<td style="text-align: right;">1.2955411</td>
+<td style="text-align: right;">0.09791922</td>
 </tr>
 <tr class="even">
-<td>1</td>
-<td style="text-align: left;">8</td>
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">555</td>
-<td style="text-align: left;">FOXP3</td>
-<td style="text-align: right;">8.839565e-83</td>
-<td style="text-align: right;">0.70442297</td>
-<td style="text-align: right;">1.0263891</td>
-<td style="text-align: right;">0.067485119</td>
+<td>4</td>
+<td style="text-align: left;">10</td>
+<td style="text-align: left;">6</td>
+<td style="text-align: right;">451</td>
+<td style="text-align: left;">CRIP2</td>
+<td style="text-align: right;">1.997914e-48</td>
+<td style="text-align: right;">0.7745188</td>
+<td style="text-align: right;">1.3102658</td>
+<td style="text-align: right;">0.09218176</td>
 </tr>
 <tr class="odd">
-<td>12</td>
-<td style="text-align: left;">8</td>
-<td style="text-align: left;">7</td>
-<td style="text-align: right;">717</td>
-<td style="text-align: left;">RPL32</td>
-<td style="text-align: right;">6.212312e-39</td>
-<td style="text-align: right;">0.53583545</td>
-<td style="text-align: right;">1.8592027</td>
-<td style="text-align: right;">0.154166667</td>
+<td>1</td>
+<td style="text-align: left;">10</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">630</td>
+<td style="text-align: left;">FOXP3</td>
+<td style="text-align: right;">2.591636e-105</td>
+<td style="text-align: right;">0.7857541</td>
+<td style="text-align: right;">1.0260368</td>
+<td style="text-align: right;">0.06800796</td>
 </tr>
 <tr class="even">
 <td>6</td>
-<td style="text-align: left;">10</td>
-<td style="text-align: left;">8</td>
-<td style="text-align: right;">827</td>
-<td style="text-align: left;">CST3</td>
-<td style="text-align: right;">3.640727e-125</td>
-<td style="text-align: right;">0.11576490</td>
-<td style="text-align: right;">0.5205301</td>
-<td style="text-align: right;">0.020238095</td>
+<td style="text-align: left;">9</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">814</td>
+<td style="text-align: left;">PASK</td>
+<td style="text-align: right;">2.405019e-51</td>
+<td style="text-align: right;">0.2574327</td>
+<td style="text-align: right;">0.7718783</td>
+<td style="text-align: right;">0.15774174</td>
 </tr>
 <tr class="odd">
 <td>10</td>
-<td style="text-align: left;">11</td>
-<td style="text-align: left;">6</td>
-<td style="text-align: right;">1100</td>
-<td style="text-align: left;">GNLY</td>
-<td style="text-align: right;">1.861016e-23</td>
-<td style="text-align: right;">2.22657177</td>
-<td style="text-align: right;">8.6381969</td>
-<td style="text-align: right;">0.002752976</td>
+<td style="text-align: left;">9</td>
+<td style="text-align: left;">8</td>
+<td style="text-align: right;">881</td>
+<td style="text-align: left;">PTPRC</td>
+<td style="text-align: right;">1.439941e-28</td>
+<td style="text-align: right;">0.4355030</td>
+<td style="text-align: right;">1.3443787</td>
+<td style="text-align: right;">0.01346389</td>
 </tr>
 <tr class="even">
+<td>11</td>
+<td style="text-align: left;">10</td>
+<td style="text-align: left;">9</td>
+<td style="text-align: right;">919</td>
+<td style="text-align: left;">CST3</td>
+<td style="text-align: right;">5.004240e-95</td>
+<td style="text-align: right;">0.9773306</td>
+<td style="text-align: right;">0.4256303</td>
+<td style="text-align: right;">0.02425031</td>
+</tr>
+<tr class="odd">
 <td>7</td>
 <td style="text-align: left;">10</td>
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">2045</td>
-<td style="text-align: left;">NUSAP1</td>
-<td style="text-align: right;">6.533082e-298</td>
-<td style="text-align: right;">0.06409672</td>
-<td style="text-align: right;">0.4199361</td>
-<td style="text-align: right;">0.120982143</td>
+<td style="text-align: left;">9</td>
+<td style="text-align: right;">2399</td>
+<td style="text-align: left;">NENF</td>
+<td style="text-align: right;">1.166642e-37</td>
+<td style="text-align: right;">0.3213416</td>
+<td style="text-align: right;">0.1399452</td>
+<td style="text-align: right;">0.12216952</td>
 </tr>
 </tbody>
 </table>
@@ -1603,7 +1622,7 @@ Figure 3: t-SNE plot of the t-SNE data, where each point represents a cell and i
 <div class="layout-chunk" data-layout="l-body">
 <pre><code>
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-0.00000 0.02763 0.21156 0.38541 0.54614 5.63901 </code></pre>
+0.00000 0.02749 0.21074 0.39354 0.54842 6.11480 </code></pre>
 </div>
 <p>Figures <a href="#fig:tsne-doublet-score">4</a> and <a href="#fig:doublet-score">5</a> reveal no concentration of the highest doublets scores in a single cluster(s) of cells.</p>
 <div class="layout-chunk" data-layout="l-body">
@@ -1669,179 +1688,168 @@ Figure 6: Library size for each HTO cluster.
 <th style="text-align: right;">logFC.9</th>
 <th style="text-align: right;">logFC.10</th>
 <th style="text-align: right;">logFC.11</th>
-<th style="text-align: right;">logFC.12</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">STMN1</td>
+<td style="text-align: left;">FOXP3</td>
 <td style="text-align: right;">1</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">-0.1165152</td>
-<td style="text-align: right;">0.0313551</td>
-<td style="text-align: right;">-0.8872111</td>
-<td style="text-align: right;">-0.1853478</td>
-<td style="text-align: right;">0.0365830</td>
-<td style="text-align: right;">-3.1072054</td>
-<td style="text-align: right;">0.0113226</td>
-<td style="text-align: right;">-0.0959518</td>
-<td style="text-align: right;">-1.4890485</td>
-<td style="text-align: right;">-2.6189248</td>
-<td style="text-align: right;">0.0075834</td>
+<td style="text-align: right;">-1.8541734</td>
+<td style="text-align: right;">-0.0273018</td>
+<td style="text-align: right;">-0.0502372</td>
+<td style="text-align: right;">-0.1585273</td>
+<td style="text-align: right;">-0.0275350</td>
+<td style="text-align: right;">-0.0792342</td>
+<td style="text-align: right;">0.0437343</td>
+<td style="text-align: right;">-0.1489365</td>
+<td style="text-align: right;">-0.1726777</td>
+<td style="text-align: right;">-0.0543129</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">GZMA</td>
+<td style="text-align: left;">H2AFZ</td>
 <td style="text-align: right;">1</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">2.4194879</td>
-<td style="text-align: right;">0.2498410</td>
-<td style="text-align: right;">1.1136692</td>
-<td style="text-align: right;">1.2410253</td>
-<td style="text-align: right;">2.4698135</td>
-<td style="text-align: right;">1.2065643</td>
-<td style="text-align: right;">1.4219408</td>
-<td style="text-align: right;">2.2402391</td>
-<td style="text-align: right;">0.7993615</td>
-<td style="text-align: right;">1.0235434</td>
-<td style="text-align: right;">1.7210011</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">CD40LG</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1.3340885</td>
-<td style="text-align: right;">0.5761152</td>
-<td style="text-align: right;">0.7710118</td>
-<td style="text-align: right;">0.5726999</td>
-<td style="text-align: right;">1.4034733</td>
-<td style="text-align: right;">0.6173981</td>
-<td style="text-align: right;">0.5199132</td>
-<td style="text-align: right;">0.4226260</td>
-<td style="text-align: right;">1.7033358</td>
-<td style="text-align: right;">0.8797492</td>
-<td style="text-align: right;">-0.0821260</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">SELL</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">-1.2603961</td>
-<td style="text-align: right;">-0.1760133</td>
-<td style="text-align: right;">-0.5386806</td>
-<td style="text-align: right;">-0.5982174</td>
-<td style="text-align: right;">0.1434976</td>
-<td style="text-align: right;">-0.7616012</td>
-<td style="text-align: right;">-0.5023200</td>
-<td style="text-align: right;">-0.9692213</td>
-<td style="text-align: right;">-0.0656737</td>
-<td style="text-align: right;">-0.5128144</td>
-<td style="text-align: right;">-1.4117836</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">CD27</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">-1.5197394</td>
-<td style="text-align: right;">-1.0073821</td>
-<td style="text-align: right;">-0.0292842</td>
-<td style="text-align: right;">-0.4175356</td>
-<td style="text-align: right;">0.7344587</td>
-<td style="text-align: right;">-0.1510262</td>
-<td style="text-align: right;">-0.4081023</td>
-<td style="text-align: right;">-0.8828107</td>
-<td style="text-align: right;">-0.1659740</td>
-<td style="text-align: right;">-0.0131925</td>
-<td style="text-align: right;">-0.8161677</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">TRBV12-4</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0.0277974</td>
-<td style="text-align: right;">-0.0246575</td>
-<td style="text-align: right;">-0.3109268</td>
-<td style="text-align: right;">-0.0886841</td>
-<td style="text-align: right;">0.1224267</td>
-<td style="text-align: right;">-0.0606165</td>
-<td style="text-align: right;">-0.0369035</td>
-<td style="text-align: right;">0.0632316</td>
-<td style="text-align: right;">-0.1611612</td>
-<td style="text-align: right;">-0.4005775</td>
-<td style="text-align: right;">0.0592375</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">RPS29</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0.3049820</td>
-<td style="text-align: right;">0.0426558</td>
-<td style="text-align: right;">0.4897544</td>
-<td style="text-align: right;">0.3183547</td>
-<td style="text-align: right;">0.0829722</td>
-<td style="text-align: right;">0.1539463</td>
-<td style="text-align: right;">1.8098947</td>
-<td style="text-align: right;">-0.0842709</td>
-<td style="text-align: right;">1.3212118</td>
-<td style="text-align: right;">0.3694007</td>
-<td style="text-align: right;">-0.3060473</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">ZBTB44</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0.1171404</td>
-<td style="text-align: right;">0.0140310</td>
-<td style="text-align: right;">0.2156356</td>
-<td style="text-align: right;">0.2028078</td>
-<td style="text-align: right;">0.0927776</td>
-<td style="text-align: right;">0.1059380</td>
-<td style="text-align: right;">-0.0230294</td>
-<td style="text-align: right;">0.0947358</td>
-<td style="text-align: right;">0.3087136</td>
-<td style="text-align: right;">0.2521559</td>
-<td style="text-align: right;">0.1307982</td>
+<td style="text-align: right;">0.0720972</td>
+<td style="text-align: right;">0.1598391</td>
+<td style="text-align: right;">-0.0132242</td>
+<td style="text-align: right;">0.2028760</td>
+<td style="text-align: right;">-0.1567038</td>
+<td style="text-align: right;">-1.9131500</td>
+<td style="text-align: right;">0.0726077</td>
+<td style="text-align: right;">-1.2112289</td>
+<td style="text-align: right;">0.7049784</td>
+<td style="text-align: right;">0.1755483</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">TUBA1B</td>
-<td style="text-align: right;">2</td>
+<td style="text-align: right;">1</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">-0.0847740</td>
-<td style="text-align: right;">0.0069241</td>
-<td style="text-align: right;">-0.8491564</td>
-<td style="text-align: right;">-0.0774404</td>
-<td style="text-align: right;">-1.5547611</td>
-<td style="text-align: right;">-3.2333929</td>
-<td style="text-align: right;">0.1364341</td>
-<td style="text-align: right;">-0.3122380</td>
-<td style="text-align: right;">-0.9003948</td>
-<td style="text-align: right;">-2.7928755</td>
-<td style="text-align: right;">-0.2116111</td>
+<td style="text-align: right;">0.7845313</td>
+<td style="text-align: right;">0.8899114</td>
+<td style="text-align: right;">0.5930168</td>
+<td style="text-align: right;">0.8019211</td>
+<td style="text-align: right;">0.7042003</td>
+<td style="text-align: right;">-2.2634041</td>
+<td style="text-align: right;">0.8896230</td>
+<td style="text-align: right;">-1.8196298</td>
+<td style="text-align: right;">0.8827590</td>
+<td style="text-align: right;">-0.0143190</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">FOXP3</td>
+<td style="text-align: left;">HMGB2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.4404639</td>
+<td style="text-align: right;">0.6567088</td>
+<td style="text-align: right;">0.4588644</td>
+<td style="text-align: right;">0.4817365</td>
+<td style="text-align: right;">0.6649483</td>
+<td style="text-align: right;">-1.9913926</td>
+<td style="text-align: right;">0.5737695</td>
+<td style="text-align: right;">-1.4391809</td>
+<td style="text-align: right;">0.9260648</td>
+<td style="text-align: right;">0.5911603</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">GNLY</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2.2860963</td>
+<td style="text-align: right;">0.9507242</td>
+<td style="text-align: right;">2.5709306</td>
+<td style="text-align: right;">1.5231357</td>
+<td style="text-align: right;">2.6214384</td>
+<td style="text-align: right;">0.7767003</td>
+<td style="text-align: right;">-0.7729128</td>
+<td style="text-align: right;">0.7185153</td>
+<td style="text-align: right;">1.5141749</td>
+<td style="text-align: right;">0.0644123</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">TRAV12-3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.2439185</td>
+<td style="text-align: right;">0.2579843</td>
+<td style="text-align: right;">0.3601664</td>
+<td style="text-align: right;">0.1795043</td>
+<td style="text-align: right;">0.3610293</td>
+<td style="text-align: right;">0.2629464</td>
+<td style="text-align: right;">0.2038707</td>
+<td style="text-align: right;">0.2369596</td>
+<td style="text-align: right;">0.3478603</td>
+<td style="text-align: right;">0.5255160</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CST3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.5880197</td>
+<td style="text-align: right;">0.5554543</td>
+<td style="text-align: right;">0.5394037</td>
+<td style="text-align: right;">0.0640261</td>
+<td style="text-align: right;">0.5047370</td>
+<td style="text-align: right;">0.4868013</td>
+<td style="text-align: right;">0.4694141</td>
+<td style="text-align: right;">0.4418646</td>
+<td style="text-align: right;">0.5293570</td>
+<td style="text-align: right;">-3.0879442</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ZMAT2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">-0.4414713</td>
+<td style="text-align: right;">-0.3660244</td>
+<td style="text-align: right;">-0.3921018</td>
+<td style="text-align: right;">-0.1600030</td>
+<td style="text-align: right;">-0.3647270</td>
+<td style="text-align: right;">-0.2848115</td>
+<td style="text-align: right;">-0.2777256</td>
+<td style="text-align: right;">-0.0603078</td>
+<td style="text-align: right;">-0.0709598</td>
+<td style="text-align: right;">-0.0902485</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">HIST1H3C</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.3106067</td>
+<td style="text-align: right;">0.3068954</td>
+<td style="text-align: right;">0.3068332</td>
+<td style="text-align: right;">0.1016812</td>
+<td style="text-align: right;">0.3019004</td>
+<td style="text-align: right;">-0.5840411</td>
+<td style="text-align: right;">0.3022427</td>
+<td style="text-align: right;">-0.8714897</td>
+<td style="text-align: right;">0.3176166</td>
+<td style="text-align: right;">-0.0870857</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">STMN1</td>
 <td style="text-align: right;">2</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">-1.8738385</td>
-<td style="text-align: right;">-0.0303620</td>
-<td style="text-align: right;">0.0163522</td>
-<td style="text-align: right;">-0.1510034</td>
-<td style="text-align: right;">-0.0053106</td>
-<td style="text-align: right;">-0.2203572</td>
-<td style="text-align: right;">-0.1937027</td>
-<td style="text-align: right;">-0.0199092</td>
-<td style="text-align: right;">0.2422583</td>
-<td style="text-align: right;">-0.2060801</td>
-<td style="text-align: right;">0.0082639</td>
+<td style="text-align: right;">0.7475556</td>
+<td style="text-align: right;">0.8665054</td>
+<td style="text-align: right;">0.7625015</td>
+<td style="text-align: right;">0.6072998</td>
+<td style="text-align: right;">0.7750755</td>
+<td style="text-align: right;">-2.2491020</td>
+<td style="text-align: right;">0.8529923</td>
+<td style="text-align: right;">-1.6894070</td>
+<td style="text-align: right;">0.8878003</td>
+<td style="text-align: right;">0.5824094</td>
 </tr>
 </tbody>
 </table>
@@ -1938,7 +1946,7 @@ Figure 12: Heatmap of log-expression values in each sample for the top 10 unique
 
 </div>
 <h2 id="summary-3">Summary</h2>
-<p>The tables of marker genes are available as CSV files in [<code>output/marker_genes</code>] and are named as follows:</p>
+<p>The tables of marker genes are available as CSV files in <a href="../output/marker_genes"><code>output/marker_genes</code></a> and are named as follows:</p>
 <ul>
 <li><code>union_any</code>: Marker genes from <a href="#standard-application">Standard application</a> whereby marker genes are formed from the <strong>union</strong> of genes differentially expressed in <strong>any</strong> direction.</li>
 <li><code>union_up</code>: Marker genes from <a href="#using-the-log-fold-change">Using the log-fold change</a> whereby marker genes are formed from the <strong>union</strong> of genes differentially expressed that are <strong>up</strong>regulated.</li>
@@ -2190,17 +2198,17 @@ Figure 12: Heatmap of log-expression values in each sample for the top 10 unique
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">T_cells</td>
-<td style="text-align: right;">13221</td>
+<td style="text-align: right;">12858</td>
 <td style="text-align: left;">98.4%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Monocyte</td>
-<td style="text-align: right;">152</td>
-<td style="text-align: left;">1.1%</td>
+<td style="text-align: right;">153</td>
+<td style="text-align: left;">1.2%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">NK_cell</td>
-<td style="text-align: right;">33</td>
+<td style="text-align: right;">28</td>
 <td style="text-align: left;">0.2%</td>
 </tr>
 <tr class="even">
@@ -2229,21 +2237,16 @@ Figure 12: Heatmap of log-expression values in each sample for the top 10 unique
 <td style="text-align: left;">0.0%</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">GMP</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: left;">0.0%</td>
-</tr>
-<tr class="even">
 <td style="text-align: left;">HSC_-G-CSF</td>
 <td style="text-align: right;">1</td>
 <td style="text-align: left;">0.0%</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">Platelets</td>
 <td style="text-align: right;">1</td>
 <td style="text-align: left;">0.0%</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">Pro-B_cell_CD34+</td>
 <td style="text-align: right;">1</td>
 <td style="text-align: left;">0.0%</td>
@@ -2295,32 +2298,32 @@ Figure 15: t-SNE overlaid with normalized scores using the main labels from the 
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">T_cell:CD4+_central_memory</td>
-<td style="text-align: right;">5308</td>
-<td style="text-align: left;">39.5%</td>
+<td style="text-align: right;">5219</td>
+<td style="text-align: left;">39.9%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">T_cell:CD4+_effector_memory</td>
-<td style="text-align: right;">5234</td>
-<td style="text-align: left;">38.9%</td>
+<td style="text-align: right;">5127</td>
+<td style="text-align: left;">39.2%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">T_cell:CD8+</td>
-<td style="text-align: right;">1005</td>
-<td style="text-align: left;">7.5%</td>
+<td style="text-align: right;">930</td>
+<td style="text-align: left;">7.1%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">T_cell:gamma-delta</td>
-<td style="text-align: right;">911</td>
+<td style="text-align: right;">883</td>
 <td style="text-align: left;">6.8%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">T_cell:CD4+</td>
-<td style="text-align: right;">569</td>
-<td style="text-align: left;">4.2%</td>
+<td style="text-align: right;">515</td>
+<td style="text-align: left;">3.9%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">T_cell:CD4+_Naive</td>
-<td style="text-align: right;">163</td>
+<td style="text-align: right;">159</td>
 <td style="text-align: left;">1.2%</td>
 </tr>
 <tr class="odd">
@@ -2340,7 +2343,7 @@ Figure 15: t-SNE overlaid with normalized scores using the main labels from the 
 </tr>
 <tr class="even">
 <td style="text-align: left;">Macrophage:monocyte-derived:M-CSF/IFNg</td>
-<td style="text-align: right;">23</td>
+<td style="text-align: right;">24</td>
 <td style="text-align: left;">0.2%</td>
 </tr>
 <tr class="odd">
@@ -2350,7 +2353,7 @@ Figure 15: t-SNE overlaid with normalized scores using the main labels from the 
 </tr>
 <tr class="even">
 <td style="text-align: left;">T_cell:CD8+_naive</td>
-<td style="text-align: right;">19</td>
+<td style="text-align: right;">16</td>
 <td style="text-align: left;">0.1%</td>
 </tr>
 <tr class="odd">
@@ -2360,17 +2363,17 @@ Figure 15: t-SNE overlaid with normalized scores using the main labels from the 
 </tr>
 <tr class="even">
 <td style="text-align: left;">T_cell:CD8+_effector_memory</td>
-<td style="text-align: right;">14</td>
+<td style="text-align: right;">11</td>
 <td style="text-align: left;">0.1%</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">NK_cell:IL2</td>
-<td style="text-align: right;">10</td>
+<td style="text-align: left;">T_cell:CD8+_Central_memory</td>
+<td style="text-align: right;">9</td>
 <td style="text-align: left;">0.1%</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">T_cell:CD8+_Central_memory</td>
-<td style="text-align: right;">10</td>
+<td style="text-align: left;">NK_cell:IL2</td>
+<td style="text-align: right;">7</td>
 <td style="text-align: left;">0.1%</td>
 </tr>
 <tr class="odd">
@@ -2384,32 +2387,32 @@ Figure 15: t-SNE overlaid with normalized scores using the main labels from the 
 <td style="text-align: left;">0.0%</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Pre-B_cell_CD34-</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: left;">0.0%</td>
-</tr>
-<tr class="even">
 <td style="text-align: left;">T_cell:CD8+_effector_memory_RA</td>
 <td style="text-align: right;">3</td>
 <td style="text-align: left;">0.0%</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">Macrophage:monocyte-derived:IL-4/Dex/cntrl</td>
 <td style="text-align: right;">2</td>
 <td style="text-align: left;">0.0%</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">Monocyte:anti-FcgRIIB</td>
 <td style="text-align: right;">2</td>
 <td style="text-align: left;">0.0%</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">Monocyte:CD14+</td>
 <td style="text-align: right;">2</td>
 <td style="text-align: left;">0.0%</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">NK_cell</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">0.0%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Pre-B_cell_CD34-</td>
 <td style="text-align: right;">2</td>
 <td style="text-align: left;">0.0%</td>
 </tr>
@@ -2661,27 +2664,27 @@ Figure 18: t-SNE overlaid with normalized scores using the fine labels from the 
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">CD8+ T-cells</td>
-<td style="text-align: right;">7678</td>
-<td style="text-align: left;">57.1%</td>
+<td style="text-align: right;">7426</td>
+<td style="text-align: left;">56.8%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">CD4+ T-cells</td>
-<td style="text-align: right;">5549</td>
-<td style="text-align: left;">41.3%</td>
+<td style="text-align: right;">5435</td>
+<td style="text-align: left;">41.6%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Monocytes</td>
-<td style="text-align: right;">181</td>
-<td style="text-align: left;">1.3%</td>
+<td style="text-align: right;">182</td>
+<td style="text-align: left;">1.4%</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">NK cells</td>
-<td style="text-align: right;">11</td>
+<td style="text-align: left;">DC</td>
+<td style="text-align: right;">10</td>
 <td style="text-align: left;">0.1%</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">DC</td>
-<td style="text-align: right;">10</td>
+<td style="text-align: left;">NK cells</td>
+<td style="text-align: right;">8</td>
 <td style="text-align: left;">0.1%</td>
 </tr>
 <tr class="even">
@@ -2746,32 +2749,32 @@ Figure 21: t-SNE overlaid with normalized scores using the main labels from the 
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">CD4+ Tem</td>
-<td style="text-align: right;">4029</td>
-<td style="text-align: left;">30.0%</td>
+<td style="text-align: right;">3940</td>
+<td style="text-align: left;">30.1%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Tregs</td>
-<td style="text-align: right;">3708</td>
-<td style="text-align: left;">27.6%</td>
+<td style="text-align: right;">3627</td>
+<td style="text-align: left;">27.7%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">CD8+ Tcm</td>
-<td style="text-align: right;">2620</td>
-<td style="text-align: left;">19.5%</td>
+<td style="text-align: right;">2491</td>
+<td style="text-align: left;">19.1%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">CD4+ Tcm</td>
-<td style="text-align: right;">1797</td>
-<td style="text-align: left;">13.4%</td>
+<td style="text-align: right;">1772</td>
+<td style="text-align: left;">13.6%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">CD8+ Tem</td>
-<td style="text-align: right;">652</td>
-<td style="text-align: left;">4.9%</td>
+<td style="text-align: right;">612</td>
+<td style="text-align: left;">4.7%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">CD4+ T-cells</td>
-<td style="text-align: right;">412</td>
+<td style="text-align: right;">408</td>
 <td style="text-align: left;">3.1%</td>
 </tr>
 <tr class="odd">
@@ -2786,12 +2789,12 @@ Figure 21: t-SNE overlaid with normalized scores using the main labels from the 
 </tr>
 <tr class="odd">
 <td style="text-align: left;">DC</td>
-<td style="text-align: right;">14</td>
+<td style="text-align: right;">15</td>
 <td style="text-align: left;">0.1%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">NK cells</td>
-<td style="text-align: right;">8</td>
+<td style="text-align: right;">7</td>
 <td style="text-align: left;">0.1%</td>
 </tr>
 <tr class="odd">
@@ -2917,7 +2920,7 @@ Figure 24: t-SNE overlaid with normalized scores using the fine labels from the 
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">T cells, CD4+</td>
-<td style="text-align: right;">13076</td>
+<td style="text-align: right;">12716</td>
 <td style="text-align: left;">97.3%</td>
 </tr>
 <tr class="even">
@@ -2927,12 +2930,12 @@ Figure 24: t-SNE overlaid with normalized scores using the fine labels from the 
 </tr>
 <tr class="odd">
 <td style="text-align: left;">NK cells</td>
-<td style="text-align: right;">151</td>
+<td style="text-align: right;">144</td>
 <td style="text-align: left;">1.1%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">T cells, CD8+</td>
-<td style="text-align: right;">21</td>
+<td style="text-align: right;">20</td>
 <td style="text-align: left;">0.2%</td>
 </tr>
 <tr class="odd">
@@ -2987,42 +2990,42 @@ Figure 27: t-SNE overlaid with normalized scores using the main labels from the 
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">T cells, CD4+, memory TREG</td>
-<td style="text-align: right;">7208</td>
-<td style="text-align: left;">53.6%</td>
+<td style="text-align: right;">7000</td>
+<td style="text-align: left;">53.5%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">T cells, CD4+, Th1</td>
-<td style="text-align: right;">2349</td>
-<td style="text-align: left;">17.5%</td>
+<td style="text-align: right;">2238</td>
+<td style="text-align: left;">17.1%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">T cells, CD4+, Th2</td>
-<td style="text-align: right;">1455</td>
-<td style="text-align: left;">10.8%</td>
+<td style="text-align: right;">1432</td>
+<td style="text-align: left;">11.0%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">T cells, CD4+, Th17</td>
-<td style="text-align: right;">1354</td>
-<td style="text-align: left;">10.1%</td>
+<td style="text-align: right;">1339</td>
+<td style="text-align: left;">10.2%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">T cells, CD4+, TFH</td>
-<td style="text-align: right;">510</td>
+<td style="text-align: right;">503</td>
 <td style="text-align: left;">3.8%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">T cells, CD4+, Th1_17</td>
-<td style="text-align: right;">250</td>
+<td style="text-align: right;">247</td>
 <td style="text-align: left;">1.9%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Monocytes, CD14+</td>
-<td style="text-align: right;">141</td>
-<td style="text-align: left;">1.0%</td>
+<td style="text-align: right;">142</td>
+<td style="text-align: left;">1.1%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">NK cells</td>
-<td style="text-align: right;">73</td>
+<td style="text-align: right;">71</td>
 <td style="text-align: left;">0.5%</td>
 </tr>
 <tr class="odd">
@@ -3188,22 +3191,22 @@ Figure 30: t-SNE overlaid with normalized scores using the fine labels from the 
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">CD4+ T cells</td>
-<td style="text-align: right;">6203</td>
-<td style="text-align: left;">46.2%</td>
+<td style="text-align: right;">5989</td>
+<td style="text-align: left;">45.8%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">T cells</td>
-<td style="text-align: right;">5729</td>
-<td style="text-align: left;">42.6%</td>
+<td style="text-align: right;">5660</td>
+<td style="text-align: left;">43.3%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">CD8+ T cells</td>
-<td style="text-align: right;">1288</td>
-<td style="text-align: left;">9.6%</td>
+<td style="text-align: right;">1204</td>
+<td style="text-align: left;">9.2%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Dendritic cells</td>
-<td style="text-align: right;">136</td>
+<td style="text-align: right;">137</td>
 <td style="text-align: left;">1.0%</td>
 </tr>
 <tr class="odd">
@@ -3213,7 +3216,7 @@ Figure 30: t-SNE overlaid with normalized scores using the fine labels from the 
 </tr>
 <tr class="even">
 <td style="text-align: left;">NK cells</td>
-<td style="text-align: right;">20</td>
+<td style="text-align: right;">18</td>
 <td style="text-align: left;">0.1%</td>
 </tr>
 <tr class="odd">
@@ -3278,62 +3281,62 @@ Figure 33: t-SNE overlaid with normalized scores using the main labels from the 
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">Tcell.Th1</td>
-<td style="text-align: right;">2776</td>
-<td style="text-align: left;">20.7%</td>
+<td style="text-align: right;">2669</td>
+<td style="text-align: left;">20.4%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Tcell.CD8.EffectorMemory</td>
-<td style="text-align: right;">2029</td>
-<td style="text-align: left;">15.1%</td>
+<td style="text-align: right;">1999</td>
+<td style="text-align: left;">15.3%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Tcell.Treg</td>
-<td style="text-align: right;">1829</td>
-<td style="text-align: left;">13.6%</td>
+<td style="text-align: right;">1785</td>
+<td style="text-align: left;">13.7%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Tcell.Th2</td>
-<td style="text-align: right;">1818</td>
-<td style="text-align: left;">13.5%</td>
+<td style="text-align: right;">1778</td>
+<td style="text-align: left;">13.6%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Tcell.Th17</td>
-<td style="text-align: right;">1446</td>
-<td style="text-align: left;">10.8%</td>
+<td style="text-align: right;">1402</td>
+<td style="text-align: left;">10.7%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Tcell.VD2pos.gd</td>
-<td style="text-align: right;">946</td>
-<td style="text-align: left;">7.0%</td>
+<td style="text-align: right;">933</td>
+<td style="text-align: left;">7.1%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Tcell.Th1.Th17</td>
-<td style="text-align: right;">904</td>
+<td style="text-align: right;">871</td>
 <td style="text-align: left;">6.7%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Tcell.MAIT</td>
-<td style="text-align: right;">621</td>
+<td style="text-align: right;">603</td>
 <td style="text-align: left;">4.6%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Tcell.CD8.CentralMemory</td>
-<td style="text-align: right;">404</td>
-<td style="text-align: left;">3.0%</td>
+<td style="text-align: right;">381</td>
+<td style="text-align: left;">2.9%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Dendritic.Myeloid</td>
-<td style="text-align: right;">137</td>
-<td style="text-align: left;">1.0%</td>
+<td style="text-align: right;">138</td>
+<td style="text-align: left;">1.1%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Tcell.FollicularHelper</td>
-<td style="text-align: right;">122</td>
+<td style="text-align: right;">121</td>
 <td style="text-align: left;">0.9%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Tcell.CD4.TerminalEffector</td>
-<td style="text-align: right;">110</td>
+<td style="text-align: right;">107</td>
 <td style="text-align: left;">0.8%</td>
 </tr>
 <tr class="odd">
@@ -3343,12 +3346,12 @@ Figure 33: t-SNE overlaid with normalized scores using the main labels from the 
 </tr>
 <tr class="even">
 <td style="text-align: left;">Tcell.CD8.TerminalEffector</td>
-<td style="text-align: right;">64</td>
-<td style="text-align: left;">0.5%</td>
+<td style="text-align: right;">55</td>
+<td style="text-align: left;">0.4%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Tcell.CD4.naive</td>
-<td style="text-align: right;">54</td>
+<td style="text-align: right;">51</td>
 <td style="text-align: left;">0.4%</td>
 </tr>
 <tr class="even">
@@ -3393,7 +3396,7 @@ Figure 33: t-SNE overlaid with normalized scores using the main labels from the 
 </tr>
 <tr class="even">
 <td style="text-align: left;">Tcell.CD8.naive</td>
-<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
 <td style="text-align: left;">0.0%</td>
 </tr>
 <tr class="odd">
@@ -3564,18 +3567,18 @@ Figure 36: t-SNE overlaid with normalized scores using the fine labels from the 
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">CD4+ T cells</td>
-<td style="text-align: right;">7632</td>
-<td style="text-align: left;">56.8%</td>
+<td style="text-align: right;">7534</td>
+<td style="text-align: left;">57.6%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">CD8+ T cells</td>
-<td style="text-align: right;">5408</td>
-<td style="text-align: left;">40.2%</td>
+<td style="text-align: right;">5160</td>
+<td style="text-align: left;">39.5%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">NK T cells</td>
-<td style="text-align: right;">180</td>
-<td style="text-align: left;">1.3%</td>
+<td style="text-align: right;">161</td>
+<td style="text-align: left;">1.2%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Dendritic cells</td>
@@ -3589,7 +3592,7 @@ Figure 36: t-SNE overlaid with normalized scores using the fine labels from the 
 </tr>
 <tr class="even">
 <td style="text-align: left;">Granulocytes</td>
-<td style="text-align: right;">40</td>
+<td style="text-align: right;">37</td>
 <td style="text-align: left;">0.3%</td>
 </tr>
 <tr class="odd">
@@ -3664,32 +3667,32 @@ Figure 39: t-SNE overlaid with normalized scores using the main labels from the 
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">CD4+ Effector Memory</td>
-<td style="text-align: right;">7787</td>
-<td style="text-align: left;">57.9%</td>
+<td style="text-align: right;">7656</td>
+<td style="text-align: left;">58.6%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">CD8+ Effector Memory</td>
-<td style="text-align: right;">2818</td>
-<td style="text-align: left;">21.0%</td>
+<td style="text-align: right;">2664</td>
+<td style="text-align: left;">20.4%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">CD4+ Central Memory</td>
-<td style="text-align: right;">1775</td>
-<td style="text-align: left;">13.2%</td>
+<td style="text-align: right;">1755</td>
+<td style="text-align: left;">13.4%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">CD8+ Central Memory</td>
-<td style="text-align: right;">607</td>
-<td style="text-align: left;">4.5%</td>
+<td style="text-align: right;">560</td>
+<td style="text-align: left;">4.3%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">CD8+ Effector Memory RA</td>
-<td style="text-align: right;">197</td>
-<td style="text-align: left;">1.5%</td>
+<td style="text-align: right;">181</td>
+<td style="text-align: left;">1.4%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Myeloid Dendritic Cells</td>
-<td style="text-align: right;">128</td>
+<td style="text-align: right;">129</td>
 <td style="text-align: left;">1.0%</td>
 </tr>
 <tr class="odd">
@@ -3704,17 +3707,17 @@ Figure 39: t-SNE overlaid with normalized scores using the main labels from the 
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Naive CD4+ T-cells</td>
-<td style="text-align: right;">17</td>
+<td style="text-align: right;">18</td>
 <td style="text-align: left;">0.1%</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Granulocyte (Neutrophils)</td>
+<td style="text-align: left;">Naive CD8+ T-cells</td>
 <td style="text-align: right;">8</td>
 <td style="text-align: left;">0.1%</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Naive CD8+ T-cells</td>
-<td style="text-align: right;">8</td>
+<td style="text-align: left;">Granulocyte (Neutrophils)</td>
+<td style="text-align: right;">7</td>
 <td style="text-align: left;">0.1%</td>
 </tr>
 <tr class="even">
@@ -3738,27 +3741,27 @@ Figure 39: t-SNE overlaid with normalized scores using the main labels from the 
 <td style="text-align: left;">0.0%</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mature NK cells_CD56+ CD16+ CD3-</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: left;">0.0%</td>
-</tr>
-<tr class="odd">
 <td style="text-align: left;">Pro B-cells</td>
 <td style="text-align: right;">2</td>
 <td style="text-align: left;">0.0%</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">Colony Forming Unit-Megakaryocytic</td>
 <td style="text-align: right;">1</td>
 <td style="text-align: left;">0.0%</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">Mature B-cells class able to switch</td>
 <td style="text-align: right;">1</td>
 <td style="text-align: left;">0.0%</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">Mature NK cells_CD56- CD16- CD3-</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">0.0%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Mature NK cells_CD56+ CD16+ CD3-</td>
 <td style="text-align: right;">1</td>
 <td style="text-align: left;">0.0%</td>
 </tr>
@@ -3835,7 +3838,6 @@ Figure 43: Heatmap of the log-normalized expression values of the cyclin genes i
 <th style="text-align: right;">overlap.9</th>
 <th style="text-align: right;">overlap.10</th>
 <th style="text-align: right;">overlap.11</th>
-<th style="text-align: right;">overlap.12</th>
 </tr>
 </thead>
 <tbody>
@@ -3844,170 +3846,160 @@ Figure 43: Heatmap of the log-normalized expression values of the cyclin genes i
 <td style="text-align: right;">1</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">0.8426066</td>
-<td style="text-align: right;">0.8574480</td>
-<td style="text-align: right;">0.8413854</td>
-<td style="text-align: right;">0.7650505</td>
-<td style="text-align: right;">0.8064148</td>
-<td style="text-align: right;">0.8308597</td>
-<td style="text-align: right;">0.8466449</td>
-<td style="text-align: right;">0.8412099</td>
-<td style="text-align: right;">0.7170270</td>
-<td style="text-align: right;">0.6186589</td>
-<td style="text-align: right;">0.8448311</td>
+<td style="text-align: right;">0.8522593</td>
+<td style="text-align: right;">0.8512506</td>
+<td style="text-align: right;">0.7694514</td>
+<td style="text-align: right;">0.8519178</td>
+<td style="text-align: right;">0.8071899</td>
+<td style="text-align: right;">0.8537724</td>
+<td style="text-align: right;">0.8609520</td>
+<td style="text-align: right;">0.6315856</td>
+<td style="text-align: right;">0.8543583</td>
+<td style="text-align: right;">0.8318212</td>
 </tr>
 <tr class="even">
 <td>CCNB2</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0.8265076</td>
-<td style="text-align: right;">0.8372328</td>
-<td style="text-align: right;">0.8308035</td>
-<td style="text-align: right;">0.7332386</td>
-<td style="text-align: right;">0.7903211</td>
-<td style="text-align: right;">0.8111051</td>
-<td style="text-align: right;">0.8372493</td>
-<td style="text-align: right;">0.8408234</td>
-<td style="text-align: right;">0.7289189</td>
-<td style="text-align: right;">0.6128585</td>
-<td style="text-align: right;">0.8418481</td>
-</tr>
-<tr class="odd">
-<td>CCNB1</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0.7910441</td>
-<td style="text-align: right;">0.7855044</td>
-<td style="text-align: right;">0.7871132</td>
-<td style="text-align: right;">0.7121765</td>
-<td style="text-align: right;">0.7521299</td>
-<td style="text-align: right;">0.7703737</td>
-<td style="text-align: right;">0.7987205</td>
-<td style="text-align: right;">0.7884773</td>
-<td style="text-align: right;">0.7349550</td>
-<td style="text-align: right;">0.6172588</td>
-<td style="text-align: right;">0.7948421</td>
-</tr>
-<tr class="even">
-<td>CCNE2</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0.6457588</td>
-<td style="text-align: right;">0.6438694</td>
-<td style="text-align: right;">0.6463106</td>
-<td style="text-align: right;">0.5754126</td>
-<td style="text-align: right;">0.6111233</td>
-<td style="text-align: right;">0.6353666</td>
-<td style="text-align: right;">0.6421092</td>
-<td style="text-align: right;">0.6477425</td>
-<td style="text-align: right;">0.5766667</td>
-<td style="text-align: right;">0.5949321</td>
-<td style="text-align: right;">0.6484619</td>
-</tr>
-<tr class="odd">
-<td>CCND3</td>
 <td style="text-align: right;">2</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">0.7211666</td>
-<td style="text-align: right;">0.5982832</td>
-<td style="text-align: right;">0.4867357</td>
-<td style="text-align: right;">0.6370368</td>
-<td style="text-align: right;">0.6183227</td>
-<td style="text-align: right;">0.8014474</td>
-<td style="text-align: right;">0.7296382</td>
-<td style="text-align: right;">0.5615446</td>
-<td style="text-align: right;">0.7487387</td>
-<td style="text-align: right;">0.5563167</td>
-<td style="text-align: right;">0.6287061</td>
+<td style="text-align: right;">0.8384658</td>
+<td style="text-align: right;">0.8408241</td>
+<td style="text-align: right;">0.7311723</td>
+<td style="text-align: right;">0.8502960</td>
+<td style="text-align: right;">0.7853949</td>
+<td style="text-align: right;">0.8513975</td>
+<td style="text-align: right;">0.8367607</td>
+<td style="text-align: right;">0.6177745</td>
+<td style="text-align: right;">0.8402057</td>
+<td style="text-align: right;">0.8107325</td>
+</tr>
+<tr class="odd">
+<td>CCNE2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.6467584</td>
+<td style="text-align: right;">0.6484643</td>
+<td style="text-align: right;">0.5741627</td>
+<td style="text-align: right;">0.6491325</td>
+<td style="text-align: right;">0.6097000</td>
+<td style="text-align: right;">0.6487935</td>
+<td style="text-align: right;">0.6461857</td>
+<td style="text-align: right;">0.5922056</td>
+<td style="text-align: right;">0.6417606</td>
+<td style="text-align: right;">0.6302722</td>
 </tr>
 <tr class="even">
+<td>CCNB1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.8000005</td>
+<td style="text-align: right;">0.7930051</td>
+<td style="text-align: right;">0.6833248</td>
+<td style="text-align: right;">0.7951996</td>
+<td style="text-align: right;">0.7275651</td>
+<td style="text-align: right;">0.8008212</td>
+<td style="text-align: right;">0.7845282</td>
+<td style="text-align: right;">0.5815448</td>
+<td style="text-align: right;">0.7961411</td>
+<td style="text-align: right;">0.7649554</td>
+</tr>
+<tr class="odd">
+<td>CCND3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.7246226</td>
+<td style="text-align: right;">0.4949858</td>
+<td style="text-align: right;">0.6478808</td>
+<td style="text-align: right;">0.5744874</td>
+<td style="text-align: right;">0.6362473</td>
+<td style="text-align: right;">0.6304662</td>
+<td style="text-align: right;">0.6073446</td>
+<td style="text-align: right;">0.5756800</td>
+<td style="text-align: right;">0.7328686</td>
+<td style="text-align: right;">0.8081581</td>
+</tr>
+<tr class="even">
+<td>CCNA1</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.5095597</td>
+<td style="text-align: right;">0.5096745</td>
+<td style="text-align: right;">0.5218361</td>
+<td style="text-align: right;">0.5131580</td>
+<td style="text-align: right;">0.5190989</td>
+<td style="text-align: right;">0.5120809</td>
+<td style="text-align: right;">0.5314743</td>
+<td style="text-align: right;">0.5231076</td>
+<td style="text-align: right;">0.5198012</td>
+<td style="text-align: right;">0.5146935</td>
+</tr>
+<tr class="odd">
 <td>CCNE1</td>
 <td style="text-align: right;">5</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">0.5286946</td>
-<td style="text-align: right;">0.5623691</td>
-<td style="text-align: right;">0.5298033</td>
-<td style="text-align: right;">0.5105868</td>
-<td style="text-align: right;">0.5243675</td>
-<td style="text-align: right;">0.5255779</td>
-<td style="text-align: right;">0.5482113</td>
-<td style="text-align: right;">0.5298760</td>
-<td style="text-align: right;">0.5100000</td>
-<td style="text-align: right;">0.5257519</td>
-<td style="text-align: right;">0.5319561</td>
-</tr>
-<tr class="odd">
-<td>CCNA1</td>
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0.5092391</td>
-<td style="text-align: right;">0.5311552</td>
-<td style="text-align: right;">0.5092470</td>
-<td style="text-align: right;">0.5216910</td>
-<td style="text-align: right;">0.5192223</td>
-<td style="text-align: right;">0.5134280</td>
-<td style="text-align: right;">0.5184755</td>
-<td style="text-align: right;">0.5116905</td>
-<td style="text-align: right;">0.5233333</td>
-<td style="text-align: right;">0.5231517</td>
-<td style="text-align: right;">0.5117351</td>
+<td style="text-align: right;">0.5290592</td>
+<td style="text-align: right;">0.5301019</td>
+<td style="text-align: right;">0.5111345</td>
+<td style="text-align: right;">0.5323301</td>
+<td style="text-align: right;">0.5228956</td>
+<td style="text-align: right;">0.5322846</td>
+<td style="text-align: right;">0.5612645</td>
+<td style="text-align: right;">0.5248094</td>
+<td style="text-align: right;">0.5501582</td>
+<td style="text-align: right;">0.5244818</td>
 </tr>
 <tr class="even">
 <td>CCND2</td>
-<td style="text-align: right;">5</td>
+<td style="text-align: right;">6</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">0.3512113</td>
-<td style="text-align: right;">0.4559923</td>
-<td style="text-align: right;">0.3901827</td>
-<td style="text-align: right;">0.6022792</td>
-<td style="text-align: right;">0.5620176</td>
-<td style="text-align: right;">0.5885722</td>
-<td style="text-align: right;">0.4331842</td>
-<td style="text-align: right;">0.4405122</td>
-<td style="text-align: right;">0.6621622</td>
-<td style="text-align: right;">0.5422407</td>
-<td style="text-align: right;">0.4185062</td>
+<td style="text-align: right;">0.3422073</td>
+<td style="text-align: right;">0.3861092</td>
+<td style="text-align: right;">0.5996632</td>
+<td style="text-align: right;">0.4424468</td>
+<td style="text-align: right;">0.5548351</td>
+<td style="text-align: right;">0.4097935</td>
+<td style="text-align: right;">0.4551753</td>
+<td style="text-align: right;">0.5216872</td>
+<td style="text-align: right;">0.4288045</td>
+<td style="text-align: right;">0.5922844</td>
 </tr>
 <tr class="odd">
 <td>CCND1</td>
 <td style="text-align: right;">8</td>
 <td style="text-align: right;">1</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">0.4989480</td>
-<td style="text-align: right;">0.5000757</td>
-<td style="text-align: right;">0.4995991</td>
-<td style="text-align: right;">0.5024455</td>
-<td style="text-align: right;">0.5014717</td>
-<td style="text-align: right;">0.4661304</td>
-<td style="text-align: right;">0.4984938</td>
-<td style="text-align: right;">0.5012159</td>
-<td style="text-align: right;">0.5033333</td>
-<td style="text-align: right;">0.5027502</td>
-<td style="text-align: right;">0.4920706</td>
+<td style="text-align: right;">0.4984888</td>
+<td style="text-align: right;">0.4992164</td>
+<td style="text-align: right;">0.5027571</td>
+<td style="text-align: right;">0.5005140</td>
+<td style="text-align: right;">0.5000981</td>
+<td style="text-align: right;">0.4910268</td>
+<td style="text-align: right;">0.4997320</td>
+<td style="text-align: right;">0.5027847</td>
+<td style="text-align: right;">0.4984179</td>
+<td style="text-align: right;">0.4696245</td>
 </tr>
 <tr class="even">
 <td>CCNB3</td>
 <td style="text-align: right;">9</td>
 <td style="text-align: right;">1</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">0.5011593</td>
-<td style="text-align: right;">0.5004910</td>
-<td style="text-align: right;">0.5012206</td>
-<td style="text-align: right;">0.5029987</td>
-<td style="text-align: right;">0.5022737</td>
-<td style="text-align: right;">0.5016216</td>
-<td style="text-align: right;">0.5005881</td>
-<td style="text-align: right;">0.5013343</td>
-<td style="text-align: right;">0.5033333</td>
-<td style="text-align: right;">0.5025752</td>
-<td style="text-align: right;">0.5007959</td>
+<td style="text-align: right;">0.5012017</td>
+<td style="text-align: right;">0.5007643</td>
+<td style="text-align: right;">0.5029794</td>
+<td style="text-align: right;">0.5012841</td>
+<td style="text-align: right;">0.5023506</td>
+<td style="text-align: right;">0.5012146</td>
+<td style="text-align: right;">0.5005095</td>
+<td style="text-align: right;">0.5026300</td>
+<td style="text-align: right;">0.5005686</td>
+<td style="text-align: right;">0.5018146</td>
 </tr>
 </tbody>
 </table>
@@ -5288,6 +5280,14 @@ issn = {14764687},
 journal = {Nature},
 title = {{An integrated encyclopedia of DNA elements in the human genome}},
 year = {2012}
+}
+
+@article{young10soupx,
+  title={SoupX removes ambient RNA contamination from droplet based single cell RNA sequencing data. bioRxiv. 2018},
+  author={Young, MD and Behjati, S},
+  journal={DOI},
+  volume={10},
+  pages={303727}
 }
 </script>
 <!--/radix_placeholder_appendices-->

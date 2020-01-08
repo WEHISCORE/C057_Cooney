@@ -6,4 +6,8 @@
   - https://www.biorxiv.org/content/10.1101/303727v1 and https://github.com/constantAmateur/SoupX
   - https://www.biorxiv.org/content/10.1101/704015v1
   - https://www.biorxiv.org/content/10.1101/699637v2
-  
+- [ ] Doublet detection
+  - [ ] From the HTO data, can see doublets. Are these picked up by looking at RNA?
+- [ ] Exclude TCR genes from downstream analyses?
+- [ ] Fix aspect ratio of t-SNE in annotation
+- [ ] Marry up HTO cluster colours and sample colours
