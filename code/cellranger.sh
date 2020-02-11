@@ -38,6 +38,8 @@ CELLRANGERDIR_GEX_HTO=${SEQDIR}/CellRanger_GEX_HTO
 mkdir -p ${CELLRANGERDIR_GEX_HTO}
 CELLRANGERDIR_VDJ=${SEQDIR}/CellRanger_VDJ
 mkdir -p ${CELLRANGERDIR_VDJ}
+DATADIR=${PROJECT_ROOT}/data/CellRanger
+mkdir -p ${DATADIR}
 
 # Generate FASTQs with cellranger mkfastq  -------------------------------------
 
@@ -123,4 +125,6 @@ do
   cp ${SAMPLE}_VDJ/outs/web_summary.html \
      ${OUTDIR}/${SAMPLE}_VDJ.web_summary.html
   cp ${SAMPLE}_VDJ/outs/vloupe.vloupe ${OUTDIR}/${SAMPLE}_VDJ.vloupe
+  cp ${SAMPLE}_VDJ/outs/filtered_contig_annotations.csv \
+     ${DATADIR}/${SAMPLE}.filtered_contig_annotations.csv
 done
