@@ -1,0 +1,482 @@
+---
+title: "Analysing the repertoire sequencing data from the Cooney (C057) memory CD4+ T-cell data set"
+description: |
+author:
+  - name: Peter Hickey 
+    url: https://peterhickey.org
+    affiliation: Single Cell Open Research Endeavour (SCORE), WEHI
+    affiliation_url: https://www.wehi.edu.au/people/shalin-naik/3310/score
+date: "`r Sys.Date()`"
+output: radix::radix_article
+editor_options: 
+  chunk_output_type: console
+bibliography: ref.bib
+---
+
+```{r setup}
+library(SingleCellExperiment)
+library(here)
+library(magrittr)
+
+source(here("analysis", "helper_functions.R"))
+
+# NOTE: Using multiple cores siezes up my laptop. Can use more on unix box.
+options("mc.cores" = ifelse(Sys.info()[["nodename"]] == "PC1331", 1L, 9L))
+register(MulticoreParam(workers = getOption("mc.cores")))
+
+knitr::opts_chunk$set(fig.path = "C057_Cooney.repertoire-seq_files/")
+```
+
+# Introduction
+
+An organism’s immune repertoire is defined as the set of T and B cell subtypes that contain genetic diversity in the T cell receptor (TCR) components or immunoglobin chains, respectively.
+This diversity is important for ensuring that the adaptive immune system can respond effectively to a wide range of antigens.
+We can profile the immune repertoire by simply sequencing the relevant transcripts (Georgiou et al. 2014; Rosati et al. 2017), which can be combined with scRNA-seq technologies to achieve single-cell resolution.
+This data can then be used to characterize an individual’s immune response based on the expansion of T or B cell clones, i.e., multiple cells with the same sequences for each TCR component or immunoglobulin chain.
+
+Here, we have profiled the immune repertoire of the CD4+ T-cells using 10X Genomics' 'Single Cell V(D)J + 5′ Gene Expression' kit.
+We aim to analyse the immune repertoirse and integrate it with the RNA sequencing data.
+
+```{r}
+sce <- readRDS(here("data", "SCEs", "C057_Cooney.annotated.SCE.rds"))
+```
+
+```{r}
+# data frames containing co-ordinates and factors for creating reduced 
+# dimensionality plots.
+tsne_df <- cbind(
+  data.frame(
+    x = reducedDim(sce, "TSNE")[, 1],
+    y = reducedDim(sce, "TSNE")[, 2]),
+  as.data.frame(colData(sce)))
+```
+
+```{r}
+hto_to_sample_df <- as.data.frame(colData(sce)) %>%
+  dplyr::select(hto_cluster, HTO, Sample, Treatment, Replicate) %>%
+  dplyr::distinct()
+
+# Some useful colours
+hto_cluster_colours <- setNames(
+  colorblindr::palette_OkabeIto,
+  levels(sce$hto_cluster))
+hto_cluster_colours <- hto_cluster_colours[!is.na(names(hto_cluster_colours))]
+hto_colours <- hto_cluster_colours
+names(hto_colours) <- dplyr::inner_join(
+  data.frame(hto_cluster = names(hto_cluster_colours)),
+  hto_to_sample_df) %>%
+  dplyr::pull(HTO)
+sample_colours <- hto_cluster_colours
+names(sample_colours) <- dplyr::inner_join(
+  data.frame(hto_cluster = names(sample_colours)),
+  hto_to_sample_df) %>%
+  dplyr::pull(Sample)
+treatment_colours <- c(
+  "Infected" = "#e41a1c",
+  "Uninfected" = "#377eb8",
+  "Unknown" = "grey70")
+# NOTE: No replicate_colours because we won't ever colour by this.
+cluster_colours <- setNames(
+  Polychrome::green.armytage.colors(nlevels(sce$cluster)),
+  levels(sce$cluster))
+```
+
+# Preparing the data
+
+## RNA-sequencing
+
+We start from the preprocessed *SingleCellExperiment* object created in ['Annotating the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney.annotate.html).
+
+## TCR-sequencing
+
+CellRanger generates a file containing filtered TCR contig annotations from the set of cells that passed its internal quality controls of the RNA-sequencing data ([`data/CellRanger/HTLV.filtered_contig_annotations.csv`](../data/CellRanger/HTLV.filtered_contig_annotations.csv)).
+
+### Data processing
+
+Each row of the file contains information about a single TCR component sequence in one cell, broken down into the alleles of the V(D)J genes making up that component (`v_gene`, `d_gene`, `j_gene`) where possible.
+The number of reads and UMIs supporting the set of allele assignments for a cell is also shown, though only the UMI count should be used for quantifying expression of a particular TCR sequence.
+Each cell is assigned to a clonotype (`raw_clonotype_id`) based on the combination of the α-chain (`TRA`) and β-chain (`TRB`) sequences in that cell.
+This table is shown below.
+
+```{r}
+tcr <- read.csv(
+  here("data", "CellRanger", "HTLV.filtered_contig_annotations.csv"),
+  stringsAsFactors = FALSE)
+rmarkdown::paged_table(tcr)
+```
+
+A challenge lies in the fact that each cell may have zero, one or many TCR sequences.
+
+```{r}
+tra <- tcr[tcr$chain == "TRA", ]
+trb <- tcr[tcr$chain == "TRB", ]
+sce$TRA <- split(DataFrame(tra), factor(tra$barcode, sce$Barcode))
+sce$TRB <- split(DataFrame(trb), factor(trb$barcode, sce$Barcode))
+```
+
+# Analysing the T-cell receptor repertoire
+
+## Basic diagnostics
+
+We start by generating some basic cell-level diagnostics.
+For each cluster, we determine the proportion of cells that have at least one sequence of a TCR component (Figure \@ref(fig:prop-expressing-with-unknowns)).
+Clusters with large counts are most likely to be T cells, though some background level of TCR expression may be observed in other clusters due to a mixture of clustering uncertainty, ambient contamination, doublet formation and expression in other cell types.
+
+```{r prop-expressing-with-unknowns, fig.cap = "t-SNE plot of data, including 'unknown' samples, alongside the proportion of cells in each cluster that express at least one sequence of the TCR α or β-chains.", fig.asp = 1/4, layout = "l-page"}
+library(tibble)
+tra_tbl <- tibble(
+  cluster = factor(levels(sce$cluster), levels(sce$cluster)),
+  n_cells = as.vector(table(sce$cluster)),
+  prop = as.vector(table(sce$cluster[lengths(sce$TRA) > 0]) / n_cells),
+  chain = "α")
+trb_tbl <- tibble(
+  cluster = factor(levels(sce$cluster), levels(sce$cluster)),
+  n_cells = as.vector(table(sce$cluster)),
+  prop = as.vector(table(sce$cluster[lengths(sce$TRB) > 0]) / n_cells),
+  chain = "β")
+
+library(ggplot2)
+library(cowplot)
+library(scater)
+plot_grid(
+  plotTSNE(sce, colour_by = "Treatment", point_alpha = 0) + 
+    geom_point(aes(colour = colour_by), size = 0.05, alpha = 0.5) +
+    scale_colour_manual(values = treatment_colours, name = "Treatment") +
+    guides(colour = FALSE, fill = FALSE) + 
+    ggtitle("Treatment") +
+    theme_cowplot(font_size = 8),
+  plotTSNE(sce, colour_by = "cluster", point_alpha = 0) + 
+    geom_point(aes(colour = colour_by), size = 0.05, alpha = 0.5) +
+    scale_colour_manual(values = cluster_colours, name = "cluster") +
+    guides(colour = FALSE, fill = FALSE) + 
+    ggtitle("Cluster") +
+    theme_cowplot(font_size = 8),
+  ggplot(rbind(tra_tbl, trb_tbl)) + 
+    geom_col(aes(x = cluster, y = prop, fill = cluster)) + 
+    facet_grid(~ chain) +
+    scale_fill_manual(values = cluster_colours, name = "cluster") +
+    theme_cowplot(font_size = 8) +
+    ylim(0, 1) +
+    ylab("Proportion") +
+    guides(fill = FALSE) +
+    ggtitle("TCR component"),
+  rel_widths = c(1, 1, 2),
+  nrow = 1)
+```
+
+Figure \@ref(fig:prop-expressing-with-unknowns) shows that the majority of clusters have more than 75% of cells expressing either the α-chain or β-chain sequences.
+We also see that the 'unknown' cells largely do not express either TCR sequence, supporting the idea that these droplets are not real cells.
+
+We therefore switch to the data set generated after ignoring the 'unknown' samples and repeat the above exercise.
+
+```{r}
+sce <- readRDS(
+  here("data", "SCEs", "C057_Cooney_ignoring_unknowns.annotated.SCE.rds"))
+```
+
+```{r}
+# data frames containing co-ordinates and factors for creating reduced 
+# dimensionality plots.
+tsne_df <- cbind(
+  data.frame(
+    x = reducedDim(sce, "TSNE")[, 1],
+    y = reducedDim(sce, "TSNE")[, 2]),
+  as.data.frame(colData(sce)))
+```
+
+```{r}
+hto_to_sample_df <- as.data.frame(colData(sce)) %>%
+  dplyr::select(hto_cluster, HTO, Sample, Treatment, Replicate) %>%
+  dplyr::distinct()
+
+# Some useful colours
+hto_cluster_colours <- setNames(
+  colorblindr::palette_OkabeIto,
+  levels(sce$hto_cluster))
+hto_cluster_colours <- hto_cluster_colours[!is.na(names(hto_cluster_colours))]
+hto_colours <- hto_cluster_colours
+names(hto_colours) <- dplyr::inner_join(
+  data.frame(hto_cluster = names(hto_cluster_colours)),
+  hto_to_sample_df) %>%
+  dplyr::pull(HTO)
+sample_colours <- hto_cluster_colours
+names(sample_colours) <- dplyr::inner_join(
+  data.frame(hto_cluster = names(sample_colours)),
+  hto_to_sample_df) %>%
+  dplyr::pull(Sample)
+treatment_colours <- c(
+  "Infected" = "#e41a1c",
+  "Uninfected" = "#377eb8",
+  "Unknown" = "grey70")
+# NOTE: No replicate_colours because we won't ever colour by this.
+cluster_colours <- setNames(
+  Polychrome::green.armytage.colors(nlevels(sce$cluster)),
+  levels(sce$cluster))
+```
+
+```{r}
+sce$TRA <- split(DataFrame(tra), factor(tra$barcode, sce$Barcode))
+sce$TRB <- split(DataFrame(trb), factor(trb$barcode, sce$Barcode))
+```
+
+Figure \@ref(fig:prop-expressing-with-unknowns) shows that almost all clusters have more than 85% of cells expressing either the α-chain or β-chain sequences.
+Cluster `r which.min(tra_tbl$prop)` is the notable exception.
+
+```{r prop-expressing, fig.cap = "t-SNE plot of data, ignoring 'unknown' samples, alongside the proportion of cells in each cluster that express at least one sequence of the TCR α or β-chains.", fig.asp = 1/4, layout = "l-page"}
+tra_tbl <- tibble(
+  cluster = factor(levels(sce$cluster), levels(sce$cluster)),
+  n_cells = as.vector(table(sce$cluster)),
+  prop = as.vector(table(sce$cluster[lengths(sce$TRA) > 0]) / n_cells),
+  chain = "α")
+trb_tbl <- tibble(
+  cluster = factor(levels(sce$cluster), levels(sce$cluster)),
+  n_cells = as.vector(table(sce$cluster)),
+  prop = as.vector(table(sce$cluster[lengths(sce$TRB) > 0]) / n_cells),
+  chain = "β")
+
+plot_grid(
+  plotTSNE(sce, colour_by = "Treatment", point_alpha = 0) + 
+    geom_point(aes(colour = colour_by), size = 0.05, alpha = 0.5) +
+    scale_colour_manual(values = treatment_colours, name = "Treatment") +
+    guides(colour = FALSE, fill = FALSE) + 
+    ggtitle("Treatment") +
+    theme_cowplot(font_size = 8),
+  plotTSNE(sce, colour_by = "cluster", point_alpha = 0) + 
+    geom_point(aes(colour = colour_by), size = 0.05, alpha = 0.5) +
+    scale_colour_manual(values = cluster_colours, name = "cluster") +
+    guides(colour = FALSE, fill = FALSE) + 
+    ggtitle("Cluster") +
+    theme_cowplot(font_size = 8),
+  ggplot(rbind(tra_tbl, trb_tbl)) + 
+    geom_col(aes(x = cluster, y = prop, fill = cluster)) + 
+    facet_grid(~ chain) +
+    scale_fill_manual(values = cluster_colours, name = "cluster") +
+    theme_cowplot(font_size = 8) +
+    ylim(0, 1) +
+    ylab("Proportion") +
+    guides(fill = FALSE) +
+    ggtitle("TCR component"),
+  rel_widths = c(1, 1, 2),
+  nrow = 1)
+```
+
+We can refine this analysis to only consider the productive sequences, i.e., contigs that are likely to produce a functional protein (Figure \@ref(fig:prop-expressing-productive)).
+
+```{r prop-expressing-productive, fig.cap = "t-SNE plot of data, ignoring 'unknown' samples, alongside the proportion of cells in each cluster that express at least one productive sequence of the TCR α or β-chains.", fig.asp = 1/4, layout = "l-page"}
+tra_tbl <- tibble(
+  cluster = factor(levels(sce$cluster), levels(sce$cluster)),
+  n_cells = as.vector(table(sce$cluster)),
+  prop = as.vector(table(sce$cluster[lengths(sce$TRA[sce$TRA[,"productive"]=="True"]) > 0]) / n_cells),
+  chain = "α")
+trb_tbl <- tibble(
+  cluster = factor(levels(sce$cluster), levels(sce$cluster)),
+  n_cells = as.vector(table(sce$cluster)),
+  prop = as.vector(table(sce$cluster[lengths(sce$TRB[sce$TRB[,"productive"]=="True"]) > 0]) / n_cells),
+  chain = "β")
+
+plot_grid(
+  plotTSNE(sce, colour_by = "Treatment", point_alpha = 0) + 
+    geom_point(aes(colour = colour_by), size = 0.05, alpha = 0.5) +
+    scale_colour_manual(values = treatment_colours, name = "Treatment") +
+    guides(colour = FALSE, fill = FALSE) + 
+    ggtitle("Treatment") +
+    theme_cowplot(font_size = 8),
+  plotTSNE(sce, colour_by = "cluster", point_alpha = 0) + 
+    geom_point(aes(colour = colour_by), size = 0.05, alpha = 0.5) +
+    scale_colour_manual(values = cluster_colours, name = "cluster") +
+    guides(colour = FALSE, fill = FALSE) + 
+    ggtitle("Cluster") +
+    theme_cowplot(font_size = 8),
+  ggplot(rbind(tra_tbl, trb_tbl)) + 
+    geom_col(aes(x = cluster, y = prop, fill = cluster)) + 
+    facet_grid(~ chain) +
+    scale_fill_manual(values = cluster_colours, name = "cluster") +
+    theme_cowplot(font_size = 8) +
+    ylim(0, 1) +
+    ylab("Proportion") +
+    guides(fill = FALSE) +
+    ggtitle("TCR component"),
+  rel_widths = c(1, 1, 2),
+  nrow = 1)
+```
+
+We can also count the number of cells in each cluster that have multiple sequences for a component (Figure \@ref(fig:prop-expressing-multiple)).
+
+```{r prop-expressing-multiple, fig.cap = "t-SNE plot of data, ignoring 'unknown' samples, alongside the proportion of cells in each cluster that express two or more sequences of the TCR α or β-chains.", fig.asp = 1/4, layout = "l-page"}
+tra_tbl <- tibble(
+  cluster = factor(levels(sce$cluster), levels(sce$cluster)),
+  n_cells = as.vector(table(sce$cluster)),
+  prop = as.vector(table(sce$cluster[lengths(sce$TRA) >= 2]) / n_cells),
+  chain = "α")
+trb_tbl <- tibble(
+  cluster = factor(levels(sce$cluster), levels(sce$cluster)),
+  n_cells = as.vector(table(sce$cluster)),
+  prop = as.vector(table(sce$cluster[lengths(sce$TRB) >= 2]) / n_cells),
+  chain = "β")
+
+plot_grid(
+  plotTSNE(sce, colour_by = "Treatment", point_alpha = 0) + 
+    geom_point(aes(colour = colour_by), size = 0.05, alpha = 0.5) +
+    scale_colour_manual(values = treatment_colours, name = "Treatment") +
+    guides(colour = FALSE, fill = FALSE) + 
+    ggtitle("Treatment") +
+    theme_cowplot(font_size = 8),
+  plotTSNE(sce, colour_by = "cluster", point_alpha = 0) + 
+    geom_point(aes(colour = colour_by), size = 0.05, alpha = 0.5) +
+    scale_colour_manual(values = cluster_colours, name = "cluster") +
+    guides(colour = FALSE, fill = FALSE) + 
+    ggtitle("Cluster") +
+    theme_cowplot(font_size = 8),
+  ggplot(rbind(tra_tbl, trb_tbl)) + 
+    geom_col(aes(x = cluster, y = prop, fill = cluster)) + 
+    facet_grid(~ chain) +
+    scale_fill_manual(values = cluster_colours, name = "cluster") +
+    theme_cowplot(font_size = 8) +
+    ylim(0, 1) +
+    ylab("Proportion") +
+    guides(fill = FALSE) +
+    ggtitle("TCR component"),
+  rel_widths = c(1, 1, 2),
+  nrow = 1)
+```
+
+## Quantifying clonal expansion
+
+Quantification of clonal expansion is the most obvious application of repertoire sequencing data.
+Cells with the same T cell clonotype are assumed to target the same antigen, and any increase in the frequency of a clonotype provides evidence for T cell activation and proliferation upon stimulation by the corresponding antigen.
+Thus, we can gain some insights into the immune activity of each T cell cluster by counting the number of expanded clonotypes in each cluster^[We do not exclude clonotypes containing cells in different clusters, which can arise for various genuine biological reasons, e.g., differences in the microenvironment.].
+
+```{r, results = "hide"}
+clone_id_A <- unlist(unique(sce$TRA[,"raw_clonotype_id"]))
+expanded_id_A <- setdiff(clone_id_A[duplicated(clone_id_A)], "None")
+length(expanded_id_A) # number of expanded clonotypes for TRA
+
+clone_id_B <- unlist(unique(sce$TRB[,"raw_clonotype_id"]))
+expanded_id_B <- setdiff(clone_id_B[duplicated(clone_id_B)], "None")
+length(expanded_id_B) # number of expanded clonotypes for TRB
+```
+
+There are `r length(expanded_id_A)` expanded clonotypes for the $$\alpha$$-chain and `r length(expanded_id_B)` expanded clonotypes for the $$\beta$$-chain.
+Figure \@ref(fig:clonotype) shows the proportion of cells in each cluster that have multiple clonotypes.
+
+```{r clonotype, fig.cap = "t-SNE plot of data, ignoring 'unknown' samples, alongside the proportion of cells in each cluster that have multiple clonotypes, based on the TCR α or β-chains.", fig.asp = 1/4, layout = "l-page"}
+tra_tbl <- tibble(
+  cluster = factor(levels(sce$cluster), levels(sce$cluster)),
+  n_cells = as.vector(table(sce$cluster)),
+  prop = as.vector(
+    table(sce$cluster[any(sce$TRA[, "raw_clonotype_id"] %in% expanded_id_A)]) /
+      n_cells),
+  chain = "α")
+trb_tbl <- tibble(
+  cluster = factor(levels(sce$cluster), levels(sce$cluster)),
+  n_cells = as.vector(table(sce$cluster)),
+  prop = as.vector(
+    table(sce$cluster[any(sce$TRB[, "raw_clonotype_id"] %in% expanded_id_B)]) /
+      n_cells),
+  chain = "β")
+
+plot_grid(
+  plotTSNE(sce, colour_by = "Treatment", point_alpha = 0) + 
+    geom_point(aes(colour = colour_by), size = 0.05, alpha = 0.5) +
+    scale_colour_manual(values = treatment_colours, name = "Treatment") +
+    guides(colour = FALSE, fill = FALSE) + 
+    ggtitle("Treatment") +
+    theme_cowplot(font_size = 8),
+  plotTSNE(sce, colour_by = "cluster", point_alpha = 0) + 
+    geom_point(aes(colour = colour_by), size = 0.05, alpha = 0.5) +
+    scale_colour_manual(values = cluster_colours, name = "cluster") +
+    guides(colour = FALSE, fill = FALSE) + 
+    ggtitle("Cluster") +
+    theme_cowplot(font_size = 8),
+  ggplot(rbind(tra_tbl, trb_tbl)) + 
+    geom_col(aes(x = cluster, y = prop, fill = cluster)) + 
+    facet_grid(~ chain) +
+    scale_fill_manual(values = cluster_colours, name = "cluster") +
+    theme_cowplot(font_size = 8) +
+    ylim(0, 1) +
+    ylab("Proportion") +
+    guides(fill = FALSE) +
+    ggtitle("TCR component"),
+  rel_widths = c(1, 1, 2),
+  nrow = 1)
+```
+
+We can use this information to determine whether a particular T cell cluster is enriched for expanding clonotypes.
+
+**TODO:** Ask James if there are particular clusters he would like to test for enrichment of expanding clonotypes.
+
+## Quantifying gene expression and properties
+
+We may also be interested in the expression of specific TCR genes, which can provide some insight into the type of antigens being targeted (Shugay et al. 2018).
+We again use Fisher’s exact test to test if our two T cell clusters of interest differ in the proportion of TCR sequences containing each gene.
+
+**TODO:** Ask James if there are specific TCR genes he is interested in.
+
+# Multi-sample analyses
+
+A much more interesting analysis is possible when there are multiple samples and treatment conditions, where the aim is to determine which clusters contain T cell clonotypes that expand in response to treatment.
+In much the same vein as the analysis in the ['Multi-sample comparisons with the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney.multi-sample_comparisons.html), we can obtain a cluster-by-sample count matrix.
+
+```{r}
+# Creating a count matrix_
+clone_counts <- any_counts <- list()
+# NOTE: Dropping the 'unknown' level
+for (j in levels(factor(sce$Sample))) {
+  current_sample <- sce[, sce$Sample == j]
+  clone_id_A <- unlist(unique(current_sample$TRA[, "raw_clonotype_id"]))
+  expanded_id_A <- setdiff(clone_id_A[duplicated(clone_id_A)], "None")
+  is_clone_A <- any(current_sample$TRA[, "raw_clonotype_id"] %in% expanded_id_A)
+  clone_counts[[j]] <- table(current_sample$cluster[is_clone_A])
+  any_counts[[j]] <- table(current_sample$cluster[lengths(current_sample$TRA) > 0])
+}
+
+clone_counts <- do.call(cbind, clone_counts)
+any_counts <- do.call(cbind, any_counts)
+```
+
+We then test for condition-specific differences in the proportion of clonotypes that are expanded.
+For the time being, we will just perform a simple Wilcoxon ranked sum test.
+We test on proportions to accommodate biological differences in T cell abundance between samples well as technical differences in, say, sequencing depth that might affect the success rate of TCR calls on a sample-by-sample basis.
+
+**TODO:** Ask James if there are particular clusters he would like to test for condition-specific differences in the proportion of clonotypes that are expanded.
+
+```{r, eval = FALSE}
+prop <- clone_counts / any_counts
+wilcox.test(
+  prop[tclust.1, grep("^infected", colnames(prop))], 
+  prop[tclust.1, grep("^uninfected", colnames(prop))])
+wilcox.test(
+  prop[tclust.2, grep("^infected", colnames(prop))],
+  prop[tclust.2, grep("^uninfected", colnames(prop))])
+```
+
+# Concluding remarks
+
+```{r}
+saveRDS(
+  sce,
+  here("data", "SCEs", "C057_Cooney_ignoring_unknowns.repertoire-seq.SCE.rds"),
+  compress = "xz")
+```
+
+The processed *SingleCellExperiment* object containing the TCR contig annotations is available (see [`data/SCEs/C057_Cooney_ignoring_unknowns.repertoire-seq.SCE.rds`](../data/SCEs/C057_Cooney_ignoring_unknowns.repertoire-seq.SCE.rds)).
+
+# Additional information {.appendix}
+
+The following are available on request:
+
+- Full CSV tables of any data presented.
+- PDF/PNG files of any static plots.
+
+# Session info {.appendix}
+
+The analysis and this document were prepared using the following software:
+
+```{r}
+sessionInfo()
+```
+
+# TODOs
+
+- [ ] Interpreting cluster 1
+- [ ] Fix citations

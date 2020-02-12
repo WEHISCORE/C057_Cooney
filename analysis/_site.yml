@@ -27,6 +27,8 @@ navbar:
           href: C057_Cooney.multi-sample_comparisons.html
         - text: "Ignoring 'unknown' samples"
           href: C057_Cooney_ignorning_unknowns.multi-sample_comparisons.html
+    - text: "Immune repertroire analysis"
+      href: C057_Cooney.repertoire-seq.html
     - text: "Supplementary files"
       menu:
         - text: "FastQC reports"
