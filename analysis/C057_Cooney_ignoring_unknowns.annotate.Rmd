@@ -1838,7 +1838,7 @@ saveRDS(
   compress = "xz")
 ```
 
-The processed *SingleCellExperiment* object is available (see [`data/SCEs/C057_Cooney_ignoring_unknowns.annotated.SCE.rds`](../data/SCEs/C057_C057_Cooney_ignoring_unknowns.annotated.SCE.rdsCooney.annotated.SCE.rds)).
+The processed *SingleCellExperiment* object is available (see [`data/SCEs/C057_Cooney_ignoring_unknowns.annotated.SCE.rds`](../data/SCEs/C057_Cooney_ignoring_unknowns.annotated.SCE.rdsCooney.annotated.SCE.rds)).
 This will be used in downstream analyses, e.g., differential expression analysis between conditions within each cluster and differential abundance analyses between conditions for each cluster.
 
 # Additional information {.appendix}
