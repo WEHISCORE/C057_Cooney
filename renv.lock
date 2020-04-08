@@ -62,8 +62,8 @@
       "Source": "Bioconductor",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteUsername": "LTLA",
       "RemoteRepo": "BiocNeighbors",
+      "RemoteUsername": "LTLA",
       "RemoteRef": "be43721",
       "RemoteSha": "be4372146b1659c226fdfa89bccb57ee858d34f8",
       "Hash": "98783f7e5672c682a38141b5550a7f21"
@@ -92,12 +92,6 @@
       "Source": "Bioconductor",
       "Hash": "e3095d6b52c23087b931102391b9f7b4"
     },
-    "Biostrings": {
-      "Package": "Biostrings",
-      "Version": "2.52.0",
-      "Source": "Bioconductor",
-      "Hash": "e4b0ef00948c2f7d3af0552a7cd813e5"
-    },
     "DBI": {
       "Package": "DBI",
       "Version": "1.1.0",
@@ -123,6 +117,12 @@
       "Source": "Bioconductor",
       "Hash": "6fa99ed9694bebfc800b5e9cadbcf9eb"
     },
+    "GO.db": {
+      "Package": "GO.db",
+      "Version": "3.8.2",
+      "Source": "Bioconductor",
+      "Hash": "11383efa2f698f1d70ed1f4686134801"
+    },
     "GenomeInfoDb": {
       "Package": "GenomeInfoDb",
       "Version": "1.20.0",
@@ -134,12 +134,6 @@
       "Version": "1.2.1",
       "Source": "Bioconductor",
       "Hash": "2d686a9ecf32a9c7218a2854debc7034"
-    },
-    "GenomicAlignments": {
-      "Package": "GenomicAlignments",
-      "Version": "1.20.1",
-      "Source": "Bioconductor",
-      "Hash": "51b7aa38a782fb403c6d58ef451881a1"
     },
     "GenomicRanges": {
       "Package": "GenomicRanges",
@@ -255,18 +249,6 @@
       "Version": "1.6.3",
       "Source": "Bioconductor",
       "Hash": "d0bbfbf137dc05e898a662d9b076ce11"
-    },
-    "Rhtslib": {
-      "Package": "Rhtslib",
-      "Version": "1.16.3",
-      "Source": "Bioconductor",
-      "Hash": "a3adb92c187a0a9a074d93c691e6e7da"
-    },
-    "Rsamtools": {
-      "Package": "Rsamtools",
-      "Version": "2.0.3",
-      "Source": "Bioconductor",
-      "Hash": "640324e99a6fb9c309b03e65130c0d2e"
     },
     "S4Vectors": {
       "Package": "S4Vectors",
@@ -393,8 +375,8 @@
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteRepo": "colorblindr",
       "RemoteUsername": "clauswilke",
+      "RemoteRepo": "colorblindr",
       "RemoteRef": "master",
       "RemoteSha": "1ac3d4d62dad047b68bb66c06cee927a4517d678",
       "Hash": "b945174cdc34bfe058f4ab6dc69029fe"
@@ -403,7 +385,7 @@
       "Package": "colorspace",
       "Version": "1.4-1",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "R-Forge",
       "Hash": "6b436e95723d1f0e861224dd9b094dfb"
     },
     "cowplot": {

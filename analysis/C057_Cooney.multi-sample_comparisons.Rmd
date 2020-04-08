@@ -446,6 +446,7 @@ To focus the GO analysis, it may be useful to filter the results to GO terms wit
 
 ```{r}
 library(org.Hs.eg.db)
+library(GO.db)
 
 for (label in names(degs_infected_vs_uninfected)) {
   fit <- de_results[[label]]
@@ -924,7 +925,8 @@ This avoids cluttering the result table with very rare subpopulations that conta
 For a DA analysis of cluster abundances, filtering is generally not required as most clusters will not be of low-abundance (otherwise there would not have been enough evidence to define the cluster in the first place).
 
 ```{r}
-keep <- filterByExpr(y, group=y$samples$Treatment)
+keep <- filterByExpr(y, group = y$samples$Treatment)
+y <- y[keep, ]
 design <- model.matrix(~Treatment, y$samples)
 colnames(design) <- sub("Treatment", "", colnames(design))
 y <- estimateDisp(y, design, trend = "none")
