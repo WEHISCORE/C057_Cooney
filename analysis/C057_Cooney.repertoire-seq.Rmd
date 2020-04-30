@@ -31,7 +31,7 @@ knitr::opts_chunk$set(fig.path = "C057_Cooney.repertoire-seq_files/")
 
 An organism’s immune repertoire is defined as the set of T and B cell subtypes that contain genetic diversity in the T cell receptor (TCR) components or immunoglobin chains, respectively.
 This diversity is important for ensuring that the adaptive immune system can respond effectively to a wide range of antigens.
-We can profile the immune repertoire by simply sequencing the relevant transcripts (Georgiou et al. 2014; Rosati et al. 2017), which can be combined with scRNA-seq technologies to achieve single-cell resolution.
+We can profile the immune repertoire by simply sequencing the relevant transcripts [@georgiou2014promise; @rosati2017overview], which can be combined with scRNA-seq technologies to achieve single-cell resolution.
 This data can then be used to characterize an individual’s immune response based on the expansion of T or B cell clones, i.e., multiple cells with the same sequences for each TCR component or immunoglobulin chain.
 
 Here, we have profiled the immune repertoire of the CD4+ T-cells using 10X Genomics' 'Single Cell V(D)J + 5′ Gene Expression' kit.
@@ -114,13 +114,16 @@ sce$TRA <- split(DataFrame(tra), factor(tra$barcode, sce$Barcode))
 sce$TRB <- split(DataFrame(trb), factor(trb$barcode, sce$Barcode))
 ```
 
-# Analysing the T-cell receptor repertoire
+# Basic diagnostics
 
-## Basic diagnostics
+## Motivation
 
-We start by generating some basic cell-level diagnostics.
+We start by generating some basic cell-level diagnostics to assess the quality and utility of the TCR sequencing data.
+
+## Analysis
+
 For each cluster, we determine the proportion of cells that have at least one sequence of a TCR component (Figure \@ref(fig:prop-expressing-with-unknowns)).
-Clusters with large counts are most likely to be T cells, though some background level of TCR expression may be observed in other clusters due to a mixture of clustering uncertainty, ambient contamination, doublet formation and expression in other cell types.
+Clusters with large counts are most likely to be T cells, though some background level of TCR expression may be observed in other clusters due to a mixture of clustering uncertainty, ambient contamination, doublet formation, and expression in other cell types.
 
 ```{r prop-expressing-with-unknowns, fig.cap = "t-SNE plot of data, including 'unknown' samples, alongside the proportion of cells in each cluster that express at least one sequence of the TCR α or β-chains.", fig.asp = 1/4, layout = "l-page"}
 library(tibble)
@@ -164,7 +167,7 @@ plot_grid(
   nrow = 1)
 ```
 
-Figure \@ref(fig:prop-expressing-with-unknowns) shows that the majority of clusters have more than 75% of cells expressing either the α-chain or β-chain sequences.
+Figure \@ref(fig:prop-expressing-with-unknowns) shows that the majority of clusters have more than 80% of cells expressing either the α-chain or β-chain sequences.
 We also see that the 'unknown' cells largely do not express either TCR sequence, supporting the idea that these droplets are not real cells.
 
 We therefore switch to the data set generated after ignoring the 'unknown' samples and repeat the above exercise.
@@ -219,7 +222,7 @@ sce$TRA <- split(DataFrame(tra), factor(tra$barcode, sce$Barcode))
 sce$TRB <- split(DataFrame(trb), factor(trb$barcode, sce$Barcode))
 ```
 
-Figure \@ref(fig:prop-expressing-with-unknowns) shows that almost all clusters have more than 85% of cells expressing either the α-chain or β-chain sequences.
+Figure \@ref(fig:prop-expressing) shows that almost all clusters have more than 85% of cells expressing either the α-chain or β-chain sequences.
 Cluster `r which.min(tra_tbl$prop)` is the notable exception.
 
 ```{r prop-expressing, fig.cap = "t-SNE plot of data, ignoring 'unknown' samples, alongside the proportion of cells in each cluster that express at least one sequence of the TCR α or β-chains.", fig.asp = 1/4, layout = "l-page"}
@@ -300,7 +303,8 @@ plot_grid(
   nrow = 1)
 ```
 
-We can also count the number of cells in each cluster that have multiple sequences for a component (Figure \@ref(fig:prop-expressing-multiple)).
+For completeness, we also count the number of cells in each cluster that have multiple sequences for a component (Figure \@ref(fig:prop-expressing-multiple)).
+The percentages are clearly lower but this phenomenon is still surprisingly common.
 
 ```{r prop-expressing-multiple, fig.cap = "t-SNE plot of data, ignoring 'unknown' samples, alongside the proportion of cells in each cluster that express two or more sequences of the TCR α or β-chains.", fig.asp = 1/4, layout = "l-page"}
 tra_tbl <- tibble(
@@ -340,40 +344,36 @@ plot_grid(
   nrow = 1)
 ```
 
-## Quantifying clonal expansion
+However, if we focus only those sequences deemed 'productive', then Figure \@ref(fig:prop-expressing-multiple-productive) shows that this percentage drops to less than 10% for most clusters.
 
-Quantification of clonal expansion is the most obvious application of repertoire sequencing data.
-Cells with the same T cell clonotype are assumed to target the same antigen, and any increase in the frequency of a clonotype provides evidence for T cell activation and proliferation upon stimulation by the corresponding antigen.
-Thus, we can gain some insights into the immune activity of each T cell cluster by counting the number of expanded clonotypes in each cluster^[We do not exclude clonotypes containing cells in different clusters, which can arise for various genuine biological reasons, e.g., differences in the microenvironment.].
+```{r prop-expressing-multiple-productive, fig.cap = "t-SNE plot of data, ignoring 'unknown' samples, alongside the proportion of cells in each cluster that express two or more **productive** sequences of the TCR α or β-chains.", fig.asp = 1/4, layout = "l-page"}
+tra_tbl <- tcr %>%
+  dplyr::filter(productive == "True") %>%
+  dplyr::group_by(barcode) %>%
+  dplyr::summarise(n = sum(chain == "TRA")) %>%
+  dplyr::inner_join(
+    as.data.frame(colData(sce)[, c("Barcode", "cluster")]),
+    by = c("barcode" = "Barcode")) %>%
+  dplyr::group_by(cluster) %>%
+  dplyr::filter(n > 1) %>%
+  dplyr::summarise(n_denom = dplyr::n())
+tra_tbl$n <- as.vector(table(sce$cluster))
+tra_tbl$prop <- tra_tbl$n_denom / tra_tbl$n
+tra_tbl$chain <- "α"
 
-```{r, results = "hide"}
-clone_id_A <- unlist(unique(sce$TRA[,"raw_clonotype_id"]))
-expanded_id_A <- setdiff(clone_id_A[duplicated(clone_id_A)], "None")
-length(expanded_id_A) # number of expanded clonotypes for TRA
-
-clone_id_B <- unlist(unique(sce$TRB[,"raw_clonotype_id"]))
-expanded_id_B <- setdiff(clone_id_B[duplicated(clone_id_B)], "None")
-length(expanded_id_B) # number of expanded clonotypes for TRB
-```
-
-There are `r length(expanded_id_A)` expanded clonotypes for the $$\alpha$$-chain and `r length(expanded_id_B)` expanded clonotypes for the $$\beta$$-chain.
-Figure \@ref(fig:clonotype) shows the proportion of cells in each cluster that have multiple clonotypes.
-
-```{r clonotype, fig.cap = "t-SNE plot of data, ignoring 'unknown' samples, alongside the proportion of cells in each cluster that have multiple clonotypes, based on the TCR α or β-chains.", fig.asp = 1/4, layout = "l-page"}
-tra_tbl <- tibble(
-  cluster = factor(levels(sce$cluster), levels(sce$cluster)),
-  n_cells = as.vector(table(sce$cluster)),
-  prop = as.vector(
-    table(sce$cluster[any(sce$TRA[, "raw_clonotype_id"] %in% expanded_id_A)]) /
-      n_cells),
-  chain = "α")
-trb_tbl <- tibble(
-  cluster = factor(levels(sce$cluster), levels(sce$cluster)),
-  n_cells = as.vector(table(sce$cluster)),
-  prop = as.vector(
-    table(sce$cluster[any(sce$TRB[, "raw_clonotype_id"] %in% expanded_id_B)]) /
-      n_cells),
-  chain = "β")
+trb_tbl <- tcr %>%
+  dplyr::filter(productive == "True") %>%
+  dplyr::group_by(barcode) %>%
+  dplyr::summarise(n = sum(chain == "TRB")) %>%
+  dplyr::inner_join(
+    as.data.frame(colData(sce)[, c("Barcode", "cluster")]),
+    by = c("barcode" = "Barcode")) %>%
+  dplyr::group_by(cluster) %>%
+  dplyr::filter(n > 1) %>%
+  dplyr::summarise(n_denom = dplyr::n())
+trb_tbl$n <- as.vector(table(sce$cluster))
+trb_tbl$prop <- trb_tbl$n_denom / trb_tbl$n
+trb_tbl$chain <- "β"
 
 plot_grid(
   plotTSNE(sce, colour_by = "Treatment", point_alpha = 0) + 
@@ -401,54 +401,201 @@ plot_grid(
   nrow = 1)
 ```
 
-We can use this information to determine whether a particular T cell cluster is enriched for expanding clonotypes.
+### Summary
 
-**TODO:** Ask James if there are particular clusters he would like to test for enrichment of expanding clonotypes.
+- Most cells express both the α-chain and β-chain
+    - Those that don't are mostly droplets in clusters that we are already suspicious of based on the RNA data.
+- More than 25% of droplets have multiple sequences for a component
+    - However, this number drops to < 15% (α-chain) and < 9% (β-chain) when this is restricted to 'productive' sequences
 
-## Quantifying gene expression and properties
+**It is still not clear to me if a single T cell can really express multiple (productive) sequences for a TCR component.**
+However, a quick Google search suggests that it is possible (e.g., [https://www.ncbi.nlm.nih.gov/pubmed/8211163](https://www.ncbi.nlm.nih.gov/pubmed/8211163); [https://www.jimmunol.org/content/202/3/637](https://www.jimmunol.org/content/202/3/637); [https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4701647/](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4701647/))^[An alternative interpretation is that these are really doublets and hence would likely have multiple distinct TCR components (although this assumes a higher doublet rate than we expect).].
 
-We may also be interested in the expression of specific TCR genes, which can provide some insight into the type of antigens being targeted (Shugay et al. 2018).
-We again use Fisher’s exact test to test if our two T cell clusters of interest differ in the proportion of TCR sequences containing each gene.
+# Quantifying clonotype expansion
 
-**TODO:** Ask James if there are specific TCR genes he is interested in.
+## Motivation
 
-# Multi-sample analyses
+Quantification of clonal expansion is the most obvious application of repertoire sequencing data.
+Cells with the same T cell clonotype are assumed to target the same antigen, and any increase in the frequency of a clonotype provides evidence for T cell activation and proliferation upon stimulation by the corresponding antigen.
+Thus, we can gain some insights into the immune activity of each sample by counting the frequency of clonotypes in each sample.
 
-A much more interesting analysis is possible when there are multiple samples and treatment conditions, where the aim is to determine which clusters contain T cell clonotypes that expand in response to treatment.
-In much the same vein as the analysis in the ['Multi-sample comparisons with the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney.multi-sample_comparisons.html), we can obtain a cluster-by-sample count matrix.
+## Analysis
+
+CellRanger includes a histogram of top-10 clonotypes by frequency in the dataset.
+Only productive sequences are included in this analysis.
+This histogram is reproduced in Figure \@ref(fig:cellranger) but is of limited use because it doesn't distinguish which sample each observation came from.
+
+```{r cellranger, fig.cap = "Top-10 clonotype frequencies (all droplets in the dataset). A clonotype is defined as a unique set of CDR3 nucleotide sequences. Only productive sequences are counted."}
+tcr %>%
+  dplyr::filter(productive == "True") %>%
+  dplyr::distinct(barcode, raw_clonotype_id) %>%
+  dplyr::group_by(raw_clonotype_id) %>%
+  dplyr::count() %>%
+  dplyr::arrange(desc(n)) %>%
+  dplyr::ungroup() %>%
+  dplyr::mutate(prop = n / sum(n)) %>%
+  head(n = 10) %>%
+  dplyr::mutate(clonotype = factor(
+    gsub("clonotype", "", raw_clonotype_id),
+    1:10)) %>%
+  ggplot(aes(x = clonotype, y = prop)) +
+  geom_col() + 
+  xlab("Clonotype") +
+  ylab("Proportion of cells") +
+  theme_cowplot() + 
+  ggtitle(
+    "")
+```
+
+For this project, we are interested in stratifying the analysis by sample to look clonal expansions associated with the treatment.
+Figure \@ref(fig:cellranger-faceted) stratifies by sample the histogram of the top-10 clonotypes by frequency.
+
+```{r cellranger-faceted, fig.cap = "Top-10 clonotype frequencies by sample. A clonotype is defined as a unique set of CDR3 nucleotide sequences. Only productive sequences are counted."}
+b <- dplyr::inner_join(
+  as.data.frame(colData(sce))[, c("Barcode", "Sample", "Treatment")],
+  tcr,
+  by = c("Barcode" = "barcode")) %>%
+  dplyr::filter(productive == "True", Treatment != "Unknown") %>%
+  dplyr::distinct(Sample, Barcode, raw_clonotype_id, Treatment) %>%
+  dplyr::group_by(raw_clonotype_id, Sample, Treatment) %>%
+  dplyr::count() %>%
+  dplyr::arrange(desc(n)) %>%
+  dplyr::group_by(Sample) %>%
+  dplyr::mutate(prop = n / sum(n))
+
+bb <- b %>% 
+  dplyr::group_by(Sample) %>%
+  dplyr::mutate(
+    cumsum_prop = cumsum(prop),
+    x = row_number(),
+    xx = x / max(x))
+
+bb %>% 
+  dplyr::filter(x <= 10) %>%
+  dplyr::arrange(Sample, x) %>%
+  dplyr::mutate(raw_clonotype_id = factor(x)) %>%
+  ggplot(aes(x = raw_clonotype_id, y = prop, fill = Sample)) +
+  geom_col() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  facet_wrap(~Sample, ncol = 3) + 
+  xlab("Clonotype") +
+  ylab("Proportion of cells") + 
+  theme_cowplot() +
+  scale_fill_manual(values = sample_colours) + 
+  guides(fill = FALSE)
+```
+
+This shows an apparent clonal explansion in the `infected_2` and `infected_3` samples.
+
+Figure \@ref(fig:cumulative-clonotype-frequencies) plots the cumulative clonotype frequencies in each sample as an alternative to simply visualising the frequency of the top-10 clonotypes in each sample. 
+
+```{r cumulative-clonotype-frequencies, fig.cap = "Cumulative clonotype frequencies by sample. Frequencies are computed within each sample."}
+ggplot(bb) + 
+  geom_step(
+    aes(x = x, y = cumsum_prop, colour = Sample, lty = Treatment),
+    lwd = 1) +
+  scale_colour_manual(values = sample_colours) + 
+  xlab("Clonotype") + 
+  ylab("Proportion of cells") +
+  cowplot::theme_cowplot()
+```
+
+This shows, for example, that more than 75% of cells from the `infected_3` sample share a very small number of clonotypes (in fact, only 20 clonotypes are required).
+This figure also shows that fewer clonotypes are observed in the `Infected` samples.
+However, this could arise simply because we sampled fewer infected cells.
+We therefore need to account for the number of *potential* clonotypes in each sample.
+
+Two possible estimates of the number of *potential* clonotypes in each sample are:
+
+1. The number of droplets from that sample (likely an overestimate as not all droplets necessarily express a TCR).
+2. The number of droplets with a TCR sequence from that sample (likely an underestimate as some of the cells with a TCR didn't have the TCR sequenced).
+
+Fortunately, the table below shows that these two estimates do not differ much (roughly, within 5-10% of eachother) so the results will not be sensitive to the choice of estimate.
 
 ```{r}
-# Creating a count matrix_
-clone_counts <- any_counts <- list()
-# NOTE: Dropping the 'unknown' level
-for (j in levels(factor(sce$Sample))) {
-  current_sample <- sce[, sce$Sample == j]
-  clone_id_A <- unlist(unique(current_sample$TRA[, "raw_clonotype_id"]))
-  expanded_id_A <- setdiff(clone_id_A[duplicated(clone_id_A)], "None")
-  is_clone_A <- any(current_sample$TRA[, "raw_clonotype_id"] %in% expanded_id_A)
-  clone_counts[[j]] <- table(current_sample$cluster[is_clone_A])
-  any_counts[[j]] <- table(current_sample$cluster[lengths(current_sample$TRA) > 0])
-}
-
-clone_counts <- do.call(cbind, clone_counts)
-any_counts <- do.call(cbind, any_counts)
+knitr::kable(
+  data.frame(
+    Sample = levels(factor(sce$Sample)),
+    est_1 = tabulate(factor(sce$Sample)),
+    est_2 = tapply(bb$n, factor(bb$Sample), sum)),
+  caption = "Two estimates of the potential number of clonotypes in each sample. 'est_1' = The number of droplets from that sample (likely an overestimate as not all droplets necessarily express a TCR). 'est_2' = The number of droplets with a TCR sequence from that sample (likely an underestimate as some of the cells with a TCR didn't have the TCR sequenced).")
 ```
 
-We then test for condition-specific differences in the proportion of clonotypes that are expanded.
-For the time being, we will just perform a simple Wilcoxon ranked sum test.
-We test on proportions to accommodate biological differences in T cell abundance between samples well as technical differences in, say, sequencing depth that might affect the success rate of TCR calls on a sample-by-sample basis.
+Below, I opt to estimate the number of potential clonotypes by (2).
 
-**TODO:** Ask James if there are particular clusters he would like to test for condition-specific differences in the proportion of clonotypes that are expanded.
+and the results are consistent either way.
 
-```{r, eval = FALSE}
-prop <- clone_counts / any_counts
-wilcox.test(
-  prop[tclust.1, grep("^infected", colnames(prop))], 
-  prop[tclust.1, grep("^uninfected", colnames(prop))])
-wilcox.test(
-  prop[tclust.2, grep("^infected", colnames(prop))],
-  prop[tclust.2, grep("^uninfected", colnames(prop))])
+Figure \@ref(fig:cumulative-potential-clonotype-frequencies) basically repeats Figure \@ref(fig:cumulative-clonotype-frequencies) but extends the x-axis out to the number of *potential* clonotypes.
+
+```{r cumulative-potential-clonotype-frequencies, fig.cap = "Cumulative potential clonotype frequencies by sample. Frequencies are computed within each sample."}
+z <- lapply(levels(factor(sce$Sample)), function(s) {
+  a <- dplyr::filter(b, Sample == s)
+  # NOTE: Opted to use the (2) estimator
+  # n <- c(a$n, rep(0, sum(sce$Sample == s) - length(a$n)))
+  n <- c(a$n, rep(0, sum(a$n) - length(a$n)))
+  n
+})
+
+tmp <- data.frame(
+  Sample = rep(levels(factor(sce$Sample)), lengths(z)),
+  Treatment = rep(sub("\\_[0-9]", "", levels(factor(sce$Sample))), lengths(z)),
+  n = unlist(z))
+
+tmp %>%
+  dplyr::group_by(Sample) %>%
+  dplyr::mutate(
+    x = seq_along(n),
+    y = cumsum(n) / sum(n)) %>%
+  ggplot(.) +
+  geom_step(
+    aes(x = x, y = y, colour = Sample, lty = Treatment),
+    lwd = 1) +
+  scale_colour_manual(values = sample_colours) + 
+  xlab("Potential clonotypes") +
+  ylab("Proportion of cells") +
+  cowplot::theme_cowplot()
 ```
+
+Finally, Figure \@ref(fig:cumulative-potential-clonotype-frequencies-normalized) normalises the by the number of *potential* haplotypes in each sample to make the samples comparable.
+
+```{r cumulative-potential-clonotype-frequencies-normalized, fig.cap = "Normalised cumulative potential clonotype frequencies by sample. Frequencies are computed within each sample."}
+tmp %>%
+  dplyr::group_by(Sample) %>%
+  dplyr::mutate(
+    x = seq_along(n) / length(n),
+    y = cumsum(n) / sum(n)) %>%
+  ggplot(.) +
+  geom_step(
+    aes(x = x, y = y, colour = Sample, lty = Treatment),
+    lwd = 1) +
+  scale_colour_manual(values = sample_colours) + 
+  xlab("Proportion of potential clonotypes") +
+  ylab("Proportion of cells") +
+  cowplot::theme_cowplot()
+```
+
+From this, we can clearly see that fewer clonotypes are found in infected cells than in uninfected cells.
+For example, the table below reports the proportion of potential clonotypes required to 'cover' 75% of cells in each sample and shows that this number is far smaller in infected cells than in uninfected cells.
+
+```{r}
+tmp %>%
+  dplyr::group_by(Sample) %>%
+  dplyr::mutate(
+    x = seq_along(n) / length(n),
+    y = cumsum(n) / sum(n)) %>%
+  dplyr::filter(y > 0.75) %>%
+  dplyr::group_by(Sample) %>%
+  dplyr::mutate(i = dplyr::row_number()) %>%
+  dplyr::filter(i == 1) %>%
+  dplyr::select(Sample, x) %>%
+  dplyr::rename("Proportion of potential clonotypes" = x) %>%
+  knitr::kable(caption = "Proportion of potential clonotypes required to 'cover' 75% of cells in each sample.", digits = 3)
+```
+
+## Summary
+
+- Infected samples have fewer clonotypes than uninfected cells, even after normalising for cell numbers.
+- Infected samples show evidence of clonal expansion (alternatively, of reduced polyclonality) compared to uninfected samples as evidenced by more cells sharing a smaller number of clonotypes.
 
 # Concluding remarks
 
@@ -475,8 +622,3 @@ The analysis and this document were prepared using the following software:
 ```{r}
 sessionInfo()
 ```
-
-# TODOs
-
-- [ ] Interpreting cluster 1
-- [ ] Fix citations

@@ -24,8 +24,8 @@
   
   
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2020-02-12"/>
-  <meta property="article:created" itemprop="dateCreated" content="2020-02-12"/>
+  <meta property="article:published" itemprop="datePublished" content="2020-04-30"/>
+  <meta property="article:created" itemprop="dateCreated" content="2020-04-30"/>
   <meta name="article:author" content="Peter Hickey"/>
   
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
@@ -43,7 +43,7 @@
   <!--radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","editor_options","bibliography"]}},"value":[{"type":"character","attributes":{},"value":["Analysing the repertoire sequencing data from the Cooney (C057) memory CD4+ T-cell data set"]},{"type":"NULL"},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Peter Hickey"]},{"type":"character","attributes":{},"value":["https://peterhickey.org"]},{"type":"character","attributes":{},"value":["Single Cell Open Research Endeavour (SCORE), WEHI"]},{"type":"character","attributes":{},"value":["https://www.wehi.edu.au/people/shalin-naik/3310/score"]}]}]},{"type":"character","attributes":{},"value":["2020-02-12"]},{"type":"character","attributes":{},"value":["radix::radix_article"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]},{"type":"character","attributes":{},"value":["ref.bib"]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","editor_options","bibliography"]}},"value":[{"type":"character","attributes":{},"value":["Analysing the repertoire sequencing data from the Cooney (C057) memory CD4+ T-cell data set"]},{"type":"NULL"},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Peter Hickey"]},{"type":"character","attributes":{},"value":["https://peterhickey.org"]},{"type":"character","attributes":{},"value":["Single Cell Open Research Endeavour (SCORE), WEHI"]},{"type":"character","attributes":{},"value":["https://www.wehi.edu.au/people/shalin-naik/3310/score"]}]}]},{"type":"character","attributes":{},"value":["2020-04-30"]},{"type":"character","attributes":{},"value":["radix::radix_article"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]},{"type":"character","attributes":{},"value":["ref.bib"]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   <!--radix_placeholder_navigation_in_header-->
@@ -1276,7 +1276,7 @@
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Analysing the repertoire sequencing data from the Cooney (C057) memory CD4+ T-cell data set","authors":[{"author":"Peter Hickey","authorURL":"https://peterhickey.org","affiliation":"Single Cell Open Research Endeavour (SCORE), WEHI","affiliationURL":"https://www.wehi.edu.au/people/shalin-naik/3310/score"}],"publishedDate":"2020-02-12T00:00:00.000+11:00","citationText":"Hickey, 2020"}
+{"title":"Analysing the repertoire sequencing data from the Cooney (C057) memory CD4+ T-cell data set","authors":[{"author":"Peter Hickey","authorURL":"https://peterhickey.org","affiliation":"Single Cell Open Research Endeavour (SCORE), WEHI","affiliationURL":"https://www.wehi.edu.au/people/shalin-naik/3310/score"}],"publishedDate":"2020-04-30T00:00:00.000+10:00","citationText":"Hickey, 2020"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -1356,7 +1356,7 @@ Supplementary files
 <div class="d-byline">
   Peter Hickey <a href="https://peterhickey.org" class="uri">https://peterhickey.org</a> (Single Cell Open Research Endeavour (SCORE), WEHI)<a href="https://www.wehi.edu.au/people/shalin-naik/3310/score" class="uri">https://www.wehi.edu.au/people/shalin-naik/3310/score</a>
   
-<br/>2020-02-12
+<br/>2020-04-30
 </div>
 
 <div class="d-article">
@@ -1365,12 +1365,11 @@ Supplementary files
 <ul>
 <li><a href="#introduction">Introduction</a></li>
 <li><a href="#preparing-the-data">Preparing the data</a></li>
-<li><a href="#analysing-the-t-cell-receptor-repertoire">Analysing the T-cell receptor repertoire</a></li>
-<li><a href="#multi-sample-analyses">Multi-sample analyses</a></li>
+<li><a href="#basic-diagnostics">Basic diagnostics</a></li>
+<li><a href="#quantifying-clonotype-expansion">Quantifying clonotype expansion</a></li>
 <li><a href="#concluding-remarks">Concluding remarks</a></li>
 <li><a href="#additional-information">Additional information</a></li>
 <li><a href="#session-info">Session info</a></li>
-<li><a href="#todos">TODOs</a></li>
 </ul>
 </nav>
 <hr class="d-toc-separator"/>
@@ -1378,7 +1377,7 @@ Supplementary files
 
 </div>
 <h1 id="introduction">Introduction</h1>
-<p>An organism’s immune repertoire is defined as the set of T and B cell subtypes that contain genetic diversity in the T cell receptor (TCR) components or immunoglobin chains, respectively. This diversity is important for ensuring that the adaptive immune system can respond effectively to a wide range of antigens. We can profile the immune repertoire by simply sequencing the relevant transcripts (Georgiou et al. 2014; Rosati et al. 2017), which can be combined with scRNA-seq technologies to achieve single-cell resolution. This data can then be used to characterize an individual’s immune response based on the expansion of T or B cell clones, i.e., multiple cells with the same sequences for each TCR component or immunoglobulin chain.</p>
+<p>An organism’s immune repertoire is defined as the set of T and B cell subtypes that contain genetic diversity in the T cell receptor (TCR) components or immunoglobin chains, respectively. This diversity is important for ensuring that the adaptive immune system can respond effectively to a wide range of antigens. We can profile the immune repertoire by simply sequencing the relevant transcripts <span class="citation" data-cites="georgiou2014promise rosati2017overview">(Georgiou et al. <a href="#ref-georgiou2014promise">2014</a>; Rosati et al. <a href="#ref-rosati2017overview">2017</a>)</span>, which can be combined with scRNA-seq technologies to achieve single-cell resolution. This data can then be used to characterize an individual’s immune response based on the expansion of T or B cell clones, i.e., multiple cells with the same sequences for each TCR component or immunoglobulin chain.</p>
 <p>Here, we have profiled the immune repertoire of the CD4+ T-cells using 10X Genomics’ ‘Single Cell V(D)J + 5′ Gene Expression’ kit. We aim to analyse the immune repertoirse and integrate it with the RNA sequencing data.</p>
 <div class="layout-chunk" data-layout="l-body">
 
@@ -1407,9 +1406,11 @@ Supplementary files
 <div class="layout-chunk" data-layout="l-body">
 
 </div>
-<h1 id="analysing-the-t-cell-receptor-repertoire">Analysing the T-cell receptor repertoire</h1>
-<h2 id="basic-diagnostics">Basic diagnostics</h2>
-<p>We start by generating some basic cell-level diagnostics. For each cluster, we determine the proportion of cells that have at least one sequence of a TCR component (Figure <a href="#fig:prop-expressing-with-unknowns">1</a>). Clusters with large counts are most likely to be T cells, though some background level of TCR expression may be observed in other clusters due to a mixture of clustering uncertainty, ambient contamination, doublet formation and expression in other cell types.</p>
+<h1 id="basic-diagnostics">Basic diagnostics</h1>
+<h2 id="motivation">Motivation</h2>
+<p>We start by generating some basic cell-level diagnostics to assess the quality and utility of the TCR sequencing data.</p>
+<h2 id="analysis">Analysis</h2>
+<p>For each cluster, we determine the proportion of cells that have at least one sequence of a TCR component (Figure <a href="#fig:prop-expressing-with-unknowns">1</a>). Clusters with large counts are most likely to be T cells, though some background level of TCR expression may be observed in other clusters due to a mixture of clustering uncertainty, ambient contamination, doublet formation, and expression in other cell types.</p>
 <div class="layout-chunk" data-layout="l-page">
 <div class="figure"><span id="fig:prop-expressing-with-unknowns"></span>
 <img src="C057_Cooney.repertoire-seq_files/prop-expressing-with-unknowns-1.png" alt="t-SNE plot of data, including 'unknown' samples, alongside the proportion of cells in each cluster that express at least one sequence of the TCR α or β-chains." width="624" />
@@ -1418,7 +1419,7 @@ Figure 1: t-SNE plot of data, including ‘unknown’ samples, alongside the pro
 </p>
 </div>
 </div>
-<p>Figure <a href="#fig:prop-expressing-with-unknowns">1</a> shows that the majority of clusters have more than 75% of cells expressing either the α-chain or β-chain sequences. We also see that the ‘unknown’ cells largely do not express either TCR sequence, supporting the idea that these droplets are not real cells.</p>
+<p>Figure <a href="#fig:prop-expressing-with-unknowns">1</a> shows that the majority of clusters have more than 80% of cells expressing either the α-chain or β-chain sequences. We also see that the ‘unknown’ cells largely do not express either TCR sequence, supporting the idea that these droplets are not real cells.</p>
 <p>We therefore switch to the data set generated after ignoring the ‘unknown’ samples and repeat the above exercise.</p>
 <div class="layout-chunk" data-layout="l-body">
 
@@ -1432,7 +1433,7 @@ Figure 1: t-SNE plot of data, including ‘unknown’ samples, alongside the pro
 <div class="layout-chunk" data-layout="l-body">
 
 </div>
-<p>Figure <a href="#fig:prop-expressing-with-unknowns">1</a> shows that almost all clusters have more than 85% of cells expressing either the α-chain or β-chain sequences. Cluster 3 is the notable exception.</p>
+<p>Figure <a href="#fig:prop-expressing">2</a> shows that almost all clusters have more than 85% of cells expressing either the α-chain or β-chain sequences. Cluster 3 is the notable exception.</p>
 <div class="layout-chunk" data-layout="l-page">
 <div class="figure"><span id="fig:prop-expressing"></span>
 <img src="C057_Cooney.repertoire-seq_files/prop-expressing-1.png" alt="t-SNE plot of data, ignoring 'unknown' samples, alongside the proportion of cells in each cluster that express at least one sequence of the TCR α or β-chains." width="624" />
@@ -1450,7 +1451,7 @@ Figure 3: t-SNE plot of data, ignoring ‘unknown’ samples, alongside the prop
 </p>
 </div>
 </div>
-<p>We can also count the number of cells in each cluster that have multiple sequences for a component (Figure <a href="#fig:prop-expressing-multiple">4</a>).</p>
+<p>For completeness, we also count the number of cells in each cluster that have multiple sequences for a component (Figure <a href="#fig:prop-expressing-multiple">4</a>). The percentages are clearly lower but this phenomenon is still surprisingly common.</p>
 <div class="layout-chunk" data-layout="l-page">
 <div class="figure"><span id="fig:prop-expressing-multiple"></span>
 <img src="C057_Cooney.repertoire-seq_files/prop-expressing-multiple-1.png" alt="t-SNE plot of data, ignoring 'unknown' samples, alongside the proportion of cells in each cluster that express two or more sequences of the TCR α or β-chains." width="624" />
@@ -1459,35 +1460,180 @@ Figure 4: t-SNE plot of data, ignoring ‘unknown’ samples, alongside the prop
 </p>
 </div>
 </div>
-<h2 id="quantifying-clonal-expansion">Quantifying clonal expansion</h2>
-<p>Quantification of clonal expansion is the most obvious application of repertoire sequencing data. Cells with the same T cell clonotype are assumed to target the same antigen, and any increase in the frequency of a clonotype provides evidence for T cell activation and proliferation upon stimulation by the corresponding antigen. Thus, we can gain some insights into the immune activity of each T cell cluster by counting the number of expanded clonotypes in each cluster<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>.</p>
-<div class="layout-chunk" data-layout="l-body">
-
-</div>
-<p>There are 1050 expanded clonotypes for the <span class="math display">\[\alpha\]</span>-chain and 1058 expanded clonotypes for the <span class="math display">\[\beta\]</span>-chain. Figure <a href="#fig:clonotype">5</a> shows the proportion of cells in each cluster that have multiple clonotypes.</p>
+<p>However, if we focus only those sequences deemed ‘productive’, then Figure <a href="#fig:prop-expressing-multiple-productive">5</a> shows that this percentage drops to less than 10% for most clusters.</p>
 <div class="layout-chunk" data-layout="l-page">
-<div class="figure"><span id="fig:clonotype"></span>
-<img src="C057_Cooney.repertoire-seq_files/clonotype-1.png" alt="t-SNE plot of data, ignoring 'unknown' samples, alongside the proportion of cells in each cluster that have multiple clonotypes, based on the TCR α or β-chains." width="624" />
+<div class="figure"><span id="fig:prop-expressing-multiple-productive"></span>
+<img src="C057_Cooney.repertoire-seq_files/prop-expressing-multiple-productive-1.png" alt="t-SNE plot of data, ignoring 'unknown' samples, alongside the proportion of cells in each cluster that express two or more **productive** sequences of the TCR α or β-chains." width="624" />
 <p class="caption">
-Figure 5: t-SNE plot of data, ignoring ‘unknown’ samples, alongside the proportion of cells in each cluster that have multiple clonotypes, based on the TCR α or β-chains.
+Figure 5: t-SNE plot of data, ignoring ‘unknown’ samples, alongside the proportion of cells in each cluster that express two or more <strong>productive</strong> sequences of the TCR α or β-chains.
 </p>
 </div>
 </div>
-<p>We can use this information to determine whether a particular T cell cluster is enriched for expanding clonotypes.</p>
-<p><strong>TODO:</strong> Ask James if there are particular clusters he would like to test for enrichment of expanding clonotypes.</p>
-<h2 id="quantifying-gene-expression-and-properties">Quantifying gene expression and properties</h2>
-<p>We may also be interested in the expression of specific TCR genes, which can provide some insight into the type of antigens being targeted (Shugay et al. 2018). We again use Fisher’s exact test to test if our two T cell clusters of interest differ in the proportion of TCR sequences containing each gene.</p>
-<p><strong>TODO:</strong> Ask James if there are specific TCR genes he is interested in.</p>
-<h1 id="multi-sample-analyses">Multi-sample analyses</h1>
-<p>A much more interesting analysis is possible when there are multiple samples and treatment conditions, where the aim is to determine which clusters contain T cell clonotypes that expand in response to treatment. In much the same vein as the analysis in the <a href="C057_Cooney.multi-sample_comparisons.html">‘Multi-sample comparisons with the Cooney (C057) memory CD4+ T-cell data set’</a>, we can obtain a cluster-by-sample count matrix.</p>
+<h3 id="summary">Summary</h3>
+<ul>
+<li>Most cells express both the α-chain and β-chain
+<ul>
+<li>Those that don’t are mostly droplets in clusters that we are already suspicious of based on the RNA data.</li>
+</ul></li>
+<li>More than 25% of droplets have multiple sequences for a component
+<ul>
+<li>However, this number drops to &lt; 15% (α-chain) and &lt; 9% (β-chain) when this is restricted to ‘productive’ sequences</li>
+</ul></li>
+</ul>
+<p><strong>It is still not clear to me if a single T cell can really express multiple (productive) sequences for a TCR component.</strong> However, a quick Google search suggests that it is possible (e.g., <a href="https://www.ncbi.nlm.nih.gov/pubmed/8211163">https://www.ncbi.nlm.nih.gov/pubmed/8211163</a>; <a href="https://www.jimmunol.org/content/202/3/637">https://www.jimmunol.org/content/202/3/637</a>; <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4701647/">https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4701647/</a>)<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>.</p>
+<h1 id="quantifying-clonotype-expansion">Quantifying clonotype expansion</h1>
+<h2 id="motivation-1">Motivation</h2>
+<p>Quantification of clonal expansion is the most obvious application of repertoire sequencing data. Cells with the same T cell clonotype are assumed to target the same antigen, and any increase in the frequency of a clonotype provides evidence for T cell activation and proliferation upon stimulation by the corresponding antigen. Thus, we can gain some insights into the immune activity of each sample by counting the frequency of clonotypes in each sample.</p>
+<h2 id="analysis-1">Analysis</h2>
+<p>CellRanger includes a histogram of top-10 clonotypes by frequency in the dataset. Only productive sequences are included in this analysis. This histogram is reproduced in Figure <a href="#fig:cellranger">6</a> but is of limited use because it doesn’t distinguish which sample each observation came from.</p>
 <div class="layout-chunk" data-layout="l-body">
-
+<div class="figure"><span id="fig:cellranger"></span>
+<img src="C057_Cooney.repertoire-seq_files/cellranger-1.png" alt="Top-10 clonotype frequencies (all droplets in the dataset). A clonotype is defined as a unique set of CDR3 nucleotide sequences. Only productive sequences are counted." width="624" />
+<p class="caption">
+Figure 6: Top-10 clonotype frequencies (all droplets in the dataset). A clonotype is defined as a unique set of CDR3 nucleotide sequences. Only productive sequences are counted.
+</p>
 </div>
-<p>We then test for condition-specific differences in the proportion of clonotypes that are expanded. For the time being, we will just perform a simple Wilcoxon ranked sum test. We test on proportions to accommodate biological differences in T cell abundance between samples well as technical differences in, say, sequencing depth that might affect the success rate of TCR calls on a sample-by-sample basis.</p>
-<p><strong>TODO:</strong> Ask James if there are particular clusters he would like to test for condition-specific differences in the proportion of clonotypes that are expanded.</p>
+</div>
+<p>For this project, we are interested in stratifying the analysis by sample to look clonal expansions associated with the treatment. Figure <a href="#fig:cellranger-faceted">7</a> stratifies by sample the histogram of the top-10 clonotypes by frequency.</p>
 <div class="layout-chunk" data-layout="l-body">
-
+<div class="figure"><span id="fig:cellranger-faceted"></span>
+<img src="C057_Cooney.repertoire-seq_files/cellranger-faceted-1.png" alt="Top-10 clonotype frequencies by sample. A clonotype is defined as a unique set of CDR3 nucleotide sequences. Only productive sequences are counted." width="624" />
+<p class="caption">
+Figure 7: Top-10 clonotype frequencies by sample. A clonotype is defined as a unique set of CDR3 nucleotide sequences. Only productive sequences are counted.
+</p>
 </div>
+</div>
+<p>This shows an apparent clonal explansion in the <code>infected_2</code> and <code>infected_3</code> samples.</p>
+<p>Figure <a href="#fig:cumulative-clonotype-frequencies">8</a> plots the cumulative clonotype frequencies in each sample as an alternative to simply visualising the frequency of the top-10 clonotypes in each sample.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="figure"><span id="fig:cumulative-clonotype-frequencies"></span>
+<img src="C057_Cooney.repertoire-seq_files/cumulative-clonotype-frequencies-1.png" alt="Cumulative clonotype frequencies by sample. Frequencies are computed within each sample." width="624" />
+<p class="caption">
+Figure 8: Cumulative clonotype frequencies by sample. Frequencies are computed within each sample.
+</p>
+</div>
+</div>
+<p>This shows, for example, that more than 75% of cells from the <code>infected_3</code> sample share a very small number of clonotypes (in fact, only 20 clonotypes are required). This figure also shows that fewer clonotypes are observed in the <code>Infected</code> samples. However, this could arise simply because we sampled fewer infected cells. We therefore need to account for the number of <em>potential</em> clonotypes in each sample.</p>
+<p>Two possible estimates of the number of <em>potential</em> clonotypes in each sample are:</p>
+<ol type="1">
+<li>The number of droplets from that sample (likely an overestimate as not all droplets necessarily express a TCR).</li>
+<li>The number of droplets with a TCR sequence from that sample (likely an underestimate as some of the cells with a TCR didn’t have the TCR sequenced).</li>
+</ol>
+<p>Fortunately, the table below shows that these two estimates do not differ much (roughly, within 5-10% of eachother) so the results will not be sensitive to the choice of estimate.</p>
+<div class="layout-chunk" data-layout="l-body">
+<table>
+<caption><span id="tab:unnamed-chunk-10">Table 1: </span>Two estimates of the potential number of clonotypes in each sample. ‘est_1’ = The number of droplets from that sample (likely an overestimate as not all droplets necessarily express a TCR). ‘est_2’ = The number of droplets with a TCR sequence from that sample (likely an underestimate as some of the cells with a TCR didn’t have the TCR sequenced).</caption>
+<thead>
+<tr class="header">
+<th></th>
+<th style="text-align: left;">Sample</th>
+<th style="text-align: right;">est_1</th>
+<th style="text-align: right;">est_2</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>infected_1</td>
+<td style="text-align: left;">infected_1</td>
+<td style="text-align: right;">1524</td>
+<td style="text-align: right;">1401</td>
+</tr>
+<tr class="even">
+<td>infected_2</td>
+<td style="text-align: left;">infected_2</td>
+<td style="text-align: right;">1313</td>
+<td style="text-align: right;">1178</td>
+</tr>
+<tr class="odd">
+<td>infected_3</td>
+<td style="text-align: left;">infected_3</td>
+<td style="text-align: right;">1412</td>
+<td style="text-align: right;">1300</td>
+</tr>
+<tr class="even">
+<td>uninfected_1</td>
+<td style="text-align: left;">uninfected_1</td>
+<td style="text-align: right;">1929</td>
+<td style="text-align: right;">1782</td>
+</tr>
+<tr class="odd">
+<td>uninfected_2</td>
+<td style="text-align: left;">uninfected_2</td>
+<td style="text-align: right;">2216</td>
+<td style="text-align: right;">2073</td>
+</tr>
+<tr class="even">
+<td>uninfected_3</td>
+<td style="text-align: left;">uninfected_3</td>
+<td style="text-align: right;">1484</td>
+<td style="text-align: right;">1405</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Below, I opt to estimate the number of potential clonotypes by (2).</p>
+<p>and the results are consistent either way.</p>
+<p>Figure <a href="#fig:cumulative-potential-clonotype-frequencies">9</a> basically repeats Figure <a href="#fig:cumulative-clonotype-frequencies">8</a> but extends the x-axis out to the number of <em>potential</em> clonotypes.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="figure"><span id="fig:cumulative-potential-clonotype-frequencies"></span>
+<img src="C057_Cooney.repertoire-seq_files/cumulative-potential-clonotype-frequencies-1.png" alt="Cumulative potential clonotype frequencies by sample. Frequencies are computed within each sample." width="624" />
+<p class="caption">
+Figure 9: Cumulative potential clonotype frequencies by sample. Frequencies are computed within each sample.
+</p>
+</div>
+</div>
+<p>Finally, Figure <a href="#fig:cumulative-potential-clonotype-frequencies-normalized">10</a> normalises the by the number of <em>potential</em> haplotypes in each sample to make the samples comparable.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="figure"><span id="fig:cumulative-potential-clonotype-frequencies-normalized"></span>
+<img src="C057_Cooney.repertoire-seq_files/cumulative-potential-clonotype-frequencies-normalized-1.png" alt="Normalised cumulative potential clonotype frequencies by sample. Frequencies are computed within each sample." width="624" />
+<p class="caption">
+Figure 10: Normalised cumulative potential clonotype frequencies by sample. Frequencies are computed within each sample.
+</p>
+</div>
+</div>
+<p>From this, we can clearly see that fewer clonotypes are found in infected cells than in uninfected cells. For example, the table below reports the proportion of potential clonotypes required to ‘cover’ 75% of cells in each sample and shows that this number is far smaller in infected cells than in uninfected cells.</p>
+<div class="layout-chunk" data-layout="l-body">
+<table>
+<caption><span id="tab:unnamed-chunk-11">Table 2: </span>Proportion of potential clonotypes required to ‘cover’ 75% of cells in each sample.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Sample</th>
+<th style="text-align: right;">Proportion of potential clonotypes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">infected_1</td>
+<td style="text-align: right;">0.095</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">infected_2</td>
+<td style="text-align: right;">0.032</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">infected_3</td>
+<td style="text-align: right;">0.015</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">uninfected_1</td>
+<td style="text-align: right;">0.291</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">uninfected_2</td>
+<td style="text-align: right;">0.121</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">uninfected_3</td>
+<td style="text-align: right;">0.357</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="summary-1">Summary</h2>
+<ul>
+<li>Infected samples have fewer clonotypes than uninfected cells, even after normalising for cell numbers.</li>
+<li>Infected samples show evidence of clonal expansion (alternatively, of reduced polyclonality) compared to uninfected samples as evidenced by more cells sharing a smaller number of clonotypes.</li>
+</ul>
 <h1 id="concluding-remarks">Concluding remarks</h1>
 <div class="layout-chunk" data-layout="l-body">
 
@@ -1565,15 +1711,18 @@ loaded via a namespace (and not attached):
 [57] purrr_0.3.3              yaml_2.2.0              
 [59] colorspace_1.4-1         knitr_1.26              </code></pre>
 </div>
-<h1 id="todos">TODOs</h1>
-<ul>
-<li>[ ] Interpreting cluster 1</li>
-<li>[ ] Fix citations</li>
-</ul>
+<div id="refs" class="references">
+<div id="ref-georgiou2014promise">
+<p>Georgiou, G., G. C. Ippolito, J. Beausang, C. E. Busse, H. Wardemann, and S. R. Quake. 2014. “The Promise and Challenge of High-Throughput Sequencing of the Antibody Repertoire.” <em>Nat. Biotechnol.</em> 32 (2): 158–68.</p>
+</div>
+<div id="ref-rosati2017overview">
+<p>Rosati, E., C. M. Dowds, E. Liaskou, E. K. K. Henriksen, T. H. Karlsen, and A. Franke. 2017. “Overview of Methodologies for T-Cell Receptor Repertoire Analysis.” <em>BMC Biotechnol.</em> 17 (1): 61.</p>
+</div>
+</div>
 <section class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p>We do not exclude clonotypes containing cells in different clusters, which can arise for various genuine biological reasons, e.g., differences in the microenvironment.<a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn1"><p>An alternative interpretation is that these are really doublets and hence would likely have multiple distinct TCR components (although this assumes a higher doublet rate than we expect).<a href="#fnref1" class="footnote-back">↩</a></p></li>
 </ol>
 </section>
 <!--radix_placeholder_article_footer-->
@@ -1583,15 +1732,6 @@ loaded via a namespace (and not attached):
 <div class="d-appendix">
 </div>
 
-<!-- dynamically load mathjax for compatibility with self-contained -->
-<script>
-  (function () {
-    var script = document.createElement("script");
-    script.type = "text/javascript";
-    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
-    document.getElementsByTagName("head")[0].appendChild(script);
-  })();
-</script>
 
 <!--radix_placeholder_site_after_body-->
 <!--/radix_placeholder_site_after_body-->
@@ -2684,6 +2824,28 @@ year = {2012}
   journal={DOI},
   volume={10},
   pages={303727}
+}
+
+@Article{georgiou2014promise,
+   Author="Georgiou, G.  and Ippolito, G. C.  and Beausang, J.  and Busse, C. E.  and Wardemann, H.  and Quake, S. R. ",
+   Title="The promise and challenge of high-throughput sequencing of the antibody repertoire",
+   Journal="Nat. Biotechnol.",
+   Year="2014",
+   Volume="32",
+   Number="2",
+   Pages="158--168",
+   Month="Feb"
+}
+
+@Article{rosati2017overview,
+   Author="Rosati, E.  and Dowds, C. M.  and Liaskou, E.  and Henriksen, E. K. K.  and Karlsen, T. H.  and Franke, A. ",
+   Title="Overview of methodologies for T-cell receptor repertoire analysis",
+   Journal="BMC Biotechnol.",
+   Year="2017",
+   Volume="17",
+   Number="1",
+   Pages="61",
+   Month="07"
 }
 </script>
 <!--/radix_placeholder_appendices-->
