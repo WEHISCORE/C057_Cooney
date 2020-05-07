@@ -177,6 +177,27 @@ sce <- readRDS(
   here("data", "SCEs", "C057_Cooney_ignoring_unknowns.annotated.SCE.rds"))
 ```
 
+James further requested that cluster 6 be excluded as he suspects it to be 
+
+> "comprised of CD8 T cells that have upregulated CD4 (and were thus included in the sort). They have unique upregulation of many CD8-specific genes (GNLY, GZMA, GZMK) this to comprise CD8 T-cells"
+
+The up-regulation of these genes can be observed in Figure \@ref(fig:cd8-markers).
+
+```{r cd8-markers, fig.cap = "Expression of CD8-specific genes by cluster."}
+plotExpression(
+  sce,
+  features = c("GNLY", "GZMA", "GZMK"),
+  x = "cluster",
+  colour_by = "cluster") + 
+  theme_cowplot() +
+  scale_fill_manual(values = cluster_colours)
+```
+
+```{r}
+sce <- sce[, sce$cluster != "6"]
+colData(sce) <- droplevels(colData(sce))
+```
+
 ```{r}
 # data frames containing co-ordinates and factors for creating reduced 
 # dimensionality plots.
@@ -556,7 +577,7 @@ tmp %>%
   cowplot::theme_cowplot()
 ```
 
-Finally, Figure \@ref(fig:cumulative-potential-clonotype-frequencies-normalized) normalises the by the number of *potential* haplotypes in each sample to make the samples comparable.
+Finally, Figure \@ref(fig:cumulative-potential-clonotype-frequencies-normalized) normalises by the number of *potential* haplotypes in each sample to make the samples comparable.
 
 ```{r cumulative-potential-clonotype-frequencies-normalized, fig.cap = "Normalised cumulative potential clonotype frequencies by sample. Frequencies are computed within each sample."}
 tmp %>%
@@ -574,8 +595,8 @@ tmp %>%
   cowplot::theme_cowplot()
 ```
 
-From this, we can clearly see that fewer clonotypes are found in infected cells than in uninfected cells.
-For example, the table below reports the proportion of potential clonotypes required to 'cover' 75% of cells in each sample and shows that this number is far smaller in infected cells than in uninfected cells.
+From this, we see hints that fewer clonotypes are found in infected cells than in uninfected cells, but this is not a consistent result^[Previously, when cluster 6 was included, this was quite a strong result. However, cluster 6 is the largest cluster and is enriched for infected cells, so by removing it we are possibly removing that signal.].
+For example, the table below reports the proportion of potential clonotypes required to 'cover' 75% of cells in each sample and shows that this number is somewhat smaller in infected cells than in uninfected cells.
 
 ```{r}
 tmp %>%
