@@ -9,36 +9,26 @@ navbar:
       href: C057_Cooney.demultiplex.html
     - text: "Preprocessing"
       href: C057_Cooney.preprocess.html
-    - text: "Dimensionality reduction"
-      menu:
-        - text: "All samples"
-          href: C057_Cooney.merge.html
-        - text: "Ignoring 'unknown' samples"
-          href: C057_Cooney_ignoring_unknowns.merge.html
+    - text: "Selecting biologically relevant cells"
+      href: C057_Cooney.cell_selection.html
     - text: "Annotating cells"
-      menu:
-        - text: "All samples"
-          href: C057_Cooney.annotate.html
-        - text: "Ignoring 'unknown' samples"
-          href: C057_Cooney_ignoring_unknowns.annotate.html
+      href: C057_Cooney.annotate.html
     - text: "Differential analyses"
-      menu:
-        - text: "All samples"
-          href: C057_Cooney.multi-sample_comparisons.html
-        - text: "Ignoring 'unknown' samples"
-          href: C057_Cooney_ignorning_unknowns.multi-sample_comparisons.html
-    - text: "Immune repertroire analysis"
+      href: C057_Cooney.multi-sample_comparisons.html
+    - text: "Immune repertoire analysis"
       href: C057_Cooney.repertoire-seq.html
     - text: "Supplementary files"
       menu:
         - text: "FastQC reports"
           href: ../output/FastQC/
-        - text: "scPipe reports"
-          href: ../output/scPipe/
+        - text: "CellRanger reports"
+          href: ../output/CellRanger/
         - text: "Marker gene tables"
           href: ../output/marker_genes/
         - text: "Differentially expressed genes"
           href: ../output/DEGs/
+        - text: "Glimma plots"
+          href: glimma-plots/
   right:
     - icon: fa-github
       href: https://github.com/WEHISCORE/C057_Cooney

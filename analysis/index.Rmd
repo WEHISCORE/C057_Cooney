@@ -17,9 +17,7 @@ bibliography: ref.bib
 library(BiocStyle)
 library(here)
 
-source(here("analysis", "helper_functions.R"))
-
-knitr::opts_chunk$set(fig.path = "C078_Wang_intro/")
+source(here("code", "helper_functions.R"))
 ```
 
 # Overview

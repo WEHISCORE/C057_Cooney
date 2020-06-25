@@ -21,10 +21,12 @@ library(dplyr)
 library(janitor)
 library(cowplot)
 
-source(here("analysis", "helper_functions.R"))
+source(here("code", "helper_functions.R"))
+
 # NOTE: Using >= 4 cores siezes up my laptop. Can use more on unix box.
 options("mc.cores" = ifelse(Sys.info()[["nodename"]] == "PC1331", 2L, 3L))
-knitr::opts_chunk$set(fig.path = "C057_Cooney_demultiplex_files/")
+
+knitr::opts_chunk$set(fig.path = "C057_Cooney.demultiplex_files/")
 ```
 
 # Introduction
@@ -46,26 +48,21 @@ The counts and their metadata are available in a *SingleCellExperiment* object a
 These are the *unfiltered* data, i.e. the data includes all potential genes and barcodes.
 
 ```{r}
-sce <- readRDS(here("data", "SCEs", "HTLV_GEX_HTO.CellRanger.SCE.rds"))
-colnames(sce) <- sce$Barcode
-
-# Split the data up into RNA and HTOs
-rna <- sce[grepl("ENS", rownames(sce)), ]
-hto <- sce[!grepl("ENS", rownames(sce)), ]
-counts(hto) <- as.matrix(counts(hto))
+sce <- readRDS(here("data", "SCEs", "C057_Cooney.CellRanger.SCE.rds"))
 ```
 
 # Calling cells from empty droplets
 
 An interesting aspect of droplet-based data is that we have no prior knowledge about which droplets (i.e. cell barcodes) actually contain cells, and which are empty. 
-Thus, we need to call cells from empty droplets based on the observed RNA expression profiles.
+Thus, we need to call cells from empty droplets based on the observed expression profiles.
+This is done separately for each 10x run.
 
 Calling empty droplets is not entirely straightforward as empty droplets can contain ambient (i.e. extracellular) RNA that can be captured and sequenced. 
 The distribution of total counts exhibits a sharp transition between barcodes with large and small total counts (Figure \@ref(fig:rankplot)), probably corresponding to cell-containing and empty droplets respectively.
 
-```{r rankplot, fig.cap = "Total UMI count for each barcode in the dataset, plotted against its rank (in decreasing order of total counts). The inferred locations of the inflection (dark green dashed lines) and knee points (blue dashed lines) are also shown."}
+```{r rankplot, fig.cap = "Total UMI count for each barcode in the dataset, plotted against its rank (in decreasing order of total counts). The inferred locations of the inflection (dark green dashed lines) and knee points (blue dashed lines) are also shown.", fig.asp = 1}
 library(DropletUtils)
-bcrank <- barcodeRanks(counts(rna))
+bcrank <- barcodeRanks(counts(sce))
 # Only showing unique points for plotting speed.
 uniq <- !duplicated(bcrank$rank)
 plot(
@@ -74,44 +71,40 @@ plot(
   log = "xy",
   xlab = "Rank", 
   ylab = "Total UMI count", 
-  main = "C041_Lopez",
+  main = "C057_Cooney",
   cex.lab = 1.2,
   xlim = c(1, 500000),
   ylim = c(1, 50000))
 abline(h = metadata(bcrank)$inflection, col = "darkgreen", lty = 2)
 abline(h = metadata(bcrank)$knee, col = "dodgerblue", lty = 2)
+legend(
+  "bottomleft",
+  legend = c("Inflection", "Knee"), 
+  col = c("darkgreen", "dodgerblue"),
+  lty = 2,
+  cex = 1.2)
 ```
 
 We use the `emptyDrops()` function from the `r Biocpkg("DropletUtils")` package to test whether the expression profile for each cell barcode is significantly different from the ambient RNA pool [@lun2018distinguishing].
 This tends to be less conservative than the cell calling algorithm from the **CellRanger** pipeline, which often discards genuine cells with low RNA content (and thus low total counts).
 Any significant deviation indicates that the barcode corresponds to a cell-containing droplet.
-We call cells at a false discovery rate (FDR) of 0.1%, meaning that no more than 0.1% of our called barcodes should be empty droplets on average.
+We call cells at a false discovery rate (FDR) of 1%, meaning that no more than 1% of our called barcodes should be empty droplets on average.
 
 ```{r}
-empties <- readRDS(here("data", "emptyDrops", "empties.rds"))
-fdr <- 0.001
-dplyr::mutate(
-  as.data.frame(empties),
-  Sample = rep("HTLV_GEX_HTO", nrow(empties))) %>%
+empties <- readRDS(
+  here("data", "emptyDrops", "C057_Cooney.emptyDrops.rds"))
+dplyr::mutate(as.data.frame(empties), Sample = rep("C057", nrow(empties))) %>%
   dplyr::group_by(Sample) %>%
   dplyr::summarise(
-    keep = sum(FDR < fdr, na.rm = TRUE), 
-    n = n(),
+    keep = sum(FDR < 0.001, na.rm = TRUE), 
+    n = dplyr::n(),
     remove = n - keep) %>%
   dplyr::mutate(library = factor(Sample)) %>%
   dplyr::select(library, keep, remove) %>%
   knitr::kable(
     caption = "Number of droplets kept and removed after filtering empty drops.")
-sce <- sce[, which(empties$FDR <= fdr)]
-# Re-split the data up into RNA and HTOs
-rna <- sce[grepl("ENS", rownames(sce)), ]
-hto <- sce[!grepl("ENS", rownames(sce)), ]
-counts(hto) <- as.matrix(counts(hto))
+sce <- sce[, which(empties$FDR <= 0.001)]
 ```
-
-It is worth pointing out that, at this point, we do not attempt to remove the ambient contamination from the remaining libraries.
-Accurate quantification of the contamination rate in each cell is difficult as it generally requires some prior biological knowledge about genes that are expected to have mutually exclusive expression profiles and are highly abundant in the ambient solution [@young10soupx].
-Fortunately, ambient contamination usually has little effect on the downstream conclusions for routine analyses; cell type identities are usually easy enough to determine from the affected genes, notwithstanding a (mostly harmless) low background level of expression for marker genes that should be unique to a cell type.
 
 # Demultiplexing with hashtag oligos (HTOs)
 
@@ -119,29 +112,25 @@ We only use the droplets identified as non-empty in [Calling cells from empty dr
 
 ```{r}
 # Select cell barcodes detected by both RNA and HTOs
-# NOTE: In this case, all droplets are retained because emptyDrops() has
-#       already been run on the RNA and because the HTOs were sequenced quite
-#       deeply.
-rna_bcs <- colSums(assay(rna)) > 0
-hto_bcs <- colSums(assay(hto)) > 0
+rna_bcs <- colSums(counts(sce)) > 0
+hto_bcs <- colSums(counts(altExp(sce, "Antibody Capture"))) > 0
 joint_bcs <- rna_bcs & hto_bcs
-rna <- rna[, joint_bcs]
-hto <- hto[, joint_bcs]
+sce <- sce[, joint_bcs]
 ```
 
 These samples were processed using 5 HTOs (`human_1`, `human_2`, `human_3`, `human_4`, and `human_5`).
-Nonetheless, we ran **CellRanger** using a larger panel of HTOs (n = `r nrow(hto)`) to enable us to check for background contamination of HTOs.
+Nonetheless, we ran **CellRanger** using a larger panel of HTOs (n = `r nrow(altExp(sce, "Antibody Capture"))`) to enable us to check for background contamination of HTOs.
 
-Figure \@ref(fig:htos) plots the distribution of each HTO counts for those HTOs detected in at least one cell and shows that HTOs `human_1`, `human_2`, `human_3`, `human_4`, and `human_5`, are clearly detected more frequently than the other barcodes, as we would hope.
+Figure \@ref(fig:htos) plots the distribution of each HTO counts for the the 8 most frequently HTOs detected and shows that HTOs `human_1`, `human_2`, `human_3`, `human_4`, and `human_5` are clearly detected more frequently than the other barcodes, as we would hope.
 
-```{r htos, fig.cap = "Distribution of HTO counts in the dataset. Only those HTOs with more detected in at least one cell are shown. The red vertical line denotes detecting the HTO 10 times in a sample.", layout = "l-page", fig.asp = 4 / 3}
-par(mfrow = c(5, 4))
-o <- order(rowSums(counts(hto)), decreasing = TRUE)
-for (i in o) {
-  if (rowSums(counts(hto))[i] > 0) {
+```{r htos, fig.cap = "Distribution of HTO counts in the dataset. Only those HTOs with more detected in at least one cell are shown. The red vertical line denotes detecting the HTO 10 times in a sample.", layout = "l-page", fig.asp = 2 / 4}
+par(mfrow = c(2, 4))
+o <- order(rowSums(counts(altExp(sce, "Antibody Capture"))), decreasing = TRUE)
+for (i in o[1:8]) {
+  if (rowSums(counts(altExp(sce, "Antibody Capture")))[i] > 10) {
     plot(
-      table(counts(hto)[i, ]),
-      main = rownames(hto)[i],
+      table(counts(altExp(sce, "Antibody Capture"))[i, ]),
+      main = rownames(altExp(sce, "Antibody Capture"))[i],
       xlim = c(1, 10 ^ 5),
       log = "x",
       xlab = "Detections",
@@ -154,7 +143,8 @@ for (i in o) {
 We therefore focus on assigning cells to just the `human_1`, `human_2`, `human_3`, `human_4`, and `human_5` HTOs, along with the combination of all five HTOs.
 
 ```{r}
-hto <- hto[paste0("human_", 1:5), ]
+altExp(sce, "Antibody Capture") <- altExp(
+  sce, "Antibody Capture")[paste0("human_", 1:5), ]
 ```
 
 We perform library-size normalization of the HTO counts and then cluster the log-expression of the HTOs to identify samples with similar HTO expression profiles.
@@ -162,21 +152,22 @@ We perform library-size normalization of the HTO counts and then cluster the log
 ```{r}
 library(scater)
 # Compute size factors
-sf_lib <- librarySizeFactors(hto)
+sf_lib <- librarySizeFactors(altExp(sce, "Antibody Capture"))
 
 library(scran)
-sizeFactors(hto) <- sf_lib
-hto <- normalizeSCE(hto)
+sizeFactors(altExp(sce, "Antibody Capture")) <- sf_lib
+altExp(sce, "Antibody Capture") <- logNormCounts(
+  altExp(sce, "Antibody Capture"))
 # NOTE: `d = NA` means no dimensionality reduction is performed.
-# NOTE: `k = 100` was selected by trial and error to get a reasonable number of 
+# NOTE: `k = 150` was selected by trial and error to get a reasonable number of 
 #       clusters that avoided overclustering the multi-HTO samples.
-g <- buildSNNGraph(hto, k = 100, d = NA)
+g <- buildSNNGraph(altExp(sce, "Antibody Capture"), k = 100, d = NA)
 clusters <- igraph::cluster_louvain(g)$membership
-hto$cluster <- factor(clusters)
-cluster_colours <- setNames(
-  colorblindr::palette_OkabeIto,
-  levels(hto$cluster))
-cluster_colours <- cluster_colours[!is.na(names(cluster_colours))]
+sce$hto_cluster <- factor(clusters)
+hto_cluster_colours <- setNames(
+  palette("Okabe-Ito")[seq_len(nlevels(sce$hto_cluster))],
+  levels(sce$hto_cluster))
+sce$hto_cluster_colours <- hto_cluster_colours[sce$hto_cluster]
 ```
 
 ## Visualize demultiplexing results
@@ -185,30 +176,30 @@ Figures \@ref(fig:pca) and \@ref(fig:pca-faceted) use principal component analys
 
 ```{r pca, fig.cap = "PCA plot of the HTO data. Each point represents a cell with the colour explained in the legend.", fig.asp = 1}
 set.seed(666)
-hto <- runPCA(hto)
+sce <- runPCA(sce, altexp = "Antibody Capture", name = "PCA_HTO")
 
-plotPCA(hto, colour_by = "cluster", point_size = 0) +
+plotReducedDim(sce, "PCA_HTO", colour_by = "hto_cluster", point_size = 0) +
   geom_point(aes(colour = colour_by), size = 0.5) +
-  scale_colour_manual(values = cluster_colours, name = "cluster") +
+  scale_colour_manual(values = hto_cluster_colours, name = "hto_cluster") +
   ggtitle("PCA: HTOs") +
   theme_cowplot()
 ```
 
 ```{r pca-faceted, fig.cap = "PCA plot of the HTO data. Each panel highlights cells from a particular cluster.", fig.asp = 1}
 pca <- cbind(
-  as.data.frame(colData(hto)),
-  x = reducedDim(hto, "PCA")[, 1],
-  y = reducedDim(hto, "PCA")[, 2])
-bg <- dplyr::select(pca, -cluster)
+  as.data.frame(colData(sce)),
+  x = reducedDim(sce, "PCA_HTO")[, 1],
+  y = reducedDim(sce, "PCA_HTO")[, 2])
+bg <- dplyr::select(pca, -hto_cluster)
 ggplot(aes(x = x, y = y), data = pca) +
   geom_point(data = bg, colour = scales::alpha("grey", 0.7), size = 0.1) +
-  geom_point(aes(colour = cluster), alpha = 1, size = 0.5) +
-  scale_fill_manual(values = cluster_colours, name = "Cluster") + 
-  scale_colour_manual(values = cluster_colours, name = "Cluster") +
+  geom_point(aes(colour = hto_cluster), alpha = 1, size = 0.5) +
+  scale_fill_manual(values = hto_cluster_colours, name = "Cluster") + 
+  scale_colour_manual(values = hto_cluster_colours, name = "Cluster") +
   theme_cowplot(font_size = 10) + 
   xlab("Dimension 1") + 
   ylab("Dimension 2") +
-  facet_wrap(~cluster, ncol = 3, labeller = label_both) +
+  facet_wrap(~hto_cluster, ncol = 3, labeller = label_both) +
   theme_cowplot() +
   theme(legend.position = "none")
 ```
@@ -217,34 +208,35 @@ As an alternative to PCA, we can  use a $t$-stochastic neighbour embedding (t-SN
 
 ```{r}
 set.seed(666)
-hto <- runTSNE(hto)
+library(Rtsne)
+sce <- runTSNE(sce, dimred = "PCA_HTO", name = "TSNE_HTO")
 ```
 
 Figures \@ref(fig:tsne) and \@ref(fig:tsne-faceted) show that five clusters are clearly distinguishable from each other and that the two additional clusters are a little easier to visually resolve.
 
 ```{r tsne, fig.cap = "t-SNE plot of the HTO data. Each point represents a cell with the colour explained in the legend.", fig.asp = 1}
-plotTSNE(hto, colour_by = "cluster", point_size = 0) +
+plotReducedDim(sce, "TSNE_HTO", colour_by = "hto_cluster", point_size = 0) +
   geom_point(aes(colour = colour_by), size = 0.5) +
-  scale_colour_manual(values = cluster_colours, name = "cluster") +
+  scale_colour_manual(values = hto_cluster_colours, name = "hto_cluster") +
   ggtitle("t-SNE: HTOs") +
   theme_cowplot()
 ```
 
 ```{r tsne-faceted, fig.cap = "t-SNE plot of the HTO data. Each panel highlights cells from a particular cluster.", fig.asp = 1}
 tsne <- cbind(
-  as.data.frame(colData(hto)),
-  x = reducedDim(hto, "TSNE")[, 1],
-  y = reducedDim(hto, "TSNE")[, 2])
-bg <- dplyr::select(tsne, -cluster)
+  as.data.frame(colData(sce)),
+  x = reducedDim(sce, "TSNE_HTO")[, 1],
+  y = reducedDim(sce, "TSNE_HTO")[, 2])
+bg <- dplyr::select(tsne, -hto_cluster)
 ggplot(aes(x = x, y = y), data = tsne) +
   geom_point(data = bg, colour = scales::alpha("grey", 0.7), size = 0.1) +
-  geom_point(aes(colour = cluster), alpha = 1, size = 0.5) +
-  scale_fill_manual(values = cluster_colours, name = "Cluster") + 
-  scale_colour_manual(values = cluster_colours, name = "Cluster") +
+  geom_point(aes(colour = hto_cluster), alpha = 1, size = 0.5) +
+  scale_fill_manual(values = hto_cluster_colours, name = "Cluster") + 
+  scale_colour_manual(values = hto_cluster_colours, name = "Cluster") +
   theme_cowplot(font_size = 10) + 
   xlab("Dimension 1") + 
   ylab("Dimension 2") +
-  facet_wrap(~cluster, ncol = 3, labeller = label_both) +
+  facet_wrap(~hto_cluster, ncol = 3, labeller = label_both) +
   theme_cowplot() +
   theme(legend.position = "none")
 ```
@@ -253,16 +245,20 @@ Figure \@ref(fig:heatmap-average) and \@ref(fig:heatmap) show that the five clea
 
 ```{r heatmap-average, fig.cap = "Heatmap of row-nomralized average log-expression of HTOs."}
 averaged <- sweep(
-  sumCountsAcrossCells(hto, clusters, exprs_values = "logcounts"),
+  assay(
+    sumCountsAcrossCells(
+      altExp(sce, "Antibody Capture"), 
+      sce$hto_cluster, 
+      exprs_values = "logcounts")),
   2,
-  table(hto$cluster),
+  table(sce$hto_cluster),
   "/")
 # Sanity check
 stopifnot(all(apply(averaged, 2, which.max) == c(3, 2, 1, 1, 4, 5, 1)))
 
 library(pheatmap)
 mat <- averaged - rowMeans(averaged)
-rownames(mat) <- rownames(hto)
+rownames(mat) <- rownames(altExp(sce, "Antibody Capture"))
 pheatmap(
   mat = mat,
   breaks = seq(-max(abs(mat)), max(abs(mat)), length.out = 101),
@@ -271,23 +267,7 @@ pheatmap(
   annotation_col = data.frame(
     cluster = colnames(averaged),
     row.names = colnames(averaged)),
-  annotation_colors = list(cluster = cluster_colours),
-  color = colorspace::divergex_hcl(n = 100, palette = "RdBu", rev = TRUE))
-```
-
-```{r heatmap, fig.cap = "Heatmap of row-normalized log-expression of HTOs."}
-.plotHeatmap(
-  object = hto,
-  features = rownames(hto),
-  columns = order(hto$cluster),
-  colour_columns_by = "cluster",
-  cluster_cols = FALSE,
-  cluster_rows = FALSE,
-  center = TRUE,
-  symmetric = TRUE,
-  show_colnames = FALSE,
-  fontsize = 8,
-  annotation_colors = list(cluster = cluster_colours),
+  annotation_colors = list(cluster = hto_cluster_colours),
   color = colorspace::divergex_hcl(n = 100, palette = "RdBu", rev = TRUE))
 ```
 
@@ -297,11 +277,11 @@ In contrast, the samples in cluster 4 often have high expression of each HTO but
 
 ```{r violin, fig.cap = "Expression of HTOs by cluster."}
 plotExpression(
-  hto,
-  features = paste0("human_", 1:5),
-  x = "cluster",
-  colour_by = "cluster") +
-  scale_fill_manual(values = cluster_colours) +
+  altExp(sce, "Antibody Capture"),
+  features = rownames(altExp(sce, "Antibody Capture")),
+  x = I(sce$hto_cluster),
+  colour_by = I(sce$hto_cluster)) +
+  scale_fill_manual(values = hto_cluster_colours) +
   theme_cowplot()
 ```
 
@@ -314,32 +294,34 @@ hto_to_sample_df <- data.frame(
   HTO = paste0("human_", c(1:5, paste0(1:5, collapse = "_"))),
   Sample = c(paste0("infected_", 1:3), paste0("uninfected_", 1:3)),
   Treatment = c(rep("Infected", 3), rep("Uninfected", 3)),
-  Replicate = rep(1:3, 2),
-  stringsAsFactors = FALSE)
+  Replicate = rep(1:3, 2))
 
 knitr::kable(hto_to_sample_df, caption = "Table linking HTOs to samples")
 ```
 
 James was targetting ~2000 cells / sample.
 The table below shows that we largely hit that target for the uninfected samples but not so for the infected samples.
-It also shows that proportion of droplets that are 'unassigned' (i.e. those in cluster (`r which.max(table(hto$cluster))`) is larger than we would like.
+It also shows that proportion of droplets that are 'unassigned' (i.e. those in cluster (`r which.max(table(sce$hto_cluster))`) is larger than we would like.
 
 ```{r}
 # Map clusters to HTOs to samples
 # NOTE: This is made by visually inspecting the above heatmaps.
 cluster_to_hto_df <- data.frame(
-  cluster = levels(hto$cluster),
+  hto_cluster = factor(levels(sce$hto_cluster)),
   HTO = c(
-    paste0("human_", c(3, 2)),
-    NA_character_, 
-    paste0("human_", c(paste0(1:5, collapse = "_"), 4, 5, 1))),
-  stringsAsFactors = FALSE)
+    "human_3",
+    "human_2",
+    NA_character_,
+    paste0("human_", c(paste0(1:5, collapse = "_"))), 
+    "human_4",
+    "human_5",
+    "human_1"))
 
 hto_df <- left_join(cluster_to_hto_df, hto_to_sample_df)
 knitr::kable(
   hto_df %>%
     left_join(
-    tabyl(data.frame(cluster = hto$cluster), cluster) %>%
+    tabyl(data.frame(hto_cluster = sce$hto_cluster), hto_cluster) %>%
       adorn_pct_formatting(1)) %>%
     dplyr::arrange(Sample), 
   caption = "Tabulation of samples by treatment and replicate (mouse). The samples are unpaired. 'NA' values are those samples who HTOs could not be demultiplexed.")
@@ -348,31 +330,14 @@ knitr::kable(
 These unassigned droplets likely include true doublets, mis-assigned singlets from the cells labelled with all five HTOs, and samples comparising ambient RNAs/HTOs (aka the 'soup' [@young10soupx]).
 
 ```{r}
-stopifnot(identical(colnames(sce), colnames(hto)))
-colData(sce) <- colData(sce) %>%
-  as.data.frame() %>%
-  select(-Sample) %>%
-  dplyr::mutate(cluster = hto$cluster) %>%
-  left_join(hto_df) %>%
-  dplyr::rename(hto_cluster = cluster) %>%
-  DataFrame(row.names = colnames(sce))
-```
-
-```{r pairs, fig.cap = "Pairwise expression of HTOs coloured by assigned by cluster.", eval = FALSE}
-# NOTE: Not using this figure (it's really a poor man's PCA or tSNE). It shows
-#       in most panels that there is a small group of cells that express 2 HTOs
-#       but have been assigned to one of the single HTO clusters.
-pairs(
-  t(logcounts(hto)),
-  col = scales::alpha(cluster_colours, c(0.1, 0.1, 0.1, 1, 0.1, 0.1, 0.1))[hto$cluster],
-  pch = 16,
-  cex = 0.5,
-  text.panel = function(x = 0.5, y = 0.5, txt, cex, font) {
-    col <- cluster_colours[cluster_to_hto_df[which(
-      cluster_to_hto_df$HTO == txt), "cluster"]]
-    text(x, y, txt, cex = cex, font = font, col = col)
-  },
-  upper.panel = NULL)
+# NOTE: This is a bit clunky because the colData contains SplitDataFrameList
+#       columns that would otherwise not survive the conversion to a data.frame.
+tmp <- as.data.frame(colData(sce)[, c("hto_cluster"), drop = FALSE]) %>%
+  mutate(hto_cluster = as.character(hto_cluster)) %>%
+  left_join(hto_df)
+colData(sce) <- cbind(
+  colData(sce)[, c("Barcode", "project", "TRA", "TRB")],
+  tmp)
 ```
 
 We will keep these 'unknown' droplets as their own category to see if these cells are transcriptomically distinct, which may indicate an issue with cell hashing for certain types of cells.
@@ -398,8 +363,11 @@ The following are available on request:
 
 # Session info {.appendix}
 
-The analysis and this document were prepared using the following software:
+<summary>The analysis and this document were prepared using the following software (click triangle to expand)</summary>
+<details>
 
 ```{r}
-sessionInfo()
+sessioninfo::session_info()
 ```
+
+</details>
