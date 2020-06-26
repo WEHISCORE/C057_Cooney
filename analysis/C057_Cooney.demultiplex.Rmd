@@ -176,9 +176,9 @@ Figures \@ref(fig:pca) and \@ref(fig:pca-faceted) use principal component analys
 
 ```{r pca, fig.cap = "PCA plot of the HTO data. Each point represents a cell with the colour explained in the legend.", fig.asp = 1}
 set.seed(666)
-sce <- runPCA(sce, altexp = "Antibody Capture", name = "PCA_HTO")
+sce <- runPCA(sce, altexp = "Antibody Capture", name = "HTO_PCA")
 
-plotReducedDim(sce, "PCA_HTO", colour_by = "hto_cluster", point_size = 0) +
+plotReducedDim(sce, "HTO_PCA", colour_by = "hto_cluster", point_size = 0) +
   geom_point(aes(colour = colour_by), size = 0.5) +
   scale_colour_manual(values = hto_cluster_colours, name = "hto_cluster") +
   ggtitle("PCA: HTOs") +
@@ -188,8 +188,8 @@ plotReducedDim(sce, "PCA_HTO", colour_by = "hto_cluster", point_size = 0) +
 ```{r pca-faceted, fig.cap = "PCA plot of the HTO data. Each panel highlights cells from a particular cluster.", fig.asp = 1}
 pca <- cbind(
   as.data.frame(colData(sce)),
-  x = reducedDim(sce, "PCA_HTO")[, 1],
-  y = reducedDim(sce, "PCA_HTO")[, 2])
+  x = reducedDim(sce, "HTO_PCA")[, 1],
+  y = reducedDim(sce, "HTO_PCA")[, 2])
 bg <- dplyr::select(pca, -hto_cluster)
 ggplot(aes(x = x, y = y), data = pca) +
   geom_point(data = bg, colour = scales::alpha("grey", 0.7), size = 0.1) +
@@ -204,31 +204,31 @@ ggplot(aes(x = x, y = y), data = pca) +
   theme(legend.position = "none")
 ```
 
-As an alternative to PCA, we can  use a $t$-stochastic neighbour embedding (t-SNE) [@van2008visualizing] to visualise the HTO data in 2-dimensions, overlaying the assigned cluster labels.
+As an alternative to PCA, we can uniform manifold approximation and projection (UMAP) method [@McInnes2018-hy] to visualise the HTO data in 2-dimensions, overlaying the assigned cluster labels.
 
 ```{r}
 set.seed(666)
-library(Rtsne)
-sce <- runTSNE(sce, dimred = "PCA_HTO", name = "TSNE_HTO")
+library(uwot)
+sce <- runUMAP(sce, dimred = "HTO_PCA", name = "HTO_UMAP")
 ```
 
-Figures \@ref(fig:tsne) and \@ref(fig:tsne-faceted) show that five clusters are clearly distinguishable from each other and that the two additional clusters are a little easier to visually resolve.
+Figures \@ref(fig:umap) and \@ref(fig:umap-faceted) show that five clusters are clearly distinguishable from each other and that the two additional clusters are a little easier to visually resolve.
 
-```{r tsne, fig.cap = "t-SNE plot of the HTO data. Each point represents a cell with the colour explained in the legend.", fig.asp = 1}
-plotReducedDim(sce, "TSNE_HTO", colour_by = "hto_cluster", point_size = 0) +
+```{r umap, fig.cap = "UMAP plot of the HTO data. Each point represents a cell with the colour explained in the legend.", fig.asp = 1}
+plotReducedDim(sce, "HTO_UMAP", colour_by = "hto_cluster", point_size = 0) +
   geom_point(aes(colour = colour_by), size = 0.5) +
   scale_colour_manual(values = hto_cluster_colours, name = "hto_cluster") +
-  ggtitle("t-SNE: HTOs") +
+  ggtitle("UMAP: HTOs") +
   theme_cowplot()
 ```
 
-```{r tsne-faceted, fig.cap = "t-SNE plot of the HTO data. Each panel highlights cells from a particular cluster.", fig.asp = 1}
-tsne <- cbind(
-  as.data.frame(colData(sce)),
-  x = reducedDim(sce, "TSNE_HTO")[, 1],
-  y = reducedDim(sce, "TSNE_HTO")[, 2])
-bg <- dplyr::select(tsne, -hto_cluster)
-ggplot(aes(x = x, y = y), data = tsne) +
+```{r umap-faceted, fig.cap = "UMAP plot of the HTO data. Each panel highlights cells from a particular cluster.", fig.asp = 1}
+umap_df <- cbind(
+  as.data.frame(colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")]),
+  x = reducedDim(sce, "HTO_UMAP")[, 1],
+  y = reducedDim(sce, "HTO_UMAP")[, 2])
+bg <- dplyr::select(umap_df, -hto_cluster)
+ggplot(aes(x = x, y = y), data = umap_df) +
   geom_point(data = bg, colour = scales::alpha("grey", 0.7), size = 0.1) +
   geom_point(aes(colour = hto_cluster), alpha = 1, size = 0.5) +
   scale_fill_manual(values = hto_cluster_colours, name = "Cluster") + 
@@ -241,7 +241,7 @@ ggplot(aes(x = x, y = y), data = tsne) +
   theme(legend.position = "none")
 ```
 
-Figure \@ref(fig:heatmap-average) and \@ref(fig:heatmap) show that the five clearly distinguishable clusters correspond to the cells uniquely labelled with a single HTO while the two remaining clusters correspond to the sample labelled with all 5 HTOs and cells labelled with two or more HTOs.
+Figure \@ref(fig:heatmap-average) shows that the five clearly distinguishable clusters correspond to the cells uniquely labelled with a single HTO while the two remaining clusters correspond to the sample labelled with all 5 HTOs and cells labelled with two or more HTOs.
 
 ```{r heatmap-average, fig.cap = "Heatmap of row-nomralized average log-expression of HTOs."}
 averaged <- sweep(
@@ -299,7 +299,7 @@ hto_to_sample_df <- data.frame(
 knitr::kable(hto_to_sample_df, caption = "Table linking HTOs to samples")
 ```
 
-James was targetting ~2000 cells / sample.
+James was targeting ~2000 cells / sample.
 The table below shows that we largely hit that target for the uninfected samples but not so for the infected samples.
 It also shows that proportion of droplets that are 'unassigned' (i.e. those in cluster (`r which.max(table(sce$hto_cluster))`) is larger than we would like.
 
@@ -332,11 +332,11 @@ These unassigned droplets likely include true doublets, mis-assigned singlets fr
 ```{r}
 # NOTE: This is a bit clunky because the colData contains SplitDataFrameList
 #       columns that would otherwise not survive the conversion to a data.frame.
-tmp <- as.data.frame(colData(sce)[, c("hto_cluster"), drop = FALSE]) %>%
-  mutate(hto_cluster = as.character(hto_cluster)) %>%
+tmp <- as.data.frame(
+  colData(sce)[, c("hto_cluster"), drop = FALSE]) %>%
   left_join(hto_df)
 colData(sce) <- cbind(
-  colData(sce)[, c("Barcode", "project", "TRA", "TRB")],
+  colData(sce)[, c("Barcode", "project", "hto_cluster_colours", "TRA", "TRB")],
   tmp)
 ```
 

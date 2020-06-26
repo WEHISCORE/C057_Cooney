@@ -402,7 +402,7 @@ If the discarded pool is enriched for a certain cell type, we should observe inc
 Another concern is whether the cells removed during QC preferentially derive from particular experimental groups.
 Reassuringly, Figure \@ref(fig:barplot-highlighting-outliers) shows that this is not the case.
 
-```{r barplot-highlighting-outliers, fig.cap = "Droplets removed during QC, stratified by `donor_id` and `HTO`. "}
+```{r barplot-highlighting-outliers, fig.cap = "Droplets removed during QC, stratified by `Sample`. "}
 ggplot(
   as.data.frame(colData(sce_pre_QC_outlier_removal)[, c("Sample", "keep")])) + 
   geom_bar(aes(x = Sample, fill = keep)) + 
@@ -730,48 +730,104 @@ This approach represents one extreme of the bias-variance trade-off where bias i
 hvg <- getTopHVGs(var_fit, var.threshold = 0)
 ```
 
-### Exclusion of ribosomal protein and mitochondrial genes from HVGs
+## Summary
+
+We are left with `r length(hvg)` HVGs by this approach^[This is a large number of HVGs but the results don't qualitatively change by reducing this to, say, the top-1000 HVGs.].
+Figure \@ref(fig:hvgs) shows the expression of the top-10 HVGs.
+
+```{r hvgs, fig.cap = "Violin plots of normalized log-expression values for the top-10 HVGs. Each point represents the log-expression value in a single cell."}
+plotExpression(object = sce, features = hvg[1:10])
+```
+
+# Dimensionality reduction
+
+Many scRNA-seq analysis procedures involve comparing cells based on their expression values across multiple genes.
+In these applications, each individual gene represents a dimension of the data. 
+If we had a scRNA-seq data set with two genes, we could make a two-dimensional plot where each axis represents the expression of one gene and each point in the plot represents a cell.
+Dimensionality reduction extends this idea to data sets with thousands of genes where each cell’s expression profile defines its location in the high-dimensional expression space.
+
+As the name suggests, dimensionality reduction aims to reduce the number of separate dimensions in the data.
+This is possible because different genes are correlated if they are affected by the same biological process.
+Thus, we do not need to store separate information for individual genes, but can instead compress multiple features into a single dimension.
+This reduces computational work in downstream analyses, as calculations only need to be performed for a few dimensions rather than thousands of genes; reduces noise by averaging across multiple genes to obtain a more precise representation of the patterns in the data; and enables effective plotting of the data, for those of us who are not capable of visualizing more than 3 dimensions.
+
+## Principal component analysis
+
+Principal components analysis (PCA) discovers axes in high-dimensional space that capture the largest amount of variation.
+In PCA, the first axis (or "principal component", PC) is chosen such that it captures the greatest variance across cells.
+The next PC is chosen such that it is orthogonal to the first and captures the greatest remaining amount of variation, and so on.
+
+By definition, the top PCs capture the dominant factors of heterogeneity in the data set.
+Thus, we can perform dimensionality reduction by restricting downstream analyses to the top PCs.
+This strategy is simple, highly effective and widely used throughout the data sciences.
+
+When applying PCA to scRNA-seq data, our assumption is that biological processes affect multiple genes in a coordinated manner.
+This means that the earlier PCs are likely to represent biological structure as more variation can be captured by considering the correlated behaviour of many genes.
+By comparison, random technical or biological noise is expected to affect each gene independently.
+There is unlikely to be an axis that can capture random variation across many genes, meaning that noise should mostly be concentrated in the later PCs.
+This motivates the use of the earlier PCs in our downstream analyses, which concentrates the biological signal to simultaneously reduce computational work and remove noise.
+
+We perform the PCA on the log-normalized expression values.
+PCA is generally robust to random noise but an excess of it may cause the earlier PCs to capture noise instead of biological structure.
+This effect can be avoided - or at least mitigated - by restricting the PCA to a subset of HVGs, as done in [Feature selection].
+
+The choice of the number of PCs is a decision that is analogous to the choice of the number of HVGs to use.
+Using more PCs will avoid discarding biological signal in later PCs, at the cost of retaining more noise.
+
+We use the strategy of retaining all PCs until the percentage of total variation explained reaches some threshold.
+We derive a suitable value for this threshold by calculating the proportion of variance in the data that is attributed to the biological component.
+This is done using the the variance modelling results from [Quantifying per-gene variation].
 
 ```{r}
-is_mito <- hvg %in% mito_set
-is_ribo <- hvg %in% ribo_set
+set.seed(67726)
+sce <- denoisePCA(
+  sce, 
+  var_fit, 
+  subset.row = hvg,
+  BSPARAM = BiocSingular::IrlbaParam(deferred = TRUE))
 ```
 
-**TODO:** Is this actually a good idea for this dataset? UP TO HERE
+This retains `r ncol(reducedDim(sce, "PCA"))` dimensions, which represents the lower bound on the number of PCs required to retain all biological variation.
+Any fewer PCs will definitely discard some aspect of biological signal^[Note that the converse is not true, i.e., there is no guarantee that the retained PCs capture all of the signal, which is only generally possible if no dimensionality reduction is performed at all.].
+This approach provides a reasonable choice when we want to retain as much signal as possible while still removing some noise.
 
-We find that the most highly variable genes in this dataset are strongly enriched for ribosomal protein genes^[Here, ribosomal protein genes are defined as those gene symbols starting with "RPL" or "RPS" or otherwise found in the ["KEGG_RIBOSOME" gene set published by MSigDB](https://www.gsea-msigdb.org/gsea/msigdb/cards/KEGG_RIBOSOME.html), namely: `r glue::glue_collapse(sort(ribo_set), sep = ", ")`] (n = `r sum(is_ribo)`) and mitochondrial genes (n = `r sum(is_mito)`), with Figure \@ref(fig:perc-mito-and-ribo) showing that nearly 80% of the top-100 HVGs are ribosomal protein genes or mitochondrial genes.
+## Dimensionality reduction for visualization
 
-```{r perc-mito-and-ribo, fig.cap = "Percentage of top-K HVGs that are mitochondrial or ribosomal protein genes."}
-par(mfrow = c(1, 1))
-plot(
-  100 * cumsum(is_mito) / seq_along(hvg),
-  log = "x",
-  ylim = c(0, 100),
-  ylab = "%",
-  xlab = "Top-k genes",
-  col = "dodgerBlue",
-  pch = 16)
-points(100 * cumsum(is_ribo) / seq_along(hvg), col = "orange", pch = 16)
-points(100 * cumsum(is_mito | is_ribo) / seq_along(hvg), col = "black", pch = 16)
-legend(
-  "topright",
-  pch = 16,
-  col = c("black", "orange", "dodgerBlue"),
-  legend = c("Both", "Ribosomal protein", "Mitochondrial"))
+We use the uniform manifold approximation and projection (UMAP) method [@McInnes2018-hy] to perform further dimensionality reduction for visualization.
+
+```{r}
+library(uwot)
+set.seed(853)
+sce <- runUMAP(sce, dimred = "PCA")
+umap_df <- cbind(
+  data.frame(
+    x = reducedDim(sce, "UMAP")[, 1],
+    y = reducedDim(sce, "UMAP")[, 2]),
+  as.data.frame(colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")]))
 ```
 
+Figure \@ref(fig:umap) visualizes the droplets using the UMAP co-ordinates.
 
+```{r umap, fig.cap = "UMAP plot of the dataset. Each point represents a droplets and is coloured by `HTO`. Each panel highlights droplets from a particular sample.", fig.asp = 1}
+bg <- dplyr::select(umap_df, -Sample)
+ggplot(aes(x = x, y = y), data = umap_df) +
+  geom_point(data = bg, colour = scales::alpha("grey", 0.5), size = 0.125) +
+  geom_point(aes(colour = HTO), alpha = 1, size = 0.25) +
+  scale_fill_manual(values = hto_colours, name = "HTO") +
+  scale_colour_manual(values = hto_colours, name = "HTO") +
+  theme_cowplot(font_size = 10) +
+  xlab("Dimension 1") +
+  ylab("Dimension 2") +
+  facet_wrap(~ Sample, ncol = 3) +
+  guides(colour = FALSE)
+```
 
+## Summary
 
+Although Figure \@ref(fig:umap) is only a preliminary summary of the data, there are few points worth highlighting:
 
-
-# OLD CODE
-
-
-
-
-
-
+- In terms of UMAP co-ordinates, there are some visual differences between `Infected` and `Uninfected` samples that are consistent across replicates.
+- The `Unknown` droplets are somewhat localised on the UMAP plot but these regions also contain droplets confidently assigned to a sample.
 
 # Concluding remarks
 
@@ -782,8 +838,8 @@ saveRDS(
   compress = "xz")
 ```
 
-The processed *SingleCellExperiment* object is available (see [`data/SCEs/C057_Cooney.processed.SCE.rds`](../data/SCEs/C057_Cooney.processed.SCE.rds)).
-This will be used in downstream analyses, e.g. when performing dimensionality reduction and clustering of cells.
+The processed *SingleCellExperiment* object is available (see [`data/SCEs/C057_Cooney.preprocessed.SCE.rds`](../data/SCEs/C057_Cooney.preprocessed.SCE.rds)).
+This will be used in downstream analyses, e.g., selecting biologically relevant cells.
 
 # Additional information {.appendix}
 
@@ -794,8 +850,11 @@ The following are available on request:
 
 # Session info {.appendix}
 
-The analysis and this document were prepared using the following software:
+<summary>The analysis and this document were prepared using the following software (click triangle to expand)</summary>
+<details>
 
 ```{r}
-sessionInfo()
+sessioninfo::session_info()
 ```
+
+</details>
