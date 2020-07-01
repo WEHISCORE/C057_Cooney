@@ -29,6 +29,10 @@ sce <- splitAltExps(
   sce,
   rowData(sce)$Type,
   "Gene Expression")
+# NOTE: HTO data aren't sparse, so simplify by storing as a dense matrix
+#       (see https://osca.bioconductor.org/integrating-with-protein-abundance.html#setting-up-the-data-2)
+counts(altExp(sce, "Antibody Capture")) <- as.matrix(
+  counts(altExp(sce, "Antibody Capture")))
 
 # VDJ
 tcr <- read.csv(
