@@ -808,13 +808,13 @@ umap_df <- cbind(
 
 Figure \@ref(fig:umap) visualizes the droplets using the UMAP co-ordinates.
 
-```{r umap, fig.cap = "UMAP plot of the dataset. Each point represents a droplets and is coloured by `HTO`. Each panel highlights droplets from a particular sample.", fig.asp = 1}
+```{r umap, fig.cap = "UMAP plot of the dataset. Each point represents a droplets and is coloured by `Sample`. Each panel highlights droplets from a particular sample.", fig.asp = 1}
 bg <- dplyr::select(umap_df, -Sample)
 ggplot(aes(x = x, y = y), data = umap_df) +
   geom_point(data = bg, colour = scales::alpha("grey", 0.5), size = 0.125) +
-  geom_point(aes(colour = HTO), alpha = 1, size = 0.25) +
-  scale_fill_manual(values = hto_colours, name = "HTO") +
-  scale_colour_manual(values = hto_colours, name = "HTO") +
+  geom_point(aes(colour = Sample), alpha = 1, size = 0.25) +
+  scale_fill_manual(values = sample_colours, name = "HTO") +
+  scale_colour_manual(values = sample_colours, name = "HTO") +
   theme_cowplot(font_size = 10) +
   xlab("Dimension 1") +
   ylab("Dimension 2") +
