@@ -289,7 +289,7 @@ pheatmap(
   annotation_col = data.frame(
     hto_cluster = sce$hto_cluster,
     row.names = colnames(sce)),
-  annotation_colours = list(cluster = hto_cluster_colours),
+  annotation_colours = list(hto_cluster = hto_cluster_colours),
   show_colnames = FALSE,
   scale = "none")
 ```
