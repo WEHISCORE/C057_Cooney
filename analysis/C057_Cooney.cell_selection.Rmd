@@ -196,7 +196,8 @@ plot_grid(
     coord_flip() +
     ylab("Number of droplets") +
     scale_fill_manual(values = cluster_colours) +
-    theme_cowplot(font_size = 5),
+    theme_cowplot(font_size = 5) + 
+    guides(fill = FALSE),
   align = "h",
   ncol = 3)
 ```
@@ -689,7 +690,8 @@ plot_grid(
     coord_flip() +
     ylab("Number of droplets") +
     scale_fill_manual(values = cluster_colours) +
-    theme_cowplot(font_size = 5),
+    theme_cowplot(font_size = 5) + 
+    guides(fill = FALSE),
   align = "h",
   ncol = 3)
 ```
@@ -1054,7 +1056,8 @@ plot_grid(
     coord_flip() +
     ylab("Number of droplets") +
     scale_fill_manual(values = cluster_colours) +
-    theme_cowplot(font_size = 5),
+    theme_cowplot(font_size = 5) + 
+    guides(fill = FALSE),
   align = "h",
   ncol = 3)
 ```
@@ -1080,13 +1083,13 @@ We first use the HTOs to identify 'labelled' doublets and then leverage these in
 ### 'Labelled' doublets
 
 For this experiment, the sample labelling is done with HTOs.
-With 5 unique HTOs, there are ${5}\choose{2} = 10$ ways a droplet could be labelled with 2 HTOs.
+With 5 unique HTOs, there are ${5 \choose 2} = 10$ ways a droplet could be labelled with 2 HTOs.
 The cell hashing data will not identify all doublets, most obviously those formed between cells from the same sample.
 It will also be near impossible to identify those doublets formed between a cell labelled with all 5 HTOs (i.e. a cell from the `uninfected_3` sample) and another cell labelled with a single HTO.
 
 We use the HTOs to identify doublets, we perform a high-resolution clustering of the HTO data^[This uses a higher resolution than that used in ['Demultiplexing the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney.demultiplex.html)].
 
-```{r}
+```{r, results = "hide"}
 g <- buildSNNGraph(altExp(sce, "Antibody Capture"), k = 25, d = NA)
 clusters <- igraph::cluster_louvain(g)$membership
 sce$hto_cluster_fine <- factor(clusters)
@@ -1134,12 +1137,12 @@ plotReducedDim(
 ```
 
 These small clusters very likely comprise doublets.
-To examine this directly, Figures \@ref(fig:hto-doublet-hto-heatmap), \@ref(fig:hto-doublet-hto-heatmap-doublts-and-unknowns), and \@ref(fig:hto-doublet-hto-heatmap-doublets) are heatmaps of the HTO counts, with each focusing on a more restricted set of cells, which collectively show:
+To examine this directly, Figures \@ref(fig:hto-doublet-hto-heatmap), \@ref(fig:hto-doublet-hto-heatmap-doublets-and-unknowns), and \@ref(fig:hto-doublet-hto-heatmap-doublets) are heatmaps of the HTO counts, with each focusing on a more restricted set of cells, which collectively show:
 
 1. Five large clusters each containing droplets with large counts for a single HTO correspond to the droplets labelled with a single HTO.
 2. One large cluster containing droplets with moderate-to-large counts for all 5 HTOs corresponds to the droplets labelled with all 5 HTOs.
 3. One moderately sized cluster containing droplets with moderate-to-high counts of some (but not all) 5 HTOs. These correspond to droplets that we cannot assign to an individual sample.
-4. Ten small clusters containing droplets with large counts for 2 HTOs. These correspond to the ${5}\choose{2} = 10$ ways a doublet could be formed from two cells each labelled with a single one of the 5 distinct HTOs.
+4. Ten small clusters containing droplets with large counts for 2 HTOs. These correspond to the ${5 \choose 2} = 10$ ways a doublet could be formed from two cells each labelled with a single one of the 5 distinct HTOs.
 
 ```{r hto-doublet-hto-heatmap, fig.cap = "Heatmap of log2(counts) for the HTOs."}
 library(pheatmap)
@@ -1151,7 +1154,7 @@ pheatmap(
   annotation_col = data.frame(
     hto_cluster_fine = sce$hto_cluster_fine,
     row.names = colnames(sce)),
-  annotation_colours = list(
+  annotation_colors = list(
     hto_cluster_fine = hto_cluster_fine_colours),
   show_colnames = FALSE,
   scale = "none")
@@ -1168,7 +1171,10 @@ pheatmap(
   annotation_col = data.frame(
     hto_cluster_fine = sce$hto_cluster_fine,
     row.names = colnames(sce)),
-  annotation_colours = list(hto_cluster_fine = hto_cluster_fine_colours),
+  annotation_colors = list(
+    # NOTE: Select 'active' colour levels.
+    hto_cluster_fine = hto_cluster_fine_colours[
+      levels(factor(tmp_sce$hto_cluster_fine))]),
   show_colnames = FALSE,
   scale = "none")
 ```
@@ -1183,7 +1189,10 @@ pheatmap(
   annotation_col = data.frame(
     hto_cluster_fine = sce$hto_cluster_fine,
     row.names = colnames(sce)),
-  annotation_colours = list(hto_cluster_fine = hto_cluster_fine_colours),
+  annotation_colors = list(
+    # NOTE: Select 'active' colour levels.
+    hto_cluster_fine = hto_cluster_fine_colours[
+      levels(factor(tmp_sce$hto_cluster_fine))]),
   show_colnames = FALSE,
   scale = "none")
 ```
@@ -1263,6 +1272,7 @@ plot_grid(
 Reassuringly, most of the 'unlabelled' doublets come from the droplets currently labelled as the `uninfected_3` sample, which was labelled with all 5 HTOs and for which it was difficult to identify 'labelled' doublets.
 
 ```{r}
+library(janitor)
 tabyl(
   data.frame(predicted_doublet = doublets_df$predicted, Sample = sce$Sample),
   Sample, predicted_doublet) %>%
@@ -1448,7 +1458,8 @@ plot_grid(
     coord_flip() +
     ylab("Number of droplets") +
     scale_fill_manual(values = cluster_colours) +
-    theme_cowplot(font_size = 5),
+    theme_cowplot(font_size = 5) + 
+    guides(fill = FALSE),
   align = "h",
   ncol = 3)
 ```
@@ -1662,7 +1673,8 @@ plot_grid(
     coord_flip() +
     ylab("Number of droplets") +
     scale_fill_manual(values = cluster_colours) +
-    theme_cowplot(font_size = 5),
+    theme_cowplot(font_size = 5) + 
+    guides(fill = FALSE),
   align = "h",
   ncol = 3)
 ```
