@@ -23,7 +23,7 @@ library(cowplot)
 
 source(here("code", "helper_functions.R"))
 
-# NOTE: Using >= 4 cores siezes up my laptop. Can use more on unix box.
+# NOTE: Using >= 4 cores seizes up my laptop. Can use more on unix box.
 options("mc.cores" = ifelse(Sys.info()[["nodename"]] == "PC1331", 2L, 3L))
 
 knitr::opts_chunk$set(fig.path = "C057_Cooney.demultiplex_files/")
@@ -103,6 +103,7 @@ dplyr::mutate(as.data.frame(empties), Sample = rep("C057", nrow(empties))) %>%
   dplyr::select(library, keep, remove) %>%
   knitr::kable(
     caption = "Number of droplets kept and removed after filtering empty drops.")
+sce_empties <- sce[, -which(empties$FDR <= 0.001)]
 sce <- sce[, which(empties$FDR <= 0.001)]
 ```
 
@@ -147,19 +148,37 @@ altExp(sce, "Antibody Capture") <- altExp(
   sce, "Antibody Capture")[paste0("human_", 1:5), ]
 ```
 
-We perform library-size normalization of the HTO counts and then cluster the log-expression of the HTOs to identify samples with similar HTO expression profiles.
+We compute median-based size factors of the HTO counts and use these to normalize the HTO counts^[Median-based size factors can adjust for the composition bias that is inherent to the HTO counts; see [https://osca.bioconductor.org/integrating-with-protein-abundance.html#normalization-1](https://osca.bioconductor.org/integrating-with-protein-abundance.html#normalization-1) for details.].
+This requires an estimate of the ambient expression of each HTO, which we estimate from the empty droplets.
+
+<aside>
+It's noteworthy that the ambient expression varies across the HTOs, with a 4-fold difference between the least and most abundant HTO.
+</aside>
+
+```{r}
+ambient <- rowMeans(counts(altExp(sce_empties)))[rownames(altExp(sce))]
+as.data.frame(ambient) %>%
+  knitr::kable(digits = 1, caption = "Estimated ambient counts for each HTO.")
+```
 
 ```{r}
 library(scater)
-# Compute size factors
-sf_lib <- librarySizeFactors(altExp(sce, "Antibody Capture"))
+sf_amb <- medianSizeFactors(
+  altExp(sce, "Antibody Capture"),
+  reference = ambient)
+# NOTE: Size factors should be positive.
+sf_amb[sf_amb == 0] <- min(sf_amb[sf_amb > 0])
+```
 
+We then cluster the log-expression of the HTOs to identify samples with similar HTO expression profiles.
+
+```{r}
 library(scran)
-sizeFactors(altExp(sce, "Antibody Capture")) <- sf_lib
+sizeFactors(altExp(sce, "Antibody Capture")) <- sf_amb
 altExp(sce, "Antibody Capture") <- logNormCounts(
   altExp(sce, "Antibody Capture"))
 # NOTE: `d = NA` means no dimensionality reduction is performed.
-# NOTE: `k = 150` was selected by trial and error to get a reasonable number of 
+# NOTE: `k = 100` was selected by trial and error to get a reasonable number of 
 #       clusters that avoided overclustering the multi-HTO samples.
 g <- buildSNNGraph(altExp(sce, "Antibody Capture"), k = 100, d = NA)
 clusters <- igraph::cluster_louvain(g)$membership
@@ -168,13 +187,14 @@ hto_cluster_colours <- setNames(
   palette("Okabe-Ito")[seq_len(nlevels(sce$hto_cluster))],
   levels(sce$hto_cluster))
 sce$hto_cluster_colours <- hto_cluster_colours[sce$hto_cluster]
+stopifnot(nlevels(sce$hto_cluster) == 7)
 ```
 
 ## Visualize demultiplexing results
 
 Figures \@ref(fig:pca) and \@ref(fig:pca-faceted) use principal component analysis (PCA) to show that five clusters are fairly distinguishable from each other and that there are two additional clusters that are more difficult to resolve.
 
-```{r pca, fig.cap = "PCA plot of the HTO data. Each point represents a cell with the colour explained in the legend.", fig.asp = 1}
+```{r pca, fig.cap = "PCA plot of the HTO data. Each point represents a cell with the colour explained in the legend.", fig.asp = 0.8}
 set.seed(666)
 sce <- runPCA(sce, altexp = "Antibody Capture", name = "HTO_PCA")
 
@@ -212,9 +232,9 @@ library(uwot)
 sce <- runUMAP(sce, dimred = "HTO_PCA", name = "HTO_UMAP")
 ```
 
-Figures \@ref(fig:umap) and \@ref(fig:umap-faceted) show that five clusters are clearly distinguishable from each other and that the two additional clusters are a little easier to visually resolve.
+Figures \@ref(fig:umap) and \@ref(fig:umap-faceted) show that five clusters are clearly distinguishable from each other and that the two additional clusters are a little harder to visually resolve.
 
-```{r umap, fig.cap = "UMAP plot of the HTO data. Each point represents a cell with the colour explained in the legend.", fig.asp = 1}
+```{r umap, fig.cap = "UMAP plot of the HTO data. Each point represents a cell with the colour explained in the legend.", fig.asp = 0.8}
 plotReducedDim(sce, "HTO_UMAP", colour_by = "hto_cluster", point_size = 0) +
   geom_point(aes(colour = colour_by), size = 0.5) +
   scale_colour_manual(values = hto_cluster_colours, name = "hto_cluster") +
@@ -241,48 +261,37 @@ ggplot(aes(x = x, y = y), data = umap_df) +
   theme(legend.position = "none")
 ```
 
-Figure \@ref(fig:heatmap-average) shows that the five clearly distinguishable clusters correspond to the cells uniquely labelled with a single HTO while the two remaining clusters correspond to the sample labelled with all 5 HTOs and cells labelled with two or more HTOs.
+Figure \@ref(fig:hto-heatmap) is a heatmap of the HTO counts by cluster and shows:
 
-```{r heatmap-average, fig.cap = "Heatmap of row-nomralized average log-expression of HTOs."}
-averaged <- sweep(
-  assay(
-    sumCountsAcrossCells(
-      altExp(sce, "Antibody Capture"), 
-      sce$hto_cluster, 
-      exprs_values = "logcounts")),
-  2,
-  table(sce$hto_cluster),
-  "/")
-# Sanity check
-stopifnot(all(apply(averaged, 2, which.max) == c(3, 2, 1, 1, 4, 5, 1)))
+- Five clusters each containing droplets with large counts for a single HTO correspond to the droplets labelled with a single HTO.
+- One cluster containing droplets with moderate-to-large counts for all 5 HTOs corresponds to the droplets labelled with all 5 HTOs.
+- One cluster containing a majority of droplets with low counts for all 5 HTOs and a minority of droplets with moderate-to-high counts of some (but not all) 5 HTOs. The majority correspond to droplets that we cannot assign to an individual sample whereas the minority may represent doublets.
+
+```{r hto-heatmap, fig.cap = "Heatmap of log2(counts) for the HTOs."}
+# NOTE: This plot is the same as the following, but allows me to specify the 
+#       `annotation_colours`.
+# assay(altExp(sce), "log2(counts+1)") <- log2(counts(altExp(sce)) + 1)
+# plotHeatmap(
+#   altExp(sce),
+#   color = viridisLite::inferno(100),
+#   rownames(altExp(sce)),
+#   colour_columns_by = "hto_cluster",
+#   exprs_values = "log2(counts+1)",
+#   order_columns_by = "hto_cluster",
+#   cluster_rows = FALSE)
 
 library(pheatmap)
-mat <- averaged - rowMeans(averaged)
-rownames(mat) <- rownames(altExp(sce, "Antibody Capture"))
 pheatmap(
-  mat = mat,
-  breaks = seq(-max(abs(mat)), max(abs(mat)), length.out = 101),
-  cluster_cols = FALSE,
+  log2(counts(altExp(sce)) + 1)[, order(sce$hto_cluster)],
+  color = viridisLite::inferno(100),
   cluster_rows = FALSE,
+  cluster_cols = FALSE,
   annotation_col = data.frame(
-    cluster = colnames(averaged),
-    row.names = colnames(averaged)),
-  annotation_colors = list(cluster = hto_cluster_colours),
-  color = colorspace::divergex_hcl(n = 100, palette = "RdBu", rev = TRUE))
-```
-
-Figure \@ref(fig:violin) plots the expression of each HTO by cluster and confirms that the expression of each HTO is highest in the samples uniquely labelled with that HTO.
-Figure \@ref(fig:violin) also reveals that the distribution of expression is very tight (i.e. low variability) for these samples labelled uniquely with that HTO as well as in the samples that were labelled with all 5 HTOs (cluster 5).
-In contrast, the samples in cluster 4 often have high expression of each HTO but this expression is much more variable than those samples in cluster 5.
-
-```{r violin, fig.cap = "Expression of HTOs by cluster."}
-plotExpression(
-  altExp(sce, "Antibody Capture"),
-  features = rownames(altExp(sce, "Antibody Capture")),
-  x = I(sce$hto_cluster),
-  colour_by = I(sce$hto_cluster)) +
-  scale_fill_manual(values = hto_cluster_colours) +
-  theme_cowplot()
+    hto_cluster = sce$hto_cluster,
+    row.names = colnames(sce)),
+  annotation_colours = list(cluster = hto_cluster_colours),
+  show_colnames = FALSE,
+  scale = "none")
 ```
 
 ## Assignment of HTO clusters to samples
@@ -301,35 +310,24 @@ knitr::kable(hto_to_sample_df, caption = "Table linking HTOs to samples")
 
 James was targeting ~2000 cells / sample.
 The table below shows that we largely hit that target for the uninfected samples but not so for the infected samples.
-It also shows that proportion of droplets that are 'unassigned' (i.e. those in cluster (`r which.max(table(sce$hto_cluster))`) is larger than we would like.
+It also shows that the proportion of droplets that are 'unassigned' (i.e. those in cluster (`r which.max(table(sce$hto_cluster))`) is larger than we would like.
+These unassigned droplets likely include true doublets, mis-assigned singlets from the cells labelled with all five HTOs, and samples comprising ambient RNAs and HTOs (aka the 'soup' [@young10soupx]).
 
 ```{r}
 # Map clusters to HTOs to samples
 # NOTE: This is made by visually inspecting the above heatmaps.
 cluster_to_hto_df <- data.frame(
   hto_cluster = factor(levels(sce$hto_cluster)),
-  HTO = c(
-    "human_3",
-    "human_2",
+    HTO = c(
     NA_character_,
+    "human_1",
+    "human_2",
     paste0("human_", c(paste0(1:5, collapse = "_"))), 
+    "human_3",
     "human_4",
-    "human_5",
-    "human_1"))
+    "human_5"))
 
 hto_df <- left_join(cluster_to_hto_df, hto_to_sample_df)
-knitr::kable(
-  hto_df %>%
-    left_join(
-    tabyl(data.frame(hto_cluster = sce$hto_cluster), hto_cluster) %>%
-      adorn_pct_formatting(1)) %>%
-    dplyr::arrange(Sample), 
-  caption = "Tabulation of samples by treatment and replicate (mouse). The samples are unpaired. 'NA' values are those samples who HTOs could not be demultiplexed.")
-```
-
-These unassigned droplets likely include true doublets, mis-assigned singlets from the cells labelled with all five HTOs, and samples comparising ambient RNAs/HTOs (aka the 'soup' [@young10soupx]).
-
-```{r}
 # NOTE: This is a bit clunky because the colData contains SplitDataFrameList
 #       columns that would otherwise not survive the conversion to a data.frame.
 tmp <- as.data.frame(
@@ -338,6 +336,14 @@ tmp <- as.data.frame(
 colData(sce) <- cbind(
   colData(sce)[, c("Barcode", "project", "hto_cluster_colours", "TRA", "TRB")],
   tmp)
+
+knitr::kable(
+  hto_df %>%
+    left_join(
+    tabyl(data.frame(hto_cluster = sce$hto_cluster), hto_cluster) %>%
+      adorn_pct_formatting(1)) %>%
+    dplyr::arrange(Sample), 
+  caption = "Tabulation of samples by treatment and replicate (mouse). The samples are unpaired. 'NA' values are those samples who HTOs could not be confidently assigned to a single `Sample`.")
 ```
 
 We will keep these 'unknown' droplets as their own category to see if these cells are transcriptomically distinct, which may indicate an issue with cell hashing for certain types of cells.
