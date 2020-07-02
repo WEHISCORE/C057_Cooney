@@ -57,7 +57,7 @@ The removal of unwanted droplets is an iterative process where at each step we:
     b. Perform dimensionality reduction (PCA and UMAP).
     c. Cluster droplets.
 
-Clustering is a critical component of this process, so we discuss it in further detail.
+Clustering is a critical component of this process, so we discuss it in further detail in the next subsection.
 
 ## Clustering
 
@@ -1686,141 +1686,706 @@ Notably:
 
 # Exclusion of unwanted cell types
 
-**TODO:** UP TO HERE
+## Motivation
+
+James enriched for CD4+ T-cells prior to performing scRNA-seq.
+However, an enrichment procedure is just that and unwanted cell types may sneak through.
+
+We can categorise unwanted cell types as either:
+
+1. 'Known' unwanted cell types: Unwanted cell types that we did know to look for *a priori* (i.e. unwanted cell types we know may have snuck through the enrichment process)
+2. 'Unknown' unwanted cell types: Unwanted cell types that we didn't know to look for *a priori* (i.e. unwanted cell types that we didn't may have snuck through the enrichment process).
+
+We will use different analysis strategies to identify the 'known' and 'unknown' unwanted cell types.
+Once we have identified the unwanted cell types, we will exclude the unwanted these cells from further analysis.
+
+## 'Unknown' unwanted cell types
+
+### Motivation
+
+A conceptually straightforward annotation approach is to compare the single-cell expression profiles with previously annotated reference data sets.
+Labels can then be assigned to each cell in our uncharacterised test data set based on the most similar reference sample(s), for some definition of "similar".
+Any published and labelled RNA-seq data set (bulk or single-cell) can be used as a reference, though its reliability depends greatly on the expertise of the original authors who assigned the labels in the first place.
+
+`r Biocpkg("SingleR")` is one such automatic annotation method for scRNA-seq data [@aran2019reference].
+Given a reference data set(s) of samples^[This can be individual cells or bulk samples.] with known labels, it labels new cells from a test data set based on similarity to the reference set(s).
+Specifically, for each test cell:
+
+1. We compute the Spearman correlation between its expression profile and that of each reference sample. 
+2. We define the per-label score as a fixed quantile (by default, 0.8) of the distribution of correlations.
+3. We repeat this for all labels and we take the label with the highest score as the annotation for this cell.
+4. Finally, we perform a fine-tuning step:
+- The reference data set is subsetted to only include labels with scores close to the maximum.
+- Scores are recomputed using only marker genes for the subset of labels.
+- This is iterated until one label remains.
+
+For visualization purposes we use the normalized scores, which are the scores linearly adjusted for each cell so that the smallest score is 0 and the largest score is 1.
+This is followed by cubing of the adjusted scores to improve dynamic range near 1. 
+
+Automatic annotation provides a convenient way of transferring biological knowledge across data sets.
+In this manner, the burden of interpreting clusters and defining marker genes only has to be done once (i.e. for the reference set).
+
+`r Biocpkg("SingleR")` can annotate at both the cluster-level and at the cell-level.
+The trade-off between cluster-level and cell-level annotation is one of increased robustness to noise (cluster-level) vs. increased resolution (cell-level).
+Poor-quality assignments with 'low' scores are labelled as `NA`.
+
+#### Available references
+
+`r Biocpkg("SingleR")` includes several in-built reference data sets, some of which are relevant for this study:
+
+* `HumanPrimaryCellAtlasData` (`HPCA`): The Human Primary Cell Atlas [@hpcaRef]
+* `BlueprintEncodeData` (`BE`): Blueprint [@blueprintRef] and Encode [@encodeRef]
+* `DatabaseImmuneCellExpressionData` (`DICE`): The [Database of Immune Cell Expression (DICE)](https://dice-database.org/) [@diceRef]
+* `NovershternHematopoieticData` (`NH`): The [Novershtern Hematopoietic Cell Data (GSE24759)](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE24759) [@nhRef]
+* `MonacoImmuneData` (`MI`): The [Monaco Immune Cell Data (GSE107011)](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE107011) [@monaco_immuneRef].
+
+These bulk RNA-seq and microarray data sets were obtained from pre-sorted cell populations, i.e., the cell labels of these samples were mostly derived based on the respective sorting/purification strategy, not via *in silico* prediction methods.
+
+The characteristics of each data set are summarized below^[Table adapted from [https://bioconductor.org/packages/release/bioc/vignettes/SingleR/inst/doc/SingleR.html#5_available_references](https://bioconductor.org/packages/release/bioc/vignettes/SingleR/inst/doc/SingleR.html#5_available_references)]:
+
+| Reference | Samples | Sample types |  No. of main labels  | No. of fine labels | Cell type focus |
+|------------------|----------|-------------|----------------------|------------|----------|
+|`HPCA`| 713 | microarrays of sorted cell populations  | 37 |  157 | Non-specific |
+|`BE` | 259 | RNA-seq | 24 | 43 | Non-specific |
+|`DICE` | 1561 | RNA-seq | 5 | 15 | Immune |
+|`NH` | 211 | microarrays of sorted cell populations | 17 | 38 | Hematopoietic & Immune |
+|`MI` | 114 | RNA-seq | 11 | 29 | Immune |
+
+The available sample types in each set can be viewed in the collapsible sections below.
+
+```{r}
+library(SingleR)
+```
+
+<details>
+<summary>`HumanPrimaryCellAtlasData` Labels</summary>
+
+```{r, echo=FALSE, message=FALSE}
+hpca <- HumanPrimaryCellAtlasData()
+.adf(colData(hpca)) %>% 
+  dplyr::count(label.main, label.fine) %>%
+  dplyr::arrange(label.main) %>%
+  knitr::kable()
+```
+</details>
+
+<details>
+<summary>`BlueprintEncodeData` Labels</summary>
+
+```{r, echo = FALSE, message = FALSE}
+be <- BlueprintEncodeData()
+.adf(colData(be)) %>% 
+  dplyr::count(label.main, label.fine) %>%
+  dplyr::arrange(label.main) %>%
+  knitr::kable()
+```
+</details>
+
+<details>
+<summary>`DatabaseImmuneCellExpressionData` Labels</summary>
+
+```{r, echo = FALSE, message = FALSE}
+dice <- DatabaseImmuneCellExpressionData()
+.adf(colData(dice)) %>% 
+  dplyr::count(label.main, label.fine) %>%
+  dplyr::arrange(label.main) %>%
+  knitr::kable()
+```
+</details>
+
+<details>
+<summary>`MonacoImmuneData` Labels</summary>
+
+```{r, echo = FALSE, message = FALSE}
+mi <- MonacoImmuneData()
+.adf(colData(mi)) %>% 
+  dplyr::count(label.main, label.fine) %>%
+  dplyr::arrange(label.main) %>%
+  knitr::kable()
+```
+</details>
+
+<details>
+<summary>`NovershternHematopoieticData` Labels</summary>
+
+```{r, echo = FALSE, message = FALSE}
+nh <- NovershternHematopoieticData()
+.adf(colData(nh)) %>% 
+  dplyr::count(label.main, label.fine) %>%
+  dplyr::arrange(label.main) %>%
+  knitr::kable()
+```
+</details>
+
+### Analysis
+
+For simplicity, I have opted to only use the 'main' labels from the `DICE` reference annotation and annotated the dataset at the cluster-level.
+The 'main' labels provide broad cell type labels appropriate for identifying clusters of an 'unwanted' cell type.
+
+<aside>
+This reference was recommended to me by colleagues with experience in using `r BiocStyle::Biocpkg("SingleR")` to annotate T-cells profiled with scRNA-seq.
+</aside>
+
+```{r}
+ref <- dice
+labels_main <- ref$label.main
+# NOTE: This code doesn't necessarily generalise beyond the DICE main labels.
+label_main_collapsed_colours <- setNames(
+  c(
+    Polychrome::glasbey.colors(nlevels(factor(labels_main)) + 1)[-1],
+    "orange"),
+  c(levels(factor(labels_main)), "other"))
+```
+
+```{r}
+pred_cluster_main <- SingleR(
+  test = sce,
+  ref = ref,
+  labels = labels_main,
+  method = "cluster",
+  cluster = sce$cluster,
+  BPPARAM = bpparam())
+
+sce$label_cluster_main <- factor(pred_cluster_main$pruned.labels[sce$cluster])
+sce$label_cluster_main_collapsed <- .collapseLabel(
+  sce$label_cluster_main,
+  sce$batch)
+umap_df$label_cluster_main_collapsed <- sce$label_cluster_main_collapsed
+```
+
+The results are summarised in the table below.
+
+```{r}
+tabyl(
+  data.frame(label.main = sce$label_cluster_main, cluster = sce$cluster), 
+  cluster, 
+  label.main) %>%
+  knitr::kable(
+    caption = "Cluster-level assignments using the main labels of the DICE reference.")
+```
+
+Figure \ref(fig:umap-with-main-cluster-labels) overlays these cell type labels on the UMAP plot and shows that the aforementioned small, distinct cluster is labelled as `Monocytes`.
+
+```{r umap-with-main-cluster-labels, fig.asp = 1 / 4, fig.cap = "UMAP plot of the MNN-corrected dataset. Each point represents a cluster and is coloured by the 'main' cluster-level label. Each panel highlights droplets from a particular predicted cluster type. Cluster labels with < 1% frequency are grouped together as `other`."}
+bg <- dplyr::select(umap_df, -label_cluster_main_collapsed)
+plot_grid(
+  plotUMAP(
+    sce, 
+    colour_by = "label_cluster_main_collapsed",
+    text_by = "cluster",
+    text_colour = "white") + 
+    scale_fill_manual(values = label_main_collapsed_colours) +
+    guides(fill = FALSE),
+  ggplot(aes(x = x, y = y), data = umap_df) +
+    geom_point(data = bg, colour = scales::alpha("grey", 0.5), size = 0.125) +
+    geom_point(
+      aes(colour = label_cluster_main_collapsed),
+      alpha = 1,
+      size = 0.25) +
+    scale_fill_manual(values = label_main_collapsed_colours) +
+    scale_colour_manual(values = label_main_collapsed_colours) +
+    theme_cowplot(font_size = 10) +
+    xlab("Dimension 1") +
+    ylab("Dimension 2") +
+    facet_wrap(~ label_cluster_main_collapsed, ncol = 2) +
+    guides(colour = FALSE))
+```
+
+##### Diagnostic plots
+
+As a sanity check, we can examine the expression of the marker genes for the relevant cell type labels by plotting a heatmap of their expression in:
+
+1. The reference dataset
+2. Our dataset
+
+The value of (1) is that we can assess if we believe the genes are indeed good markers of the relevant cell type in the reference dataset.
+The value of (2) is that we can check that these genes are useful markers in our dataset (e.g., that they are reasonably well sampled in our data).
+
+```{r}
+monocyte_vs_cd4_markers <- metadata(
+  pred_cluster_main)$de.genes$`Monocytes`$`T cells, CD4+`
+cd4_vs_monocyte_markers <- metadata(
+  pred_cluster_main)$de.genes$`T cells, CD4+`$`Monocytes`
+markers <- c(
+  head(monocyte_vs_cd4_markers, 10),
+  head(cd4_vs_monocyte_markers, 10))
+```
+
+Here, we specifically select (some of) the most strongly upregulated genes when comparing the `Monocytes` to the `T cells, CD4+` (`dice.Mono_vs_CD4`) and vice-versa (`dice.CD4_vs_Mono`)
+
+Figure \@ref(fig:ref-heat-markers) confirms that both the `dice.Mono_vs_CD4` and `dice.CD4_vs_Mono` marker genes distinguish these two cell types from one another in the `DICE` reference dataset.
+However, the `dice.CD4_vs_Mono` marker genes are also expressed in `T cells, CD8+` samples, highlighting that what are useful marker genes in one comparison are not necessarily in another comparison.
+
+```{r ref-heat-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in the `DICE` reference dataset for selected marker genes between the `Monocytes` and `T cells, CD4+` labels. Each column is a sample, each row a gene", fig.asp = 1.1}
+# NOTE: Have to remove column names from DICE to avoid an error.
+tmp <- dice
+colnames(tmp) <- seq_len(ncol(tmp))
+
+plotHeatmap(
+  tmp,
+  features = markers,
+  colour_columns_by = "label.main",
+  center = TRUE,
+  symmetric = TRUE,
+  order_columns_by = "label.main",
+  cluster_rows = FALSE,
+  cluster_cols = FALSE,
+  annotation_row = data.frame(
+    markers = c(rep("dice.Mono_vs_CD4", 10), rep("dice.CD4_vs_Mono", 10)),
+    row.names = markers))
+```
+
+Figure \@ref(fig:test-heat-markers) shows that both the `dice.Mono_vs_CD4` and `dice.CD4_vs_Mono` marker genes marker genes are indeed very specific to their respective clusters in our dataset.
+
+```{r test-heat-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in our dataset at the cell-level for selected marker genes between the `Monocytes` and `T cells, CD4+` labels. Each column is a sample, each row a gene. For legibility, only a random 10% of non-`Monocytes` cells are shown.", fig.asp = 1.1}
+# NOTE: Alternatively, could plot the cluster-level data.
+# tmp <- logNormCounts(
+#   sumCountsAcrossCells(
+#     sce,
+#     ids = colData(sce)[, c("cluster", "label_cluster_main")],
+#     subset_row = markers), exprs_values = 1)
+
+set.seed(561)
+tmp <- cbind(
+  sce[, sce$label_cluster_main == "Monocytes"],
+  sce[, sce$label_cluster_main != "Monocytes"][
+    , sample(
+      sum(sce$label_cluster_main != "Monocytes"),
+      0.1 * sum(sce$label_cluster_main != "Monocytes"))])
+plotHeatmap(
+  tmp,
+  features = markers,
+  colour_columns_by = c("label_cluster_main", "cluster"),
+  center = TRUE,
+  symmetric = TRUE,
+  order_columns_by = c("label_cluster_main", "cluster"),
+  cluster_rows = FALSE,
+  cluster_cols = FALSE,
+  annotation_row = data.frame(
+    markers = c(rep("dice.Mono_vs_CD4", 10), rep("dice.CD4_vs_Mono", 10)),
+    row.names = markers))
+```
+
+#### Checking for enrichment of cells in experimental group
+
+```{r}
+keep <- sce$label_cluster_main_collapsed != "Monocytes"
+```
+
+We again check whether the cells removed by this procedure are preferentially derive from particular experimental groups.
+Figure \@ref(fig:monocytes-highlighting-removed-droplets) shows that excluding these cells will preferentially exclude cells from the `Uninfected` samples.
+
+```{r monocytes-highlighting-removed-droplets, fig.cap = "Droplets removed after excluding droplets from clusters labelled as `Monocytes`, stratified by `Sample`."}
+ggplot(
+  data.frame(Sample = sce$Sample, keep = keep)) + 
+  geom_bar(aes(x = Sample, fill = keep)) + 
+  ylab("Number of droplets") + 
+  theme_cowplot(font_size = 9) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+#### Summary
+
+We opt to remove cells from clusters labelled as `Monocytes`.
+This will provide better resolution for us to analyse the remaining cells, which are nominally the CD4+ T-cells of interest.
+
+<aside>
+If it is biologically relevant that the `Monocytes` are only found in `Uninfected` then we would need to retain these cells for downstream analysis.
+</aside>
+
+```{r}
+sce <- sce[, keep]
+colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")] <-
+  droplevels(colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")])
+hto_colours <- hto_colours[levels(sce$HTO)]
+hto_cluster_colours <- hto_cluster_colours[levels(sce$hto_cluster)]
+sample_colours <- sample_colours[levels(sce$Sample)]
+treatment_colours <- treatment_colours[levels(sce$Treatment)]
+```
+
+### Re-processing
+
+```{r}
+var_fit <- modelGeneVarByPoisson(sce, block = sce$batch)
+hvg <- getTopHVGs(var_fit, var.threshold = 0)
+
+set.seed(11235)
+sce <- denoisePCA(
+  sce, 
+  var_fit, 
+  subset.row = hvg,
+  BSPARAM = BiocSingular::IrlbaParam(deferred = TRUE))
+
+set.seed(8875)
+sce <- runUMAP(sce, dimred = "PCA")
+umap_df <- cbind(
+  data.frame(
+    x = reducedDim(sce, "UMAP")[, 1],
+    y = reducedDim(sce, "UMAP")[, 2]),
+  as.data.frame(colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")]))
+
+set.seed(8111)
+snn_gr <- buildSNNGraph(sce, use.dimred = "PCA")
+clusters <- igraph::cluster_louvain(snn_gr)
+sce$cluster <- factor(clusters$membership)
+umap_df$cluster <- sce$cluster
+cluster_colours <- setNames(
+  Polychrome::glasbey.colors(nlevels(sce$cluster) + 1)[-1],
+  levels(sce$cluster))
+sce$cluster_colours <- cluster_colours[sce$cluster]
+```
+
+There are `r nlevels(sce$cluster)` clusters detected, shown on the UMAP plot Figure \@ref(fig:no-monocytes-clusterplot-umap) and broken down by experimental factors in Figure \@ref(fig:no-monocytes-cluster-barplot).
+
+```{r no-monocytes-clusterplot-umap, fig.cap = "UMAP plot of the updated data, where each point represents a droplet and is coloured according to the legend.", fig.asp = 0.7}
+plot_grid(
+  ggplot(aes(x = x, y = y), data = umap_df) +
+    geom_point(aes(colour = cluster), size = 0.25) +
+    scale_colour_manual(values = cluster_colours) + 
+    theme_cowplot(font_size = 8) + 
+    xlab("Dimension 1") + 
+    ylab("Dimension 2"),
+  ggplot(aes(x = x, y = y), data = umap_df) +
+    geom_point(aes(colour = Treatment), size = 0.25) +
+    theme_cowplot(font_size = 8) + 
+    xlab("Dimension 1") + 
+    ylab("Dimension 2") +
+    scale_colour_manual(values = treatment_colours),
+  ggplot(aes(x = x, y = y), data = umap_df) +
+    geom_point(aes(colour = Sample), size = 0.25) +
+    theme_cowplot(font_size = 8) + 
+    xlab("Dimension 1") + 
+    ylab("Dimension 2") +
+    scale_colour_manual(values = sample_colours),
+  ncol = 2, 
+  align = "v")
+```
+
+```{r no-monocytes-cluster-barplot, fig.asp = 1 / 4, fig.cap = "Breakdown of clusters by experimental factors."}
+plot_grid(
+  ggplot(as.data.frame(colData(sce)[, c("cluster", "Sample")])) + 
+    geom_bar(
+      aes(x = cluster, fill = Sample),
+      position = position_fill(reverse = TRUE)) +
+    coord_flip() +
+    ylab("Frequency") +
+    scale_fill_manual(values = sample_colours) +
+    theme_cowplot(font_size = 5),
+  ggplot(as.data.frame(colData(sce)[, c("cluster", "Treatment")])) + 
+    geom_bar(
+      aes(x = cluster, fill = Treatment),
+      position = position_fill(reverse = TRUE)) +
+    coord_flip() +
+    ylab("Frequency") +
+    scale_fill_manual(values = treatment_colours) +
+    theme_cowplot(font_size = 5),
+  ggplot(as.data.frame(colData(sce)[, "cluster", drop = FALSE])) + 
+    geom_bar(aes(x = cluster, fill = cluster)) +
+    coord_flip() +
+    ylab("Number of droplets") +
+    scale_fill_manual(values = cluster_colours) +
+    theme_cowplot(font_size = 5) + 
+    guides(fill = FALSE),
+  align = "h",
+  ncol = 3)
+```
+
+Notably:
+
+- Still, some of the clusters are highly treatment-specific.
+- Still, none of the clusters are highly sample-specific.
+
+## 'Known' unwanted cell types
+
+### Motivation
+
+James indicated that there may be a subpopulation of CD8+ T-cells in this dataset.
+CD4+ and CD8+ T-cells are notoriously difficult to distinguish from one another using scRNA-seq data^[E.g., see [https://osca.bioconductor.org/cell-type-annotation.html#assigning-cell-labels-from-reference-data](https://osca.bioconductor.org/cell-type-annotation.html#assigning-cell-labels-from-reference-data)].
+
+<aside>
+Specifically, James believes that there may be a population of CD8+ T-cells that upregulated the cell-surface expression of CD4 and hence were retained in the enrichment step.
+</aside>
+
+### Analysis
+
+Supposing that there are CD8+ T-cells in this dataset, then there are several reasons why the approach taken in ['Unknown' unwanted cell types] did not label any cluster as CD8+ T-cells:
+
+1. If the CD8+ T-cells were spread across several clusters, and in a minority within each of those clusters, then a cluster-level analysis would likely not label any cluster as CD8+ T-cells. 
+2. If the marker genes distinguishing CD4+ T-cells and CD8+ T-cells in the reference dataset are poorly chosen
+    a. If these genes can't even distinguish CD4+ T-cells and CD8+ T-cells in the reference dataset
+    b. If these genes are poorly sampled in our dataset.
+    
+We explore these issues in turn.
+    
+#### Cell-level annotations
+
+A cell-level annotation using `r Biocpkg("SingleR")` may allow us to identify CD8+ T-cells that are clustering with CD4+ T-cells rather than as a distinct cluster.
+For simplicity, I have again opted to only use the `DICE` reference annotation but now annotated the dataset at the cell-level using both the 'main' and 'fine' labels.
+
+<aside>
+A reminder that the trade-off between cluster-level and cell-level annotation is one of increased robustness to noise (cluster-level) vs. increased resolution (cell-level). The story is similar for the trade-off between using 'main' and 'fine' labels.
+</aside>
+
+```{r}
+pred_cell_main <- SingleR(
+  test = sce,
+  ref = ref,
+  labels = labels_main,
+  BPPARAM = bpparam())
+sce$label_cell_main <- factor(pred_cell_main$pruned.labels)
+sce$label_cell_main_collapsed <- .collapseLabel(
+  sce$label_cell_main,
+  sce$batch)
+umap_df$label_cell_main_collapsed <- sce$label_cell_main_collapsed
+
+labels_fine <- ref$label.fine
+# NOTE: This code doesn't necessarily generalise beyond the DICE main labels.
+label_fine_collapsed_colours <- setNames(
+  c(
+    Polychrome::glasbey.colors(nlevels(factor(labels_fine)) + 1)[-1],
+    "orange"),
+  c(levels(factor(labels_fine)), "other"))
+
+pred_cell_fine <- SingleR(
+  test = sce,
+  ref = ref,
+  labels = labels_fine,
+  BPPARAM = bpparam())
+sce$label_cell_fine <- factor(pred_cell_fine$pruned.labels)
+sce$label_cell_fine_collapsed <- .collapseLabel(
+  sce$label_cell_fine,
+  sce$batch)
+umap_df$label_cell_fine_collapsed <- sce$label_cell_fine_collapsed
+```
+
+The results using the 'main' label is summarised in the table below.
+Almost all cells are labelled as `T cells, CD4+`.
+
+```{r}
+tabyl(
+  data.frame(label.main = sce$label_cell_main, cluster = sce$cluster), 
+  label.main,
+  cluster) %>%
+  adorn_totals("col") %>%
+  adorn_percentages("col") %>%
+  adorn_pct_formatting() %>%
+  adorn_ns() %>%
+  knitr::kable(
+    caption = "Cell-level assignments using the 'main' labels of the DICE reference.")
+```
+
+The results using the 'fine' label is summarised in the table below.
+Consistent with the 'main' labels, almost all cells are labelled as a subtype of `T cells, CD4+` cells.
+
+```{r}
+tabyl(
+  data.frame(label.fine = sce$label_cell_fine, cluster = sce$cluster), 
+  label.fine,
+  cluster) %>%
+  adorn_totals("col") %>%
+  adorn_percentages("col") %>%
+  adorn_pct_formatting() %>%
+  adorn_ns() %>%
+  knitr::kable(
+    caption = "Cell-level assignments using the 'fine' labels of the DICE reference.")
+```
+
+This consistency is further emphasised when we cross-tabulate the 'main' and 'fine' labels.
+
+```{r}
+tabyl(
+  data.frame(
+  label.main = sce$label_cell_main,
+  label.fine = sce$label_cell_fine,cluster = sce$cluster),
+  label.fine, label.main) %>%
+  adorn_totals("row") %>%
+  adorn_percentages("col") %>%
+  adorn_pct_formatting() %>%
+  adorn_ns() %>%
+  knitr::kable(
+    caption = "Cross-tabulation of the 'main' and 'fine' assignments using the DICE reference.")
+```
+
+Figure \ref(fig:umap-with-fine-cell-labels) overlays the 'fine' cell type labels on the UMAP plot.
+
+```{r umap-with-fine-cell-labels, fig.asp = 1 / 4, fig.cap = "UMAP plot. Each point represents a cluster and is coloured by the 'fine' cell-level label. Each panel highlights droplets from a particular predicted cluster type. Cluster labels with < 1% frequency are grouped together as `other`."}
+bg <- dplyr::select(umap_df, -label_cell_fine_collapsed)
+plot_grid(
+  plotUMAP(
+    sce, 
+    colour_by = "label_cell_fine_collapsed",
+    text_by = "cluster",
+    text_colour = "black") + 
+    scale_fill_manual(values = label_fine_collapsed_colours) +
+    guides(fill = FALSE),
+  ggplot(aes(x = x, y = y), data = umap_df) +
+    geom_point(data = bg, colour = scales::alpha("grey", 0.5), size = 0.125) +
+    geom_point(
+      aes(colour = label_cell_fine_collapsed),
+      alpha = 1,
+      size = 0.25) +
+    scale_fill_manual(values = label_fine_collapsed_colours) +
+    scale_colour_manual(values = label_fine_collapsed_colours) +
+    theme_cowplot(font_size = 10) +
+    xlab("Dimension 1") +
+    ylab("Dimension 2") +
+    facet_wrap(~ label_cell_fine_collapsed, ncol = 2) +
+    guides(colour = FALSE))
+```
+
+Essentially none of the cells are labelled as CD8+ T-cells by this approach.
+
+###### Diagnostic plots
+
+As a sanity check, we again examine the expression of the marker genes for the relevant cell type labels by plotting a heatmap of their expression in:
+
+1. The reference dataset
+2. Our dataset
+
+The value of (1) is that we can assess if we believe the genes are indeed good markers of the relevant cell type in the reference dataset.
+The value of (2) is that we can check that these genes are useful markers in our dataset (e.g., that they are reasonably well sampled in our data).
+
+```{r}
+cd8_vs_cd4_markers <- metadata(
+  pred_cell_main)$de.genes$`T cells, CD8+`$`T cells, CD4+`
+cd4_vs_cd8_markers <- metadata(
+  pred_cell_main)$de.genes$`T cells, CD4+`$`T cells, CD8+`
+markers <- c(
+  head(cd8_vs_cd4_markers, 20),
+  head(cd4_vs_cd8_markers, 20))
+```
+
+Here, we specifically select (some of) the most strongly upregulated genes when comparing the `T cells, CD8+` to the `T cells, CD4+` (`dice.CD8_vs_CD4`) and vice-versa (`dice.CD4_vs_CD8`).
+
+Figure \@ref(fig:ref-heat-markers) confirms that both the `dice.CD8_vs_CD4` and `dice.CD4_vs_CD8` marker genes distinguish these two cell types from one another in the `DICE` reference dataset.
+
+```{r ref-heat-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in the `DICE` reference dataset for selected marker genes between the `Monocytes` and `T cells, CD4+` labels. Each column is a sample, each row a gene", fig.asp = 1.1}
+# NOTE: Have to remove column names from DICE to avoid an error.
+tmp <- dice
+colnames(tmp) <- seq_len(ncol(tmp))
+
+plotHeatmap(
+  tmp,
+  features = markers,
+  colour_columns_by = c("label.main", "label.fine"),
+  center = TRUE,
+  symmetric = TRUE,
+  order_columns_by = c("label.main", "label.fine"),
+  cluster_rows = FALSE,
+  cluster_cols = FALSE,
+  annotation_row = data.frame(
+    markers = c(rep("dice.CD8_vs_CD4", 20), rep("dice.CD4_vs_CD8", 20)),
+    row.names = markers))
+```
+
+Figure \@ref(fig:test-heat-markers) shows that very few of the `dice.CD8_vs_CD4` marker genes are expressed at in any cells in our dataset.
+In contrast, many of the cells express several of the `dice.CD4_vs_CD8` marker genes.
+
+```{r test-heat-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in our dataset at the cell-level for selected marker genes between the `T cells, CD8+` and `T cells, CD4+` labels. Each column is a sample, each row a gene.", fig.asp = 1.1}
+plotHeatmap(
+  sce,
+  features = markers,
+  colour_columns_by = c("label_cell_main", "label_cell_fine", "cluster"),
+  center = TRUE,
+  symmetric = TRUE,
+  order_columns_by = c("label_cell_main", "label_cell_fine", "cluster"),
+  cluster_rows = FALSE,
+  cluster_cols = FALSE,
+  annotation_row = data.frame(
+    markers = c(rep("T cells, CD8+", 20), rep("T cells, CD4+", 20)),
+    row.names = markers))
+```
+
+Figure \@ref(fig:test-heat-markers) shows that even amongst those cells not labelled as `T cells, CD4+`, very few of the `dice.CD8_vs_CD4` marker genes are expressed in our dataset.
+
+```{r test-heat-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in our dataset at the cell-level for selected marker genes between the `T cells, CD8+` and `T cells, CD4+` labels. Each column is a sample, each row a gene.", fig.asp = 1.1}
+plotHeatmap(
+  sce[, sce$label_cell_main != "T cells, CD4+"],
+  features = markers,
+  colour_columns_by = c("label_cell_main", "label_cell_fine", "cluster"),
+  center = TRUE,
+  symmetric = TRUE,
+  order_columns_by = c("label_cell_main", "label_cell_fine", "cluster"),
+  cluster_rows = FALSE,
+  cluster_cols = FALSE,
+  annotation_row = data.frame(
+    markers = c(rep("T cells, CD8+", 20), rep("T cells, CD4+", 20)),
+    row.names = markers))
+```
+    
+##### Summary
+
+By performing a cell-level annotation with `r BiocStyle::Biocpkg("SingleR")`, we have ruled out the possibility that the absence of CD8+ T-cells identified in ['Unknown' unwanted cell types] is due to this analysis being performed at the cluster-level.
+In fact, the cell-level analysis has provided stronger evidence that these cells are almost all various subtypes of CD4+ T-cells.
+
+However, we also observed that the `dice.CD8_vs_CD4` marker genes are poorly sampled in our dataset, leaving open the possibility that a different choice of marker genes would allow us to distinguish the two cell types and identify any stray CD8+ T-cells.
+We pursue this approach in the next section.
+
+#### Alternative marker gene lists
+
+```{r}
+james_cd8_markers <- c("GNLY", "GZMA", "GZMK")
+```
+
+As an alternative to using the `DICE`-derived marker genes, we could use any other list of putative marker genes.
+James provided some genes that he believes are markers of the unwanted CD8+ cells, namely `r glue::glue_collapse(james_cd8_markers, sep = ", ", last = ", and ")`.
+We look at the expression of these in both the `DICE` reference dataset and in our dataset.
+
+##### Diagnostic plots
+
+Figure \@ref(fig:ref-heat-markers) shows that these genes are arguably stronger markers of NK cells than they are of CD8+ cells.
+More importantly, these genes are highly expressed in several CD4+ T-cell subtypes in the `DICE` reference dataset.
+
+```{r ref-heat-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in the `DICE` reference dataset for selected marker genes between the `Monocytes` and `T cells, CD4+` labels. Each column is a sample, each row a gene", fig.asp = 1.1}
+# NOTE: Have to remove column names from DICE to avoid an error.
+tmp <- dice
+colnames(tmp) <- seq_len(ncol(tmp))
+
+plotHeatmap(
+  tmp,
+  features = james_cd8_markers,
+  colour_columns_by = c("label.main", "label.fine"),
+  center = TRUE,
+  symmetric = TRUE,
+  cluster_rows = TRUE,
+  cluster_cols = TRUE)
+```
+
+Consistent with this, Figure \@ref(fig:test-heat-markers) shows high expression of these genes in cells labelled as various subtypes of CD4+ T-cells.
+
+```{r test-heat-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in our dataset at the cell-level for selected marker genes between the `T cells, CD8+` and `T cells, CD4+` labels. Each column is a sample, each row a gene. For legibility, only a random 1% of non-`T cells, CD8+` cells are shown.", fig.asp = 1.1}
+plotHeatmap(
+  sce,
+  features = james_cd8_markers,
+  colour_columns_by = c("label_cell_main", "label_cell_fine", "cluster"),
+  center = TRUE,
+  symmetric = TRUE,
+  order_columns_by = c("label_cell_main", "label_cell_fine", "cluster"),
+  cluster_rows = TRUE,
+  cluster_cols = TRUE)
+```
+
+Furthermore, Figure \@ref(fig:test-heat-markers) shows high expression of these genes for those cells labelled as `NK cells` and low expression of those same genes in the few cells labelled as `T cells, CD8`.
+
+##### Summary
+
+There is no evidence in the `DICE` reference dataset that `r glue::glue_collapse(james_cd8_markers, sep = ", ", last = ", and ")` are markers of CD8+ T-cells.
+To the contrary, the `DICE` dataset provides strong evidence that these are markers of various CD4+ T-cell subtypes and NK cells.
+
+<aside>
+We could extend this analysis using a different set of 'CD8+ T-cell' marker genes, but I don't think this is necessary or fruitful analysis direction.
+</aside>
+
+### Summary
+
+- We identified a small number of `Monocytes` which we excluded from further analysis.
+- We did not identify any of the suspected CD8+ T-cells.
+- Instead, we found strong evidence that almost all the remaining cells are various subtypes of CD4+ T-cells.
 
 ```{r}
 knitr::knit_exit()
 ```
 
+# Data integration
 
-
-
-
-
-
-# OLD CODE
-
-
-
-
-
-# Stripped nuclei
-
-## Motivation
-
-```{r, results = "hide"}
-prop_unknown <- tapply(
-  sce$Sample == "Unknown",
-  sce$cluster,
-  function(x) sum(x) / length(x))
-sort(prop_unknown)
-prop_unknown_outliers <- isOutlier(
-  prop_unknown,
-  type = "higher",
-  # NOTE: Want the cluster(s) that are **way** out there.
-  nmads = 5)
-unknown_enriched_clusters <- levels(sce$cluster)[prop_unknown_outliers]
-```
-
-Figure \@ref(fig:cluster-barplot) showed that cluster(s) `r glue::glue_collapse(unknown_enriched_clusters, sep = ", ", last = ", and ")` are enriched for `Unknown` droplets.
-A likely explanation is that these clusters represent 'stripped nuclei' - cells that have lost their cytoplasm before encapsulation in the droplets of the 10X Chromium machine.
-Stripped nuclei show particularly low mitochondrial read fractions alongside low library sizes [@Pijuan-Sala2019-yz].
-These droplets cluster differently, likely because the nuclear and cytoplasmic RNA composition is different to the other droplets in the dataset.
-
-## Analysis
-
-Figure \@ref(fig:stripped-nuclei) plots the the median library size against the median mitochondrial gene expression fraction for cells in each of the clusters.
-
-```{r stripped-nuclei, fig.cap = "Stripped nucleus identification. Clusters with low mitochrondrial gene expression patterns also show small library sizes. Coloured points are clusters that are consistent with comprising stripped nuclei (using the same cluster colours as in other plots).", fig.asp = 1}
-mito_percent <- tapply(sce$subsets_Mito_percent, sce$cluster, median)
-libsize <- tapply(sce$sum, sce$cluster, median)
-plot(
-  mito_percent, 
-  libsize,
-  log = "xy",
-  col = ifelse(
-    # NOTE: Highlight the cluster that is an outlier for both metrics.
-    isOutlier(mito_percent, type = "lower", nmads = 3) & 
-      isOutlier(libsize, type = "lower", nmads = 3, log = TRUE),
-    cluster_colours,
-    "darkgrey"),
-  pch = 16,
-  xlab = "Cluster median mitochondrial percentage",
-  ylab = "Cluster median library size")
-```
-
-We indeed observe a cluster with notably lower mitochondrial gene expression fraction and smaller library size.
-We label that cluster with mitochrondrial gene expression fraction more than 3 MADs below the median and log-library size more than 3 MADs below the median as stripped nuclei.
-
-```{r}
-stripped_nuclei_clusters <- names(
-  isOutlier(mito_percent, type = "lower", nmads = 3) & 
-    isOutlier(libsize, type = "lower", nmads = 3, log = TRUE))[
-      isOutlier(mito_percent, type = "lower", nmads = 3) & 
-        isOutlier(libsize, type = "lower", nmads = 3, log = TRUE)]
-# NOTE: Sanity check that the cluster(s) with low mito% are the same as the 
-#       cluster(s) with a large proprotion of unknown droplets.
-stopifnot(identical(stripped_nuclei_clusters, unknown_enriched_clusters))
-```
-
-Figure \@ref(fig:stripped-nuclei-umap) highlights this cluster on the UMAP plot. 
-```{r stripped-nuclei-umap, fig.cap = "UMAP plot highlighting droplets from the cluster suspected to contain stripped nuclei (coloured red).", fig.asp = 1}
-stripped_nuclei_tsne <- cbind(
-  umap_df,
-  data.frame(stripped = sce$cluster %in% stripped_nuclei_clusters))
-ggplot(stripped_nuclei_tsne, aes(x = x, y = y)) + 
-  geom_point(aes(colour = stripped), size = 0.5) + 
-  scale_colour_manual(values = c("FALSE" = "darkgrey", "TRUE" = "red")) +
-  guides(colour = FALSE, alpha = FALSE) + 
-  theme_cowplot() +
-  xlab("") + 
-  ylab("") +
-  theme(axis.text = element_blank())
-```
-
-In fact, this this cluster, cluster `r glue::glue_collapse(unknown_enriched_clusters, sep = ";")`, is exactly the cluster that is enriched for 'unknown' droplets.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Selection of 'labelled' singlets
-
-## Motivation
-
-```{r, results = "hide"}
-prop_unknown <- tapply(
-  sce$Sample == "Unknown",
-  sce$cluster,
-  function(x) sum(x) / length(x))
-sort(prop_unknown)
-prop_unknown_outliers <- isOutlier(
-  prop_unknown,
-  type = "higher",
-  # NOTE: Only want clusters that are **way** out there.
-  nmads = 5)
-unknown_enriched_clusters <- levels(sce$cluster)[prop_unknown_outliers]
-
-# Sanity check
-stopifnot(identical(unknown_enriched_clusters, c("3", "9", "10")))
-```
-
-There are several clusters with a notably large number of `Unknown` droplets.
-Our concern is that this could indicate a cell subpopulation (e.g., cell type) that is systematically failing to be labelled by one or more of the HTOs.
-
-There is no cluster with a notably large number of `unassigned` droplets.
-Even if there were, it is not clear what would cause a subpopulation of cells to be systematically under-labelled by the genotype-derived labels.
+**TODO:** Try doing this whole section using data integrated with MNN
