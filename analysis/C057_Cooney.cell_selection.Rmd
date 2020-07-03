@@ -129,7 +129,6 @@ c2_sets <- msigdbr(species = "Homo sapiens", category = "C2")
 ribo_set <- union(
   ribo_set,
   c2_sets[c2_sets$gs_name == "KEGG_RIBOSOME", ]$human_gene_symbol)
-is_ribo <- rownames(sce) %in% ribo_set
 ```
 
 ## Initial clustering
@@ -1846,6 +1845,8 @@ label_main_collapsed_colours <- setNames(
     Polychrome::glasbey.colors(nlevels(factor(labels_main)) + 1)[-1],
     "orange"),
   c(levels(factor(labels_main)), "other"))
+sce$label_main_collapsed_colours <- label_main_collapsed_colours[
+  as.character(sce$label_cluster_main)]
 ```
 
 ```{r}
@@ -2163,6 +2164,8 @@ label_fine_collapsed_colours <- setNames(
     Polychrome::glasbey.colors(nlevels(factor(labels_fine)) + 1)[-1],
     "orange"),
   c(levels(factor(labels_fine)), "other"))
+sce$label_fine_collapsed_colours <- label_fine_collapsed_colours[
+  as.character(sce$label_cell_fine_collapsed)]
 
 pred_cell_fine <- SingleR(
   test = sce,
@@ -2405,12 +2408,112 @@ We could extend this analysis using a different set of 'CD8+ T-cell' marker gene
 - We did not identify any of the suspected CD8+ T-cells.
 - Instead, we found strong evidence that almost all the remaining cells are various subtypes of CD4+ T-cells.
 
+# Summary
+
+After extensive analysis we have now identified those droplets containing 'biologically relevant' cells (n = `r ncol(sce)`).
+Specifically, we have selected for singlets that are CD4+ T-cells.
+We can verify that we have selected CD4+ T-cells by looking at the expression of known marker genes.
+
+### Exclusion of ribosomal protein and mitochondrial genes from HVGs
+
+Figure \@ref(fig:cd4-markers-umap) gives an example using some marker genes of `T cells, CD4+` cells from the `DICE` reference dataset.
+
+```{r cd4-markers-umap, fig.cap = "UMAP plot of the updated data, where each point represents a cell and is coloured according to expression of selected genes. The selected genes are markers of the `T cells, CD4+` cells in the `DICE` reference dataset that are also highly expressed in our dataset.", fig.asp = 0.8}
+all_markers <- metadata(pred_cell_main)$de.genes
+cd4_markers <- all_markers[["T cells, CD4+"]]
+cd4_markers_t <- table(unlist(cd4_markers))
+
+# Three approaches to selecting markers:
+# 
+# 1. Identify genes occurring in most pairwise comparisons
+#      `markers <- names(sort(cd4_markers_t, decreasing = TRUE))`
+# 2. Identify the markers genes that are most highly expressed (on average)
+#    in our dataset.
+#     `markers <- names(sort(rowMeans(logcounts(sce)[names(cd4_markers_t), ]), decreasing = TRUE))`
+# 3. A compromise between (1) and (2), here selecting most highly expressed markers that occur in at least X pairwise comparisons
+#     `markers <- names(sort(rowMeans(logcounts(sce)[names(cd4_markers_t[cd4_markers_t >= X]), ]), decreasing = TRUE))`
+
+# NOTE: Opted to go with (3) with X = 2
+markers <- names(
+  sort(
+    rowMeans(logcounts(sce)[names(cd4_markers_t[cd4_markers_t >= 2]), ]),
+    decreasing = TRUE))
+
+# NOTE: Have to remove `TRA` and `TRB` before create the dataframe.
+tmp <- sce
+colData(tmp) <- colData(tmp)[!colnames(colData(tmp)) %in% c("TRA", "TRB")]
+p <- lapply(head(markers, 9), function(marker) {
+  b <- makePerCellDF(sce, features = marker) %>%
+    tidyr::pivot_longer(
+      all_of(marker),
+      names_to = "feature",
+      values_to = "logcounts")
+  ggplot(data = b, aes(x = UMAP.1, y = UMAP.2)) + 
+    geom_point(aes(colour = logcounts), size = 1/9) + 
+    scale_colour_viridis_c(option = "magma") + 
+    theme_cowplot(font_size = 8) + 
+    ggtitle(marker)
+})
+plot_grid(plotlist = p, ncol = 3)
+```
+
+
 ## Re-processing
+
+We perform a final re-processing of the 'biologically relevant' cells.
+Notably, we opt at this stage to exclude ribosomal protein and mitochondrial genes from the list of highly variable genes, for reasons example below.
 
 ```{r}
 var_fit <- modelGeneVarByPoisson(sce, block = sce$batch)
 hvg <- getTopHVGs(var_fit, var.threshold = 0)
+```
 
+We find that the most highly variable genes in this dataset are somewhat enriched for ribosomal protein genes^[Here, ribosomal protein genes are defined as those gene symbols starting with "RPL" or "RPS" or otherwise found in the ["KEGG_RIBOSOME" gene set published by MSigDB](https://www.gsea-msigdb.org/gsea/msigdb/cards/KEGG_RIBOSOME.html), namely: `r glue::glue_collapse(sort(ribo_set), sep = ", ")`] (n = `r sum(is_ribo)`) and mitochondrial genes (n = `r sum(is_mito)`), with Figure \@ref(fig:perc-mito-and-ribo) showing that more than 20% of the top-200 HVGs are ribosomal protein or mitochondrial genes.
+
+```{r perc-mito-and-ribo, fig.cap = "Percentage of top-K HVGs that are mitochondrial or ribosomal protein genes."}
+is_mito <- hvg %in% mito_set
+is_ribo <- hvg %in% ribo_set
+
+plot(
+  100 * cumsum(is_mito) / seq_along(hvg),
+  log = "x",
+  ylim = c(0, 100),
+  ylab = "%",
+  xlab = "Top-k genes",
+  col = "dodgerBlue",
+  pch = 16)
+points(100 * cumsum(is_ribo) / seq_along(hvg), col = "orange", pch = 16)
+points(100 * cumsum(is_mito | is_ribo) / seq_along(hvg), col = "black", pch = 16)
+legend(
+  "topright",
+  pch = 16,
+  col = c("black", "orange", "dodgerBlue"),
+  legend = c("Both", "Ribosomal protein", "Mitochondrial"))
+```
+
+Ribosomal protein and mitochondrial genes are of lesser biological relevance to this study, so we it was decided to exclude them from the HVGs.
+This means that these genes can no longer **directly** influence some of the subsequent steps in the analysis, including:
+
+- Dimensionality reduction
+  - Principal component analysis (PCA)
+  - Uniform manifold approximation and projection (UMAP)
+- Data integration
+  - Mutual nearest neighbours (MNN)
+- Clustering
+
+Although the exclusion of these genes from the HVGs prevents them from directly influencing these analyses, they may still **indirectly** influence these steps or otherwise be associated with their outcomes.
+For example, if there is a set of (non ribosomal protein) genes that are strongly associated with ribosomal protein gene expression, then we may still see a cluster associated with ribosomal protein gene expression.
+
+Finally, and to emphasise, we have only excluded ribosomal protein and mitochondrial genes from the HVGs, i.e. we have not excluded them entirely from the dataset.
+In particular, this means that these genes may appear in downstream results (e.g., tables of cluster marker genes and differentially expressed genes).
+
+```{r}
+hvg <- hvg[!(is_mito | is_ribo)]
+```
+
+### Visualisation
+
+```{r}
 set.seed(11235)
 sce <- denoisePCA(
   sce, 
@@ -2496,52 +2599,6 @@ Notably:
 
 - Still, some of the clusters are highly treatment-specific.
 - Still, none of the clusters are highly sample-specific.
-
-# Summary
-
-After extensive analysis we have now identified those droplets containing 'biologically relevant' cells (n = `r ncol(sce)`).
-Specifically, we have selected for singlets that are CD4+ T-cells.
-We can verify that we have selected CD4+ T-cells by looking at the expression of known marker genes.
-Figure \@ref(fig:cd4-markers-umap) gives an example using some marker genes of `T cells, CD4+` cells from the `DICE` reference dataset.
-
-```{r cd4-markers-umap, fig.cap = "UMAP plot of the updated data, where each point represents a cell and is coloured according to expression of selected genes. The selected genes are markers of the `T cells, CD4+` cells in the `DICE` reference dataset that are also highly expressed in our dataset.", fig.asp = 0.8}
-all_markers <- metadata(pred_cell_main)$de.genes
-cd4_markers <- all_markers[["T cells, CD4+"]]
-cd4_markers_t <- table(unlist(cd4_markers))
-
-# Three approaches to selecting markers:
-# 
-# 1. Identify genes occurring in most pairwise comparisons
-#      `markers <- names(sort(cd4_markers_t, decreasing = TRUE))`
-# 2. Identify the markers genes that are most highly expressed (on average)
-#    in our dataset.
-#     `markers <- names(sort(rowMeans(logcounts(sce)[names(cd4_markers_t), ]), decreasing = TRUE))`
-# 3. A compromise between (1) and (2), here selecting most highly expressed markers that occur in at least X pairwise comparisons
-#     `markers <- names(sort(rowMeans(logcounts(sce)[names(cd4_markers_t[cd4_markers_t >= X]), ]), decreasing = TRUE))`
-
-# NOTE: Opted to go with (3) with X = 2
-markers <- names(
-  sort(
-    rowMeans(logcounts(sce)[names(cd4_markers_t[cd4_markers_t >= 2]), ]),
-    decreasing = TRUE))
-
-# NOTE: Have to remove `TRA` and `TRB` before create the dataframe.
-tmp <- sce
-colData(tmp) <- colData(tmp)[!colnames(colData(tmp)) %in% c("TRA", "TRB")]
-p <- lapply(head(markers, 9), function(marker) {
-  b <- makePerCellDF(sce, features = marker) %>%
-    tidyr::pivot_longer(
-      all_of(marker),
-      names_to = "feature",
-      values_to = "logcounts")
-  ggplot(data = b, aes(x = UMAP.1, y = UMAP.2)) + 
-    geom_point(aes(colour = logcounts), size = 1/9) + 
-    scale_colour_viridis_c(option = "magma") + 
-    theme_cowplot(font_size = 8) + 
-    ggtitle(marker)
-})
-plot_grid(plotlist = p, ncol = 3)
-```
 
 # Concluding remarks
 
