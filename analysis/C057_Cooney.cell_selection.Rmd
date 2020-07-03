@@ -23,6 +23,7 @@ library(cowplot)
 library(edgeR)
 library(Glimma)
 library(BiocParallel)
+library(patchwork)
 
 source(here("code", "helper_functions.R"))
 
@@ -30,8 +31,7 @@ source(here("code", "helper_functions.R"))
 options("mc.cores" = ifelse(Sys.info()[["nodename"]] == "PC1331", 2L, 8L))
 register(MulticoreParam(workers = getOption("mc.cores")))
 
-knitr::opts_chunk$set(
-  fig.path = "C057_Cooney.cell_selection_files/")
+knitr::opts_chunk$set(fig.path = "C057_Cooney.cell_selection_files/")
 ```
 
 # Motivation
@@ -95,8 +95,7 @@ We would build the graph using the principal components.
 We start from the preprocessed *SingleCellExperiment* object created in ['Preprocessing the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney.preprocess.html).
 
 ```{r}
-sce <- readRDS(
-  here("data", "SCEs", "C057_Cooney.preprocessed.SCE.rds"))
+sce <- readRDS(here("data", "SCEs", "C057_Cooney.preprocessed.SCE.rds"))
 
 # data frames containing co-ordinates and factors for creating reduced 
 # dimensionality plots.
@@ -594,11 +593,15 @@ ggplot(
 
 #### Summary 
 
+```{r}
+keep <- !sce$cluster %in% c("3", "5", "6")
+```
+
 We conclude that droplets in clusters 3, 5, and 6 do not contain intact cells, but rather comprises ambient RNA, and therefore remove all droplets in these clusters.
+The removes `r sum(!keep)` droplets, retaining `r sum(keep)` for further analysis.
 We do not exclude droplets from cluster 10 because these look to comprise a distinct cell type that may be more prevalent in the `Uninfected` samples.
 
 ```{r}
-keep <- !sce$cluster %in% c("3", "5", "6")
 sce <- sce[, keep]
 colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")] <-
   droplevels(colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")])
@@ -962,10 +965,13 @@ ggplot(
 
 #### Summary
 
-We conclude that droplets in clusters 4 and 7 do not contain intact cells, but rather comprises ambient RNA, and therefore remove all droplets in these clusters.
-
 ```{r}
 keep <- !sce$cluster %in% c("4", "7")
+```
+We conclude that droplets in clusters 4 and 7 do not contain intact cells, but rather comprises ambient RNA, and therefore remove all droplets in these clusters.
+The removes `r sum(!keep)` droplets, retaining `r sum(keep)` for further analysis.
+
+```{r}
 sce <- sce[, keep]
 colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")] <-
   droplevels(colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")])
@@ -1364,11 +1370,15 @@ ggplot(
 
 #### Summary 
 
+```{r}
+sce <- sce[, keep]
+```
+
 We opt to remove both the 'labelled' known doublets and 'unlabelled' predicted doublets from the dataset.
+The removes `r sum(!keep)` droplets, retaining `r sum(keep)` for further analysis.
 The dataset may still contain some 'unlabelled' doublets, but their number should be very small owing to the experimental design.
 
 ```{r}
-sce <- sce[, keep]
 colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")] <-
   droplevels(colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")])
 hto_colours <- hto_colours[levels(sce$HTO)]
@@ -1578,6 +1588,7 @@ ggplot(
 
 We can conclude that it is unlikely that our HTO labelling has systematically under-labelled a biologically relevant cell type.
 Furthermore, the `Unknown` droplets are not useful in downstream analyses because we cannot match them to a treatment, and so we removed all `Unknown` droplets from the data.
+The removes `r sum(!keep)` droplets, retaining `r sum(keep)` for further analysis.
 
 At this point, our dataset only contains 'labelled' singlets, i.e. those droplets we are confident are single cells and that we can assign to a single sample.
 These are the cells we want to use in our downstream analysis.
@@ -1707,7 +1718,7 @@ A conceptually straightforward annotation approach is to compare the single-cell
 Labels can then be assigned to each cell in our uncharacterised test data set based on the most similar reference sample(s), for some definition of "similar".
 Any published and labelled RNA-seq data set (bulk or single-cell) can be used as a reference, though its reliability depends greatly on the expertise of the original authors who assigned the labels in the first place.
 
-`r Biocpkg("SingleR")` is one such automatic annotation method for scRNA-seq data [@aran2019reference].
+`r BiocStyle::Biocpkg("SingleR")` is one such automatic annotation method for scRNA-seq data [@aran2019reference].
 Given a reference data set(s) of samples^[This can be individual cells or bulk samples.] with known labels, it labels new cells from a test data set based on similarity to the reference set(s).
 Specifically, for each test cell:
 
@@ -1725,13 +1736,13 @@ This is followed by cubing of the adjusted scores to improve dynamic range near 
 Automatic annotation provides a convenient way of transferring biological knowledge across data sets.
 In this manner, the burden of interpreting clusters and defining marker genes only has to be done once (i.e. for the reference set).
 
-`r Biocpkg("SingleR")` can annotate at both the cluster-level and at the cell-level.
+`r BiocStyle::Biocpkg("SingleR")` can annotate at both the cluster-level and at the cell-level.
 The trade-off between cluster-level and cell-level annotation is one of increased robustness to noise (cluster-level) vs. increased resolution (cell-level).
 Poor-quality assignments with 'low' scores are labelled as `NA`.
 
 #### Available references
 
-`r Biocpkg("SingleR")` includes several in-built reference data sets, some of which are relevant for this study:
+`r BiocStyle::Biocpkg("SingleR")` includes several in-built reference data sets, some of which are relevant for this study:
 
 * `HumanPrimaryCellAtlasData` (`HPCA`): The Human Primary Cell Atlas [@hpcaRef]
 * `BlueprintEncodeData` (`BE`): Blueprint [@blueprintRef] and Encode [@encodeRef]
@@ -1864,31 +1875,37 @@ tabyl(
     caption = "Cluster-level assignments using the main labels of the DICE reference.")
 ```
 
-Figure \ref(fig:umap-with-main-cluster-labels) overlays these cell type labels on the UMAP plot and shows that the aforementioned small, distinct cluster is labelled as `Monocytes`.
+Figure \@ref(fig:umap-with-main-cluster-labels) overlays these cell type labels on the UMAP plot and shows that the aforementioned small, distinct cluster is labelled as `Monocytes`.
 
-```{r umap-with-main-cluster-labels, fig.asp = 1 / 4, fig.cap = "UMAP plot of the MNN-corrected dataset. Each point represents a cluster and is coloured by the 'main' cluster-level label. Each panel highlights droplets from a particular predicted cluster type. Cluster labels with < 1% frequency are grouped together as `other`."}
+```{r umap-with-main-cluster-labels, fig.asp = 1 / 3, fig.cap = "UMAP plot highlighting clusters (left) and 'main' cluster-level labels (right) where each panel highlights droplets from a particular label. Labels with < 1% frequency are grouped together as `other`."}
+p1 <- ggplot(aes(x = x, y = y), data = umap_df) +
+  geom_point(
+    aes(colour = cluster),
+    alpha = 1,
+    size = 0.25) +
+  scale_fill_manual(values = cluster_colours) +
+  scale_colour_manual(values = cluster_colours) +
+  theme_cowplot(font_size = 10) +
+  xlab("Dimension 1") +
+  ylab("Dimension 2") +
+  ggtitle("Clusters")
 bg <- dplyr::select(umap_df, -label_cluster_main_collapsed)
-plot_grid(
-  plotUMAP(
-    sce, 
-    colour_by = "label_cluster_main_collapsed",
-    text_by = "cluster",
-    text_colour = "white") + 
-    scale_fill_manual(values = label_main_collapsed_colours) +
-    guides(fill = FALSE),
-  ggplot(aes(x = x, y = y), data = umap_df) +
-    geom_point(data = bg, colour = scales::alpha("grey", 0.5), size = 0.125) +
-    geom_point(
-      aes(colour = label_cluster_main_collapsed),
-      alpha = 1,
-      size = 0.25) +
-    scale_fill_manual(values = label_main_collapsed_colours) +
-    scale_colour_manual(values = label_main_collapsed_colours) +
-    theme_cowplot(font_size = 10) +
-    xlab("Dimension 1") +
-    ylab("Dimension 2") +
-    facet_wrap(~ label_cluster_main_collapsed, ncol = 2) +
-    guides(colour = FALSE))
+p2 <- ggplot(aes(x = x, y = y), data = umap_df) +
+  geom_point(data = bg, colour = scales::alpha("grey", 0.5), size = 0.125) +
+  geom_point(
+    aes(colour = label_cluster_main_collapsed),
+    alpha = 1,
+    size = 0.25) +
+  scale_fill_manual(values = label_main_collapsed_colours) +
+  scale_colour_manual(values = label_main_collapsed_colours) +
+  theme_cowplot(font_size = 10) +
+  xlab("Dimension 1") +
+  ylab("Dimension 2") +
+  facet_wrap(~ label_cluster_main_collapsed, ncol = 2) +
+  guides(colour = FALSE) + 
+  ggtitle("'Main' cluster-level label")
+
+p1 + p2 + plot_layout(widths = c(1, 2))
 ```
 
 ##### Diagnostic plots
@@ -1913,10 +1930,10 @@ markers <- c(
 
 Here, we specifically select (some of) the most strongly upregulated genes when comparing the `Monocytes` to the `T cells, CD4+` (`dice.Mono_vs_CD4`) and vice-versa (`dice.CD4_vs_Mono`)
 
-Figure \@ref(fig:ref-heat-markers) confirms that both the `dice.Mono_vs_CD4` and `dice.CD4_vs_Mono` marker genes distinguish these two cell types from one another in the `DICE` reference dataset.
+Figure \@ref(fig:ref-dice-mono-and-cd4-markers) confirms that both the `dice.Mono_vs_CD4` and `dice.CD4_vs_Mono` marker genes distinguish these two cell types from one another in the `DICE` reference dataset.
 However, the `dice.CD4_vs_Mono` marker genes are also expressed in `T cells, CD8+` samples, highlighting that what are useful marker genes in one comparison are not necessarily in another comparison.
 
-```{r ref-heat-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in the `DICE` reference dataset for selected marker genes between the `Monocytes` and `T cells, CD4+` labels. Each column is a sample, each row a gene", fig.asp = 1.1}
+```{r ref-dice-mono-and-cd4-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in the `DICE` reference dataset for selected marker genes between the `Monocytes` and `T cells, CD4+` labels. Each column is a sample, each row a gene", fig.asp = 1.1}
 # NOTE: Have to remove column names from DICE to avoid an error.
 tmp <- dice
 colnames(tmp) <- seq_len(ncol(tmp))
@@ -1935,9 +1952,9 @@ plotHeatmap(
     row.names = markers))
 ```
 
-Figure \@ref(fig:test-heat-markers) shows that both the `dice.Mono_vs_CD4` and `dice.CD4_vs_Mono` marker genes marker genes are indeed very specific to their respective clusters in our dataset.
+Figure \@ref(fig:test-dice-mono-and-cd4-markers) shows that both the `dice.Mono_vs_CD4` and `dice.CD4_vs_Mono` marker genes marker genes are indeed very specific to their respective clusters in our dataset.
 
-```{r test-heat-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in our dataset at the cell-level for selected marker genes between the `Monocytes` and `T cells, CD4+` labels. Each column is a sample, each row a gene. For legibility, only a random 10% of non-`Monocytes` cells are shown.", fig.asp = 1.1}
+```{r test-dice-mono-and-cd4-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in our dataset at the cell-level for selected marker genes between the `Monocytes` and `T cells, CD4+` labels. Each column is a sample, each row a gene. For legibility, only a random 10% of non-`Monocytes` cells are shown.", fig.asp = 1.1}
 # NOTE: Alternatively, could plot the cluster-level data.
 # tmp <- logNormCounts(
 #   sumCountsAcrossCells(
@@ -1987,6 +2004,7 @@ ggplot(
 #### Summary
 
 We opt to remove cells from clusters labelled as `Monocytes`.
+The removes `r sum(!keep)` droplets, retaining `r sum(keep)` for further analysis.
 This will provide better resolution for us to analyse the remaining cells, which are nominally the CD4+ T-cells of interest.
 
 <aside>
@@ -2119,7 +2137,7 @@ We explore these issues in turn.
     
 #### Cell-level annotations
 
-A cell-level annotation using `r Biocpkg("SingleR")` may allow us to identify CD8+ T-cells that are clustering with CD4+ T-cells rather than as a distinct cluster.
+A cell-level annotation using `r BiocStyle::Biocpkg("SingleR")` may allow us to identify CD8+ T-cells that are clustering with CD4+ T-cells rather than as a distinct cluster.
 For simplicity, I have again opted to only use the `DICE` reference annotation but now annotated the dataset at the cell-level using both the 'main' and 'fine' labels.
 
 <aside>
@@ -2206,31 +2224,36 @@ tabyl(
     caption = "Cross-tabulation of the 'main' and 'fine' assignments using the DICE reference.")
 ```
 
-Figure \ref(fig:umap-with-fine-cell-labels) overlays the 'fine' cell type labels on the UMAP plot.
+Figure \@ref(fig:umap-with-fine-cell-labels) overlays the 'fine' cell type labels on the UMAP plot.
 
-```{r umap-with-fine-cell-labels, fig.asp = 1 / 4, fig.cap = "UMAP plot. Each point represents a cluster and is coloured by the 'fine' cell-level label. Each panel highlights droplets from a particular predicted cluster type. Cluster labels with < 1% frequency are grouped together as `other`."}
+```{r umap-with-fine-cell-labels, fig.asp = 1 / 2, fig.cap = "UMAP plot. Each point represents a cluster and is coloured by the 'fine' cell-level label. Each panel highlights droplets from a particular predicted cluster type. Cluster labels with < 1% frequency are grouped together as `other`."}
+p1 <- ggplot(aes(x = x, y = y), data = umap_df) +
+  geom_point(
+    aes(colour = cluster),
+    alpha = 1,
+    size = 0.25) +
+  scale_fill_manual(values = cluster_colours) +
+  scale_colour_manual(values = cluster_colours) +
+  theme_cowplot(font_size = 10) +
+  xlab("Dimension 1") +
+  ylab("Dimension 2") +
+  ggtitle("Clusters")
 bg <- dplyr::select(umap_df, -label_cell_fine_collapsed)
-plot_grid(
-  plotUMAP(
-    sce, 
-    colour_by = "label_cell_fine_collapsed",
-    text_by = "cluster",
-    text_colour = "black") + 
-    scale_fill_manual(values = label_fine_collapsed_colours) +
-    guides(fill = FALSE),
-  ggplot(aes(x = x, y = y), data = umap_df) +
-    geom_point(data = bg, colour = scales::alpha("grey", 0.5), size = 0.125) +
-    geom_point(
-      aes(colour = label_cell_fine_collapsed),
-      alpha = 1,
-      size = 0.25) +
-    scale_fill_manual(values = label_fine_collapsed_colours) +
-    scale_colour_manual(values = label_fine_collapsed_colours) +
-    theme_cowplot(font_size = 10) +
-    xlab("Dimension 1") +
-    ylab("Dimension 2") +
-    facet_wrap(~ label_cell_fine_collapsed, ncol = 2) +
-    guides(colour = FALSE))
+p2 <- ggplot(aes(x = x, y = y), data = umap_df) +
+  geom_point(data = bg, colour = scales::alpha("grey", 0.5), size = 0.125) +
+  geom_point(
+    aes(colour = label_cell_fine_collapsed),
+    alpha = 1,
+    size = 0.25) +
+  scale_fill_manual(values = label_fine_collapsed_colours) +
+  scale_colour_manual(values = label_fine_collapsed_colours) +
+  theme_cowplot(font_size = 6) +
+  xlab("Dimension 1") +
+  ylab("Dimension 2") +
+  facet_wrap(~ label_cell_fine_collapsed, ncol = 3) +
+  guides(colour = FALSE) + 
+  ggtitle("'Fine' cell-levl label")
+p1 + p2 + plot_layout(widths = c(1, 1))
 ```
 
 Essentially none of the cells are labelled as CD8+ T-cells by this approach.
@@ -2257,9 +2280,9 @@ markers <- c(
 
 Here, we specifically select (some of) the most strongly upregulated genes when comparing the `T cells, CD8+` to the `T cells, CD4+` (`dice.CD8_vs_CD4`) and vice-versa (`dice.CD4_vs_CD8`).
 
-Figure \@ref(fig:ref-heat-markers) confirms that both the `dice.CD8_vs_CD4` and `dice.CD4_vs_CD8` marker genes distinguish these two cell types from one another in the `DICE` reference dataset.
+Figure \@ref(fig:ref-dice-cd8-and-cd4-markers) confirms that both the `dice.CD8_vs_CD4` and `dice.CD4_vs_CD8` marker genes distinguish these two cell types from one another in the `DICE` reference dataset.
 
-```{r ref-heat-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in the `DICE` reference dataset for selected marker genes between the `Monocytes` and `T cells, CD4+` labels. Each column is a sample, each row a gene", fig.asp = 1.1}
+```{r ref-dice-cd8-and-cd4-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in the `DICE` reference dataset for selected marker genes between the `Monocytes` and `T cells, CD4+` labels. Each column is a sample, each row a gene", fig.asp = 1.1}
 # NOTE: Have to remove column names from DICE to avoid an error.
 tmp <- dice
 colnames(tmp) <- seq_len(ncol(tmp))
@@ -2278,10 +2301,10 @@ plotHeatmap(
     row.names = markers))
 ```
 
-Figure \@ref(fig:test-heat-markers) shows that very few of the `dice.CD8_vs_CD4` marker genes are expressed at in any cells in our dataset.
+Figure \@ref(fig:test-dice-cd8-and-cd4-markers) shows that very few of the `dice.CD8_vs_CD4` marker genes are expressed at in any cells in our dataset.
 In contrast, many of the cells express several of the `dice.CD4_vs_CD8` marker genes.
 
-```{r test-heat-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in our dataset at the cell-level for selected marker genes between the `T cells, CD8+` and `T cells, CD4+` labels. Each column is a sample, each row a gene.", fig.asp = 1.1}
+```{r test-dice-cd8-and-cd4-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in our dataset at the cell-level for selected marker genes between the `T cells, CD8+` and `T cells, CD4+` labels. Each column is a sample, each row a gene.", fig.asp = 1.1}
 plotHeatmap(
   sce,
   features = markers,
@@ -2292,13 +2315,13 @@ plotHeatmap(
   cluster_rows = FALSE,
   cluster_cols = FALSE,
   annotation_row = data.frame(
-    markers = c(rep("T cells, CD8+", 20), rep("T cells, CD4+", 20)),
+    markers = c(rep("dice.CD8_vs_CD4", 20), rep("dice.CD4_vs_CD8", 20)),
     row.names = markers))
 ```
 
-Figure \@ref(fig:test-heat-markers) shows that even amongst those cells not labelled as `T cells, CD4+`, very few of the `dice.CD8_vs_CD4` marker genes are expressed in our dataset.
+Figure \@ref(fig:subset-test-dice-cd8-and-cd4-markers) shows that even amongst those cells not labelled as `T cells, CD4+`, very few of the `dice.CD8_vs_CD4` marker genes are expressed in our dataset.
 
-```{r test-heat-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in our dataset at the cell-level for selected marker genes between the `T cells, CD8+` and `T cells, CD4+` labels. Each column is a sample, each row a gene.", fig.asp = 1.1}
+```{r subset-test-dice-cd8-and-cd4-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in our dataset at the cell-level for selected marker genes between the `T cells, CD8+` and `T cells, CD4+` labels. Each column is a sample, each row a gene. Only cells not labelled as `T cells, CD4+` are shown.", fig.asp = 1.1}
 plotHeatmap(
   sce[, sce$label_cell_main != "T cells, CD4+"],
   features = markers,
@@ -2309,7 +2332,7 @@ plotHeatmap(
   cluster_rows = FALSE,
   cluster_cols = FALSE,
   annotation_row = data.frame(
-    markers = c(rep("T cells, CD8+", 20), rep("T cells, CD4+", 20)),
+    markers = c(rep("dice.CD8_vs_CD4", 20), rep("dice.CD4_vs_CD8", 20)),
     row.names = markers))
 ```
     
@@ -2333,10 +2356,10 @@ We look at the expression of these in both the `DICE` reference dataset and in o
 
 ##### Diagnostic plots
 
-Figure \@ref(fig:ref-heat-markers) shows that these genes are arguably stronger markers of NK cells than they are of CD8+ cells.
+Figure \@ref(fig:ref-james-cd8-markers) shows that these genes are arguably stronger markers of NK cells than they are of CD8+ cells.
 More importantly, these genes are highly expressed in several CD4+ T-cell subtypes in the `DICE` reference dataset.
 
-```{r ref-heat-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in the `DICE` reference dataset for selected marker genes between the `Monocytes` and `T cells, CD4+` labels. Each column is a sample, each row a gene", fig.asp = 1.1}
+```{r ref-james-cd8-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in the `DICE` reference dataset for 'CD8+ T-cell' marker genes provided by James. Each column is a sample, each row a gene", fig.asp = 1.1}
 # NOTE: Have to remove column names from DICE to avoid an error.
 tmp <- dice
 colnames(tmp) <- seq_len(ncol(tmp))
@@ -2351,9 +2374,9 @@ plotHeatmap(
   cluster_cols = TRUE)
 ```
 
-Consistent with this, Figure \@ref(fig:test-heat-markers) shows high expression of these genes in cells labelled as various subtypes of CD4+ T-cells.
+Consistent with this, Figure \@ref(fig:test-james-cd8-markers) shows high expression of these genes in cells labelled as various subtypes of CD4+ T-cells.
 
-```{r test-heat-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in our dataset at the cell-level for selected marker genes between the `T cells, CD8+` and `T cells, CD4+` labels. Each column is a sample, each row a gene. For legibility, only a random 1% of non-`T cells, CD8+` cells are shown.", fig.asp = 1.1}
+```{r test-james-cd8-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in our dataset at the cell-level for 'CD8+ T-cell' marker genes provided by James. Each column is a sample, each row a gene.", fig.asp = 1.1}
 plotHeatmap(
   sce,
   features = james_cd8_markers,
@@ -2365,7 +2388,7 @@ plotHeatmap(
   cluster_cols = TRUE)
 ```
 
-Furthermore, Figure \@ref(fig:test-heat-markers) shows high expression of these genes for those cells labelled as `NK cells` and low expression of those same genes in the few cells labelled as `T cells, CD8`.
+Furthermore, Figure \@ref(fig:test-james-cd8-markers) shows high expression of these genes for those cells labelled as `NK cells` and low expression of those same genes in the few cells labelled as `T cells, CD8`.
 
 ##### Summary
 
@@ -2376,16 +2399,175 @@ To the contrary, the `DICE` dataset provides strong evidence that these are mark
 We could extend this analysis using a different set of 'CD8+ T-cell' marker genes, but I don't think this is necessary or fruitful analysis direction.
 </aside>
 
-### Summary
+#### Summary
 
-- We identified a small number of `Monocytes` which we excluded from further analysis.
+- We identified a small number of `Monocytes` that we excluded from further analysis.
 - We did not identify any of the suspected CD8+ T-cells.
 - Instead, we found strong evidence that almost all the remaining cells are various subtypes of CD4+ T-cells.
 
+## Re-processing
+
 ```{r}
-knitr::knit_exit()
+var_fit <- modelGeneVarByPoisson(sce, block = sce$batch)
+hvg <- getTopHVGs(var_fit, var.threshold = 0)
+
+set.seed(11235)
+sce <- denoisePCA(
+  sce, 
+  var_fit, 
+  subset.row = hvg,
+  BSPARAM = BiocSingular::IrlbaParam(deferred = TRUE))
+
+set.seed(8875)
+sce <- runUMAP(sce, dimred = "PCA")
+umap_df <- cbind(
+  data.frame(
+    x = reducedDim(sce, "UMAP")[, 1],
+    y = reducedDim(sce, "UMAP")[, 2]),
+  as.data.frame(colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")]))
+
+set.seed(8111)
+snn_gr <- buildSNNGraph(sce, use.dimred = "PCA")
+clusters <- igraph::cluster_louvain(snn_gr)
+sce$cluster <- factor(clusters$membership)
+umap_df$cluster <- sce$cluster
+cluster_colours <- setNames(
+  Polychrome::glasbey.colors(nlevels(sce$cluster) + 1)[-1],
+  levels(sce$cluster))
+sce$cluster_colours <- cluster_colours[sce$cluster]
 ```
 
-# Data integration
+There are `r nlevels(sce$cluster)` clusters detected, shown on the UMAP plot Figure \@ref(fig:selected-cells-clusterplot-umap) and broken down by experimental factors in Figure \@ref(fig:selected-cells-cluster-barplot).
 
-**TODO:** Try doing this whole section using data integrated with MNN
+```{r selected-cells-clusterplot-umap, fig.cap = "UMAP plot of the updated data, where each point represents a droplet and is coloured according to the legend.", fig.asp = 0.7}
+plot_grid(
+  ggplot(aes(x = x, y = y), data = umap_df) +
+    geom_point(aes(colour = cluster), size = 0.25) +
+    scale_colour_manual(values = cluster_colours) + 
+    theme_cowplot(font_size = 8) + 
+    xlab("Dimension 1") + 
+    ylab("Dimension 2"),
+  ggplot(aes(x = x, y = y), data = umap_df) +
+    geom_point(aes(colour = Treatment), size = 0.25) +
+    theme_cowplot(font_size = 8) + 
+    xlab("Dimension 1") + 
+    ylab("Dimension 2") +
+    scale_colour_manual(values = treatment_colours),
+  ggplot(aes(x = x, y = y), data = umap_df) +
+    geom_point(aes(colour = Sample), size = 0.25) +
+    theme_cowplot(font_size = 8) + 
+    xlab("Dimension 1") + 
+    ylab("Dimension 2") +
+    scale_colour_manual(values = sample_colours),
+  ncol = 2, 
+  align = "v")
+```
+
+```{r selected-cells-cluster-barplot, fig.asp = 1 / 4, fig.cap = "Breakdown of clusters by experimental factors."}
+plot_grid(
+  ggplot(as.data.frame(colData(sce)[, c("cluster", "Sample")])) + 
+    geom_bar(
+      aes(x = cluster, fill = Sample),
+      position = position_fill(reverse = TRUE)) +
+    coord_flip() +
+    ylab("Frequency") +
+    scale_fill_manual(values = sample_colours) +
+    theme_cowplot(font_size = 5),
+  ggplot(as.data.frame(colData(sce)[, c("cluster", "Treatment")])) + 
+    geom_bar(
+      aes(x = cluster, fill = Treatment),
+      position = position_fill(reverse = TRUE)) +
+    coord_flip() +
+    ylab("Frequency") +
+    scale_fill_manual(values = treatment_colours) +
+    theme_cowplot(font_size = 5),
+  ggplot(as.data.frame(colData(sce)[, "cluster", drop = FALSE])) + 
+    geom_bar(aes(x = cluster, fill = cluster)) +
+    coord_flip() +
+    ylab("Number of droplets") +
+    scale_fill_manual(values = cluster_colours) +
+    theme_cowplot(font_size = 5) + 
+    guides(fill = FALSE),
+  align = "h",
+  ncol = 3)
+```
+
+Notably:
+
+- Still, some of the clusters are highly treatment-specific.
+- Still, none of the clusters are highly sample-specific.
+
+# Summary
+
+After extensive analysis we have now identified those droplets containing 'biologically relevant' cells (n = `r ncol(sce)`).
+Specifically, we have selected for singlets that are CD4+ T-cells.
+We can verify that we have selected CD4+ T-cells by looking at the expression of known marker genes.
+Figure \@ref(fig:cd4-markers-umap) gives an example using some marker genes of `T cells, CD4+` cells from the `DICE` reference dataset.
+
+```{r cd4-markers-umap, fig.cap = "UMAP plot of the updated data, where each point represents a cell and is coloured according to expression of selected genes. The selected genes are markers of the `T cells, CD4+` cells in the `DICE` reference dataset that are also highly expressed in our dataset.", fig.asp = 0.8}
+all_markers <- metadata(pred_cell_main)$de.genes
+cd4_markers <- all_markers[["T cells, CD4+"]]
+cd4_markers_t <- table(unlist(cd4_markers))
+
+# Three approaches to selecting markers:
+# 
+# 1. Identify genes occurring in most pairwise comparisons
+#      `markers <- names(sort(cd4_markers_t, decreasing = TRUE))`
+# 2. Identify the markers genes that are most highly expressed (on average)
+#    in our dataset.
+#     `markers <- names(sort(rowMeans(logcounts(sce)[names(cd4_markers_t), ]), decreasing = TRUE))`
+# 3. A compromise between (1) and (2), here selecting most highly expressed markers that occur in at least X pairwise comparisons
+#     `markers <- names(sort(rowMeans(logcounts(sce)[names(cd4_markers_t[cd4_markers_t >= X]), ]), decreasing = TRUE))`
+
+# NOTE: Opted to go with (3) with X = 2
+markers <- names(
+  sort(
+    rowMeans(logcounts(sce)[names(cd4_markers_t[cd4_markers_t >= 2]), ]),
+    decreasing = TRUE))
+
+# NOTE: Have to remove `TRA` and `TRB` before create the dataframe.
+tmp <- sce
+colData(tmp) <- colData(tmp)[!colnames(colData(tmp)) %in% c("TRA", "TRB")]
+p <- lapply(head(markers, 9), function(marker) {
+  b <- makePerCellDF(sce, features = marker) %>%
+    tidyr::pivot_longer(
+      all_of(marker),
+      names_to = "feature",
+      values_to = "logcounts")
+  ggplot(data = b, aes(x = UMAP.1, y = UMAP.2)) + 
+    geom_point(aes(colour = logcounts), size = 1/9) + 
+    scale_colour_viridis_c(option = "magma") + 
+    theme_cowplot(font_size = 8) + 
+    ggtitle(marker)
+})
+plot_grid(plotlist = p, ncol = 3)
+```
+
+# Concluding remarks
+
+```{r}
+saveRDS(
+  sce,
+  here("data", "SCEs", "C057_Cooney.cells_selected.SCE.rds"),
+  compress = "xz")
+```
+The processed *SingleCellExperiment* object is available (see [`data/SCEs/C057_Cooney.cells_selected.SCE.rds`](../data/SCEs/C057_Cooney.cells_selected.SCE.rds)).
+This will be used in downstream analyses, e.g., identifying cluster marker genes and refining the cell labels.
+
+# Additional information {.appendix}
+
+The following are available on request:
+
+- Full CSV tables of any data presented.
+- PDF/PNG files of any static plots.
+
+# Session info {.appendix}
+
+<summary>The analysis and this document were prepared using the following software (click triangle to expand)</summary>
+<details>
+
+```{r}
+sessioninfo::session_info()
+```
+
+</details>
