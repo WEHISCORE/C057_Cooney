@@ -31,8 +31,7 @@ options(
     ifelse(Sys.info()[["nodename"]] == "rstudio-1.hpc.wehi.edu.au", 8L, 2L))
 register(MulticoreParam(workers = getOption("mc.cores")))
 
-knitr::opts_chunk$set(
-  fig.path = "C057_Cooney.preprocess_files/")
+knitr::opts_chunk$set(fig.path = "C057_Cooney.preprocess_files/")
 ```
 
 # Setting up the data
@@ -41,8 +40,7 @@ We start from the demultiplexed *SingleCellExperiment* object created in ['Demul
 
 
 ```{r}
-sce <- readRDS(
-  here("data", "SCEs", "C057_Cooney.demultiplexed.SCE.rds"))
+sce <- readRDS(here("data", "SCEs", "C057_Cooney.demultiplexed.SCE.rds"))
 ```
 
 ## Incorporating cell-based annotation
