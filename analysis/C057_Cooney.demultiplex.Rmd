@@ -141,7 +141,7 @@ Nonetheless, we ran **CellRanger** using a larger panel of HTOs (n = `r nrow(alt
 
 Figure \@ref(fig:htos) plots the distribution of each HTO counts for the the 8 most frequently HTOs detected and shows that HTOs `human_1`, `human_2`, `human_3`, `human_4`, and `human_5` are clearly detected more frequently than the other barcodes, as we would hope.
 
-```{r htos, fig.cap = "Distribution of HTO counts in the dataset. Only those HTOs with more detected in at least one cell are shown. The red vertical line denotes detecting the HTO 10 times in a sample.", layout = "l-page", fig.asp = 2 / 4}
+```{r htos, fig.cap = "Distribution of HTO counts in the dataset. Only those HTOs with more detected in at least one cell are shown. The red vertical line denotes detecting the HTO 10 times in a sample.", fig.asp = 2 / 4}
 par(mfrow = c(2, 4))
 o <- order(rowSums(counts(altExp(sce, "Antibody Capture"))), decreasing = TRUE)
 for (i in o[1:8]) {
@@ -341,7 +341,7 @@ pheatmap(
   fontsize = 6)
 ```
 
-On the basis of Figure \@ref(fig:mosty-doublets-hto-heatmap), we assign droplets in these clusters accordingly:
+On the basis of Figure \@ref(fig:mostly-doublets-hto-heatmap), we assign droplets in these clusters accordingly:
 
 ```{r}
 mostly_doublet_clusters <- as.character(17:26)
@@ -430,8 +430,8 @@ pheatmap(
 
 James was targeting ~2000 cells / sample.
 The table below shows that we largely hit that target for the uninfected samples but not so for the infected samples.
-It also shows that the proportion of droplets that are 'unassigned' (i.e. those in cluster (`r which.max(table(sce$hto_cluster))`) is larger than we would like.
-These unassigned droplets likely include true doublets, mis-assigned singlets from the cells labelled with all five HTOs, and samples comprising ambient RNAs and HTOs (aka the 'soup' [@young10soupx]).
+It also shows that the proportion of droplets that are `ambiguous` is larger than we would like.
+These `ambiguous` droplets include singlets (and doublets) with insufficient HTO sequencing coverage, mis-assigned singlets from the cells labelled with all five HTOs, and samples comprising ambient RNAs and HTOs (aka the 'soup' [@young10soupx]).
 
 ```{r}
 knitr::kable(
