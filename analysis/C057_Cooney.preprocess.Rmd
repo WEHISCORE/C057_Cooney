@@ -49,8 +49,8 @@ Cell-based annotations are included in the *colData* of the *SingleCellExperimen
 We store the counts from the hashtag features as an 'alternative experiment'.
 
 ```{r}
-colData(sce)[c("HTO", "Sample", "Treatment", "Replicate")] <- endoapply(
-  colData(sce)[c("HTO", "Sample", "Treatment", "Replicate")], 
+colData(sce)[c("Treatment", "Replicate")] <- endoapply(
+  colData(sce)[c("Treatment", "Replicate")], 
   function(x) {
     x[is.na(x)] <- "Unknown"
     factor(x)
@@ -58,24 +58,10 @@ colData(sce)[c("HTO", "Sample", "Treatment", "Replicate")] <- endoapply(
 ```
 
 ```{r}
-hto_to_sample_df <- as.data.frame(
-  colData(sce)[c("hto_cluster", "HTO", "Sample", "Treatment", "Replicate")]) %>%
-  dplyr::distinct()
-
 # Some useful colours
-hto_cluster_colours <- sce$hto_cluster_colours[levels(sce$hto_cluster)]
-hto_colours <- hto_cluster_colours
-names(hto_colours) <- dplyr::inner_join(
-  data.frame(hto_cluster = names(hto_cluster_colours)),
-  hto_to_sample_df) %>%
-  dplyr::pull(HTO)
-sce$hto_colours <- hto_colours[sce$hto_cluster]
-sample_colours <- hto_cluster_colours
-names(sample_colours) <- dplyr::inner_join(
-  data.frame(hto_cluster = names(sample_colours)),
-  hto_to_sample_df) %>%
-  dplyr::pull(Sample)
-sce$sample_colours <- sample_colours[sce$Sample]
+sample_colours <- setNames(
+  unique(sce$sample_colours),
+  unique(names(sce$sample_colours)))
 treatment_colours <- c(
   "Infected" = "#e41a1c",
   "Uninfected" = "#377eb8",
@@ -86,7 +72,7 @@ sce$treatment_colours <- treatment_colours[sce$Treatment]
 
 ### Summary
 
-This dataset contains samples from `r nlevels(sce$Sample)` samples.
+This dataset contains samples from 6 samples, along with 'doublets' and 'ambiguous' samples.
 All samples are human memory CD4+ T cells from 'humanised mice'.
 Humanised mice are an immunodeficient strain and injected with human stem cells as pups which then differentiate into human hematopoietic cells as the mice mature.
 Mice were infected or not infected with HTLV, with each condition done in biological triplicate (1 mouse / replicate).
@@ -179,7 +165,11 @@ sce <- addPerCellQC(sce, subsets = list(Mito = which(is_mito)))
 
 ## Visualizing the QC metrics
 
-```{r qcplot-by-sample, fig.cap = "Distributions of various QC metrics for all cells in the dataset. This includes the library sizes, number of genes detected, and percentage of reads mapped to mitochondrial genes.", layout = "l-page", fig.asp = 0.5}
+Figure \@ref(fig:qcplot-by-sample) shows that the vast majority of samples are good-quality; the library sizes are in the thousands^[This is consistent with the use of UMI counts rather than read counts, as each transcript molecule can only produce one UMI count but can yield many reads after fragmentation.], we observe around two thousand expressed genes per cell, and moderate mitochondrial percentages per cell.
+As we would expect, the `doublet` droplets have larger library sizes and more genes detected.
+The `ambiguous` droplets have notably smaller library sizes and fewer genes detected.
+
+```{r qcplot-by-sample, fig.cap = "Distributions of various QC metrics for all cells in the dataset. This includes the library sizes, number of genes detected, and percentage of reads mapped to mitochondrial genes.", fig.asp = 0.5}
 plot_grid(
   ggplot(
     data = as.data.frame(colData(sce)[, c("Sample", "Treatment", "sum")]),
@@ -230,10 +220,6 @@ plot_grid(
   align = "v")
 ```
 
-Figure \@ref(fig:qcplot-by-sample) shows that the vast majority of samples are good-quality; the library sizes are in the thousands^[This is consistent with the use of UMI counts rather than read counts, as each transcript molecule can only produce one UMI count but can yield many reads after fragmentation.], we observe around two thousand expressed genes per cell, and moderate mitochondrial percentages per cell.
-
-It is notable that the `Unknown` samples have much smaller library sizes and fewer genes detected on average than the other samples.
-
 It is also valuable to examine how the other QC metrics behave with respect to each other (Figure \@ref(fig:qcbiplot)). 
 Generally, they will be in rough agreement, i.e., cells with low total counts will also have low numbers of expressed features and mitochondrial proportions.
 Clear discrepancies may correspond to technical differences between batches of cells or genuine biological differences in RNA content.
@@ -253,7 +239,6 @@ plot(
   log = "x")
 ```
 
-For now, we retain the samples of `Unknown` origin because it may be interesting to see if these are from specific cell types.
 
 ## Identifying outliers by each metric
 
@@ -411,7 +396,7 @@ ggplot(
 
 Finally, Figure \@ref(fig:qcplot-highlighting-outliers) compares the QC metrics of the discarded and retained droplets.
 
-```{r qcplot-highlighting-outliers, fig.cap = "Distribution of QC metrics for each plate in the dataset. Each point represents a cell and is colored according to whether it was discarded during the QC process. Note that a cell will only be kept if it passes the relevant threshold for all four QC metrics.", layout = "l-page", fig.asp = 0.7}
+```{r qcplot-highlighting-outliers, fig.cap = "Distribution of QC metrics for each plate in the dataset. Each point represents a cell and is colored according to whether it was discarded during the QC process. Note that a cell will only be kept if it passes the relevant threshold for all four QC metrics.", fig.asp = 0.7}
 plot_grid(
   ggplot(
     data = as.data.frame(
@@ -469,7 +454,7 @@ See [`docs/C057_Cooney.annotate.html`](../docs/C057_Cooney.annotate.html) for re
 
 To conclude, Figure \@ref(fig:qcplot-post-outlier-removal) shows that following QC that most samples have similar QC metrics, as is to be expected, and Figure \@ref(fig:experiment-by-sample-postqc) summarises the experimental design following QC.
 
-```{r qcplot-post-outlier-removal, fig.cap = "Distributions of various QC metrics for all cells in the dataset passing QC. This includes the library sizes and proportion of reads mapped to mitochondrial genes.", layout = "l-body-outset", fig.asp = 0.7}
+```{r qcplot-post-outlier-removal, fig.cap = "Distributions of various QC metrics for all cells in the dataset passing QC. This includes the library sizes and proportion of reads mapped to mitochondrial genes.", fig.asp = 0.7}
 plot_grid(
   ggplot(
     data = as.data.frame(colData(sce)[, c("Sample", "Treatment", "sum")]),
@@ -695,7 +680,7 @@ This is especially important if batches exhibit systematic technical differences
 Figure \@ref(fig:trendplots) visualizes the quality of the batch-specific trend fits and highlights the need for batch-specific estimates of these fits.
 The analysis of each batch yields estimates of the biological and technical components for each gene, which are averaged across batches.
 
-```{r trendplots, fig.cap = "Variance in the data set as a function of the mean after blocking. Each plot represents the results for a single batch, each point represents a gene (black) and the blue line represents the Poisson trend.", fig.asp = 1, layout = "l-page"}
+```{r trendplots, fig.cap = "Variance in the data set as a function of the mean after blocking. Each plot represents the results for a single batch, each point represents a gene (black) and the blue line represents the Poisson trend.", fig.asp = 1}
 par(mfrow = c(3, 3))
 blocked.stats <- var_fit$per.block
 for (i in colnames(blocked.stats)) {
