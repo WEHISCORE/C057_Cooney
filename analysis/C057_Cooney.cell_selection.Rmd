@@ -106,12 +106,6 @@ umap_df <- cbind(
   as.data.frame(colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")]))
 
 # Some useful colours
-hto_cluster_colours <- setNames(
-  unique(sce$hto_cluster_colours),
-  unique(names(sce$hto_cluster_colours)))
-hto_colours <- setNames(
-  unique(sce$hto_colours),
-  unique(names(sce$hto_colours)))
 sample_colours <- setNames(
   unique(sce$sample_colours),
   unique(names(sce$sample_colours)))
@@ -138,7 +132,7 @@ set.seed(75699)
 snn_gr <- buildSNNGraph(sce, use.dimred = "PCA")
 clusters <- igraph::cluster_louvain(snn_gr)
 sce$cluster <- factor(clusters$membership)
-stopifnot(nlevels(sce$cluster) == 11)
+stopifnot(nlevels(sce$cluster) == 10)
 umap_df$cluster <- sce$cluster
 cluster_colours <- setNames(
   Polychrome::glasbey.colors(nlevels(sce$cluster) + 1)[-1],
@@ -203,9 +197,9 @@ plot_grid(
 Notably:
 
 - Some of the clusters are highly treatment-specific.
-- Some of the clusters are enriched for `Unknown` droplets.
+- Many of the clusters are enriched for `ambiguous` droplets.
 
-# Clusters enriched for `Unknown` droplets
+# Clusters enriched for `ambiguous` droplets
 
 This analysis is done in two parts: a [First pass] and a [Refinement].
 
@@ -214,52 +208,52 @@ This analysis is done in two parts: a [First pass] and a [Refinement].
 ### Motivation
 
 ```{r, results = "hide"}
-prop_unknown <- tapply(
-  sce$Sample == "Unknown",
+prop_ambiguous <- tapply(
+  sce$Sample == "ambiguous",
   sce$cluster,
   function(x) sum(x) / length(x))
-sort(prop_unknown)
-prop_unknown_outliers <- isOutlier(
-  prop_unknown,
+sort(prop_ambiguous)
+prop_ambiguous_outliers <- isOutlier(
+  prop_ambiguous,
   type = "higher",
   # NOTE: Want the cluster(s) that are **way** out there.
   nmads = 5)
-unknown_enriched_clusters <- levels(sce$cluster)[prop_unknown_outliers]
-stopifnot(identical(unknown_enriched_clusters, c("3", "5", "6", "10")))
+ambiguous_enriched_clusters <- levels(sce$cluster)[prop_ambiguous_outliers]
+stopifnot(identical(ambiguous_enriched_clusters, c("2", "7", "8", "9")))
 ```
 
-There are several clusters with unusually large proportions of droplets being of `Unknown` origin, namely clusters `r glue::glue_collapse(unknown_enriched_clusters, sep = ", ", last = ", and ")` (proportions = `r glue::glue_collapse(round(prop_unknown[unknown_enriched_clusters], 2), ", ", last = ", and ")`, respectively).
+There are several clusters with unusually large proportions of droplets being of `ambiguous` origin, namely clusters `r glue::glue_collapse(ambiguous_enriched_clusters, sep = ", ", last = ", and ")` (proportions = `r glue::glue_collapse(round(prop_ambiguous[ambiguous_enriched_clusters], 2), ", ", last = ", and ")`, respectively).
 
 These droplets cannot be assigned to a sample of origin and so are not useful in downstream analyses.
 However, before we exclude them, we want to ensure we aren't systematically excluding a biologically relevant cell population.
 
 We would further like to know that this isn't systematically excluding droplets from a particular sample or treatment group.
-This is challenging because by definition most of these droplets are of `Unknown` origin.
+This is challenging because by definition most of these droplets are of `ambiguous` origin.
 However, we can check if the 'labelled' droplets in those clusters are enriched for particular samples.
 
 ### Analysis
 
-Figure \@ref(fig:unknown-enriched-clusters-umap) highlights droplets from these clusters on the UMAP plot, showing that they are largely distinct from the bulk of droplets from the dataset.
+Figure \@ref(fig:ambiguous-enriched-clusters-umap) highlights droplets from these clusters on the UMAP plot, showing that they are largely distinct from the bulk of droplets from the dataset.
 
-```{r unknown-enriched-clusters-umap, fig.cap = "UMAP plot highlighting droplets from clusters that are enriched for `Unknown` droplets. Cluster labels are overlaid on cluster centroids."}
+```{r ambiguous-enriched-clusters-umap, fig.cap = "UMAP plot highlighting droplets from clusters that are enriched for `ambiguous` droplets. Cluster labels are overlaid on cluster centroids."}
 plotUMAP(
   sce,
   colour_by = data.frame(
-    `Unknown enriched cluster` = sce$cluster %in% unknown_enriched_clusters),
+    `ambiguous enriched cluster` = sce$cluster %in% ambiguous_enriched_clusters),
   text_by = "cluster")
 ```
 
-Figure \@ref(fig:unknown-enriched-clusters-qc-plot) shows that the QC metrics of droplets from these clusters are distinct from the other clusters, having smaller library sizes and fewer genes detected (but no difference in mitochondrial proportions).
+Figure \@ref(fig:ambiguous-enriched-clusters-qc-plot) shows that the QC metrics of droplets from these clusters are distinct from the other clusters, having smaller library sizes and fewer genes detected (but no difference in mitochondrial proportions).
 
-```{r unknown-enriched-clusters-qc-plot, fig.cap = "QC metrics of droplets by cluster, highlighting droplets from clusters that are enriched for `Unknown` droplets (orange)."}
+```{r ambiguous-enriched-clusters-qc-plot, fig.cap = "QC metrics of droplets by cluster, highlighting droplets from clusters that are enriched for `ambiguous` droplets (orange)."}
 plot_grid(
   plotColData(
     sce, 
     "sum", 
     x = "cluster", 
     colour_by = data.frame(
-      `Unknown enriched cluster` = 
-        sce$cluster %in% unknown_enriched_clusters)) +
+      `ambiguous enriched cluster` = 
+        sce$cluster %in% ambiguous_enriched_clusters)) +
     scale_y_log10() + 
     guides(fill = FALSE),
   plotColData(
@@ -267,8 +261,8 @@ plot_grid(
     "detected", 
     x = "cluster", 
     colour_by = data.frame(
-      `Unknown enriched cluster` = 
-        sce$cluster %in% unknown_enriched_clusters)) +
+      `ambiguous enriched cluster` = 
+        sce$cluster %in% ambiguous_enriched_clusters)) +
     scale_y_log10() + 
     guides(fill = FALSE),
   plotColData(
@@ -276,24 +270,24 @@ plot_grid(
   "subsets_Mito_percent",
   x = "cluster",
   colour_by = data.frame(
-      `Unknown enriched cluster` = 
-        sce$cluster %in% unknown_enriched_clusters)) + 
+      `ambiguous enriched cluster` = 
+        sce$cluster %in% ambiguous_enriched_clusters)) + 
     guides(fill = FALSE),
   align = "v",
   ncol = 2)
 ```
 
-This is particularly clear for clusters 3, 5, and 6, whereas cluster 10 comprises droplets with abnormal and typical QC metrics.
+This is particularly clear for clusters 2, 7, and 9, whereas cluster 8 comprises droplets with abnormal and typical QC metrics.
 Droplets with small library sizes are likely to contain ambient RNA rather than intact cells.
 
 #### Checking for removal of biologically relevant subpopulations
 
 We check for cell type loss by looking for systematic differences in gene expression between the discarded and retained droplets, doing this separately for each of the suspicious clusters.
 
-##### Cluster 3
+##### Cluster 2
 
 ```{r}
-keep <- !sce$cluster == "3"
+keep <- !sce$cluster == "2"
 lost <- calculateAverage(counts(sce)[, !keep])
 kept <- calculateAverage(counts(sce)[, keep])
 logged <- cpm(cbind(lost, kept), log = TRUE, prior.count = 2)
@@ -301,13 +295,13 @@ logFC <- logged[, 1] - logged[, 2]
 abundance <- rowMeans(logged)
 ```
 
-Figure \@ref(fig:unknown-enriched-clusters-3-md-plot) shows the result of this analysis, highlighting that there are few genes with a large $logFC$ between 'lost' and 'kept' droplets and that the systematically downregulated genes are largely ribosomal protein genes.
+Figure \@ref(fig:ambiguous-enriched-clusters-2-md-plot) shows the result of this analysis, highlighting that there are few genes with a large $logFC$ between 'lost' and 'kept' droplets.
 
 <aside>
-An interactive version of Figure \@ref(fig:unknown-enriched-clusters-3-md-plot) is available from [`output/glimma-plots/unknown-enriched-clusters-3-md-plot.html`](../output/glimma-plots/unknown-enriched-clusters-3-md-plot.html).
+An interactive version of Figure \@ref(fig:ambiguous-enriched-clusters-2-md-plot) is available from [`output/glimma-plots/ambiguous-enriched-clusters-2-md-plot.html`](../output/glimma-plots/ambiguous-enriched-clusters-2-md-plot.html).
 </aside>
 
-```{r unknown-enriched-clusters-3-md-plot, fig.cap = "Log-fold change in expression in the discarded cells compared to the retained cells. Each point represents a gene with mitochondrial transcripts in blue and ribosomal protein genes in orange. Dashed red lines indicate $|logFC| = 1$", fig.asp = 0.7}
+```{r ambiguous-enriched-clusters-2-md-plot, fig.cap = "Log-fold change in expression in the discarded cells compared to the retained cells. Each point represents a gene with mitochondrial transcripts in blue and ribosomal protein genes in orange. Dashed red lines indicate $|logFC| = 1$", fig.asp = 0.7}
 is_mito <- rownames(sce) %in% mito_set
 is_ribo <- rownames(sce) %in% ribo_set
 plot(
@@ -347,28 +341,28 @@ glMDPlot(
   side.ylab = "Average count",
   cols = c("orange", "black", "dodgerBlue"),
   path = here("output"),
-  html = "unknown-enriched-clusters-3-md-plot",
+  html = "ambiguous-enriched-clusters-2-md-plot",
   launch = FALSE)
 ```
 
 If the discarded pool is enriched for a certain cell type, we should observe increased expression of the corresponding marker genes.
 
 Another concern is whether the cells removed by this procedure are preferentially derive from particular experimental groups.
-Reassuringly, Figure \@ref(fig:unknown-enriched-clusters-3-barplot-highlighting-removed-droplets) shows that this is not the case; most of the removed droplets are `Unknown`, as we expect from the above analysis.
+Reassuringly, Figure \@ref(fig:ambiguous-enriched-clusters-2-barplot-highlighting-removed-droplets) shows that this is not the case; most of the removed droplets are `ambiguous`, as we expect from the above analysis.
 
-```{r unknown-enriched-clusters-3-barplot-highlighting-removed-droplets, fig.cap = "Droplets retained after excluding droplets from cluster 3, stratified by `Sample`."}
+```{r ambiguous-enriched-clusters-2-barplot-highlighting-removed-droplets, fig.cap = "Droplets retained after excluding droplets from cluster 2, stratified by `Sample`."}
 ggplot(
-  data.frame(Sample = sce$Sample, keep = sce$cluster != "3")) + 
+  data.frame(Sample = sce$Sample, keep = sce$cluster != "2")) + 
   geom_bar(aes(x = Sample, fill = keep)) + 
   ylab("Number of droplets") + 
   theme_cowplot(font_size = 9) + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-##### Cluster 5
+##### Cluster 7
 
 ```{r}
-keep <- !sce$cluster == "5"
+keep <- !sce$cluster == "7"
 lost <- calculateAverage(counts(sce)[, !keep])
 kept <- calculateAverage(counts(sce)[, keep])
 logged <- cpm(cbind(lost, kept), log = TRUE, prior.count = 2)
@@ -376,13 +370,13 @@ logFC <- logged[, 1] - logged[, 2]
 abundance <- rowMeans(logged)
 ```
 
-Figure \@ref(fig:unknown-enriched-clusters-5-md-plot) shows the result of this analysis, highlighting that there are few genes with a large $logFC$ between 'lost' and 'kept' droplets and that the systematically downregulated genes are largely ribosomal protein genes.
+Figure \@ref(fig:ambiguous-enriched-clusters-7-md-plot) shows the result of this analysis, highlighting that there are few genes with a large $logFC$ between 'lost' and 'kept' droplets.
 
 <aside>
-An interactive version of Figure \@ref(fig:unknown-enriched-clusters-5-md-plot) is available from [`output/glimma-plots/unknown-enriched-clusters-5-md-plot.html`](../output/glimma-plots/unknown-enriched-clusters-5-md-plot.html).
+An interactive version of Figure \@ref(fig:ambiguous-enriched-clusters-7-md-plot) is available from [`output/glimma-plots/ambiguous-enriched-clusters-7-md-plot.html`](../output/glimma-plots/ambiguous-enriched-clusters-7-md-plot.html).
 </aside>
 
-```{r unknown-enriched-clusters-5-md-plot, fig.cap = "Log-fold change in expression in the discarded cells compared to the retained cells. Each point represents a gene with mitochondrial transcripts in blue and ribosomal protein genes in orange. Dashed red lines indicate $|logFC| = 1$", fig.asp = 0.7}
+```{r ambiguous-enriched-clusters-7-md-plot, fig.cap = "Log-fold change in expression in the discarded cells compared to the retained cells. Each point represents a gene with mitochondrial transcripts in blue and ribosomal protein genes in orange. Dashed red lines indicate $|logFC| = 1$", fig.asp = 0.7}
 is_mito <- rownames(sce) %in% mito_set
 is_ribo <- rownames(sce) %in% ribo_set
 plot(
@@ -422,28 +416,28 @@ glMDPlot(
   side.ylab = "Average count",
   cols = c("orange", "black", "dodgerBlue"),
   path = here("output"),
-  html = "unknown-enriched-clusters-5-md-plot",
+  html = "ambiguous-enriched-clusters-7-md-plot",
   launch = FALSE)
 ```
 
 If the discarded pool is enriched for a certain cell type, we should observe increased expression of the corresponding marker genes.
 
 Another concern is whether the cells removed by this procedure are preferentially derive from particular experimental groups.
-Reassuringly, Figure \@ref(fig:unknown-enriched-clusters-5-barplot-highlighting-removed-droplets) shows that this is not the case; most of the removed droplets are `Unknown`, as we expect from the above analysis.
+Reassuringly, Figure \@ref(fig:ambiguous-enriched-clusters-7-barplot-highlighting-removed-droplets) shows that this is not the case; most of the removed droplets are `ambiguous`, as we expect from the above analysis.
 
-```{r unknown-enriched-clusters-5-barplot-highlighting-removed-droplets, fig.cap = "Droplets retained after excluding droplets from cluster 5, stratified by `Sample`."}
+```{r ambiguous-enriched-clusters-7-barplot-highlighting-removed-droplets, fig.cap = "Droplets retained after excluding droplets from cluster 5, stratified by `Sample`."}
 ggplot(
-  data.frame(Sample = sce$Sample, keep = sce$cluster != "5")) + 
+  data.frame(Sample = sce$Sample, keep = sce$cluster != "7")) + 
   geom_bar(aes(x = Sample, fill = keep)) + 
   ylab("Number of droplets") + 
   theme_cowplot(font_size = 9) + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-##### Cluster 6
+##### Cluster 8
 
 ```{r}
-keep <- !sce$cluster == "6"
+keep <- !sce$cluster == "8"
 lost <- calculateAverage(counts(sce)[, !keep])
 kept <- calculateAverage(counts(sce)[, keep])
 logged <- cpm(cbind(lost, kept), log = TRUE, prior.count = 2)
@@ -451,13 +445,13 @@ logFC <- logged[, 1] - logged[, 2]
 abundance <- rowMeans(logged)
 ```
 
-Figure \@ref(fig:unknown-enriched-clusters-6-md-plot) shows the result of this analysis, highlighting that there are few genes with a large $logFC$ between 'lost' and 'kept' droplets and that the systematically downregulated genes are largely ribosomal protein genes.
+Figure \@ref(fig:ambiguous-enriched-clusters-8-md-plot) shows the result of this analysis, highlighting that there are a number of genes with a large $logFC$ between 'lost' and 'kept' droplets.
 
 <aside>
-An interactive version of Figure \@ref(fig:unknown-enriched-clusters-6-md-plot) is available from [`output/glimma-plots/unknown-enriched-clusters-6-md-plot.html`](../output/glimma-plots/unknown-enriched-clusters-6-md-plot.html).
+An interactive version of Figure \@ref(fig:ambiguous-enriched-clusters-8-md-plot) is available from [`output/glimma-plots/ambiguous-enriched-clusters-8-md-plot.html`](../output/glimma-plots/ambiguous-enriched-clusters-8-md-plot.html).
 </aside>
 
-```{r unknown-enriched-clusters-6-md-plot, fig.cap = "Log-fold change in expression in the discarded cells compared to the retained cells. Each point represents a gene with mitochondrial transcripts in blue and ribosomal protein genes in orange. Dashed red lines indicate $|logFC| = 1$", fig.asp = 0.7}
+```{r ambiguous-enriched-clusters-8-md-plot, fig.cap = "Log-fold change in expression in the discarded cells compared to the retained cells. Each point represents a gene with mitochondrial transcripts in blue and ribosomal protein genes in orange. Dashed red lines indicate $|logFC| = 1$", fig.asp = 0.7}
 is_mito <- rownames(sce) %in% mito_set
 is_ribo <- rownames(sce) %in% ribo_set
 plot(
@@ -497,28 +491,28 @@ glMDPlot(
   side.ylab = "Average count",
   cols = c("orange", "black", "dodgerBlue"),
   path = here("output"),
-  html = "unknown-enriched-clusters-6-md-plot",
+  html = "ambiguous-enriched-clusters-8-md-plot",
   launch = FALSE)
 ```
 
 If the discarded pool is enriched for a certain cell type, we should observe increased expression of the corresponding marker genes.
 
 Another concern is whether the cells removed by this procedure are preferentially derive from particular experimental groups.
-Reassuringly, Figure \@ref(fig:unknown-enriched-clusters-6-barplot-highlighting-removed-droplets) shows that this is not the case; most of the removed droplets are `Unknown`, as we expect from the above analysis.
+Figure \@ref(fig:ambiguous-enriched-clusters-8-barplot-highlighting-removed-droplets) shows that excluding these droplets might preferentially exclude droplets from the `Uninfected` samples.
 
-```{r unknown-enriched-clusters-6-barplot-highlighting-removed-droplets, fig.cap = "Droplets retained after excluding droplets from cluster 5, stratified by `Sample`."}
+```{r ambiguous-enriched-clusters-8-barplot-highlighting-removed-droplets, fig.cap = "Droplets retained after excluding droplets from cluster 8, stratified by `Sample`."}
 ggplot(
-  data.frame(Sample = sce$Sample, keep = sce$cluster != "6")) + 
+  data.frame(Sample = sce$Sample, keep = sce$cluster != "8")) + 
   geom_bar(aes(x = Sample, fill = keep)) + 
   ylab("Number of droplets") + 
   theme_cowplot(font_size = 9) + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-##### Cluster 10
+##### Cluster 9
 
 ```{r}
-keep <- !sce$cluster == "10"
+keep <- !sce$cluster == "9"
 lost <- calculateAverage(counts(sce)[, !keep])
 kept <- calculateAverage(counts(sce)[, keep])
 logged <- cpm(cbind(lost, kept), log = TRUE, prior.count = 2)
@@ -526,13 +520,13 @@ logFC <- logged[, 1] - logged[, 2]
 abundance <- rowMeans(logged)
 ```
 
-Figure \@ref(fig:unknown-enriched-clusters-10-md-plot) shows the result of this analysis, highlighting that there are few genes with a large $logFC$ between 'lost' and 'kept' droplets and that the systematically downregulated genes are largely ribosomal protein genes.
+Figure \@ref(fig:ambiguous-enriched-clusters-9-md-plot) shows the result of this analysis, highlighting that there are few genes with a large $logFC$ between 'lost' and 'kept' droplets.
 
 <aside>
-An interactive version of Figure \@ref(fig:unknown-enriched-clusters-10-md-plot) is available from [`output/glimma-plots/unknown-enriched-clusters-10-md-plot.html`](../output/glimma-plots/unknown-enriched-clusters-10-md-plot.html).
+An interactive version of Figure \@ref(fig:ambiguous-enriched-clusters-9-md-plot) is available from [`output/glimma-plots/ambiguous-enriched-clusters-9-md-plot.html`](../output/glimma-plots/ambiguous-enriched-clusters-9-md-plot.html).
 </aside>
 
-```{r unknown-enriched-clusters-10-md-plot, fig.cap = "Log-fold change in expression in the discarded cells compared to the retained cells. Each point represents a gene with mitochondrial transcripts in blue and ribosomal protein genes in orange. Dashed red lines indicate $|logFC| = 1$", fig.asp = 0.7}
+```{r ambiguous-enriched-clusters-9-md-plot, fig.cap = "Log-fold change in expression in the discarded cells compared to the retained cells. Each point represents a gene with mitochondrial transcripts in blue and ribosomal protein genes in orange. Dashed red lines indicate $|logFC| = 1$", fig.asp = 0.7}
 is_mito <- rownames(sce) %in% mito_set
 is_ribo <- rownames(sce) %in% ribo_set
 plot(
@@ -572,18 +566,18 @@ glMDPlot(
   side.ylab = "Average count",
   cols = c("orange", "black", "dodgerBlue"),
   path = here("output"),
-  html = "unknown-enriched-clusters-10-md-plot",
+  html = "ambiguous-enriched-clusters-9-md-plot",
   launch = FALSE)
 ```
 
 If the discarded pool is enriched for a certain cell type, we should observe increased expression of the corresponding marker genes.
 
 Another concern is whether the cells removed by this procedure are preferentially derive from particular experimental groups.
-Figure \@ref(fig:unknown-enriched-clusters-10-barplot-highlighting-removed-droplets) shows that excluding these droplets might preferentially exclude droplets from the `Uninfected` samples.
+Reassuringly, Figure \@ref(fig:ambiguous-enriched-clusters-8-barplot-highlighting-removed-droplets) shows that this is not the case; most of the removed droplets are `ambiguous`, as we expect from the above analysis.
 
-```{r unknown-enriched-clusters-10-barplot-highlighting-removed-droplets, fig.cap = "Droplets retained after excluding droplets from cluster 10, stratified by `Sample`."}
+```{r ambiguous-enriched-clusters-10-barplot-highlighting-removed-droplets, fig.cap = "Droplets retained after excluding droplets from cluster 9, stratified by `Sample`."}
 ggplot(
-  data.frame(Sample = sce$Sample, keep = sce$cluster != "10")) + 
+  data.frame(Sample = sce$Sample, keep = sce$cluster != "9")) + 
   geom_bar(aes(x = Sample, fill = keep)) + 
   ylab("Number of droplets") + 
   theme_cowplot(font_size = 9) + 
@@ -593,19 +587,17 @@ ggplot(
 #### Summary 
 
 ```{r}
-keep <- !sce$cluster %in% c("3", "5", "6")
+keep <- !sce$cluster %in% c("2", "7")
 ```
 
-We conclude that droplets in clusters 3, 5, and 6 do not contain intact cells, but rather comprises ambient RNA, and therefore remove all droplets in these clusters.
+We conclude that droplets in clusters 2 and 7 do not contain intact cells, but rather comprises ambient RNA, and therefore remove all droplets in these clusters.
 The removes `r sum(!keep)` droplets, retaining `r sum(keep)` for further analysis.
-We do not exclude droplets from cluster 10 because these look to comprise a distinct cell type that may be more prevalent in the `Uninfected` samples.
+We do not exclude droplets from cluster 8 and 9 because these look to comprise some distinct cell type(s) that may be more prevalent in the `Uninfected` samples.
 
 ```{r}
 sce <- sce[, keep]
 colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")] <-
   droplevels(colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")])
-hto_colours <- hto_colours[levels(sce$HTO)]
-hto_cluster_colours <- hto_cluster_colours[levels(sce$hto_cluster)]
 sample_colours <- sample_colours[levels(sce$Sample)]
 treatment_colours <- treatment_colours[levels(sce$Treatment)]
 ```
@@ -643,9 +635,9 @@ cluster_colours <- setNames(
 sce$cluster_colours <- cluster_colours[sce$cluster]
 ```
 
-There are `r nlevels(sce$cluster)` clusters detected, shown on the UMAP plot Figure \@ref(fig:no-unknown-enriched-clusters-clusterplot-umap) and broken down by experimental factors in Figure \@ref(fig:no-unknown-enriched-clusters-cluster-barplot).
+There are `r nlevels(sce$cluster)` clusters detected, shown on the UMAP plot Figure \@ref(fig:no-ambiguous-enriched-clusters-clusterplot-umap) and broken down by experimental factors in Figure \@ref(fig:no-ambiguous-enriched-clusters-cluster-barplot).
 
-```{r no-unknown-enriched-clusters-clusterplot-umap, fig.cap = "UMAP plot, where each point represents a droplet and is coloured according to the legend.", fig.asp = 0.7}
+```{r no-ambiguous-enriched-clusters-clusterplot-umap, fig.cap = "UMAP plot, where each point represents a droplet and is coloured according to the legend.", fig.asp = 0.7}
 plot_grid(
   ggplot(aes(x = x, y = y), data = umap_df) +
     geom_point(aes(colour = cluster), size = 0.25) +
@@ -669,7 +661,7 @@ plot_grid(
   align = "v")
 ```
 
-```{r no-unknown-enriched-clusters-cluster-barplot, fig.asp = 1 / 4, fig.cap = "Breakdown of clusters by experimental factors."}
+```{r no-ambiguous-enriched-clusters-cluster-barplot, fig.asp = 1 / 4, fig.cap = "Breakdown of clusters by experimental factors."}
 plot_grid(
   ggplot(as.data.frame(colData(sce)[, c("cluster", "Sample")])) + 
     geom_bar(
@@ -701,7 +693,7 @@ plot_grid(
 Notably:
 
 - Still, some of the clusters are highly treatment-specific.
-- **Still, some of the clusters are enriched for `Unknown` droplets.**
+- **Still, some of the clusters are enriched for `ambiguous` droplets.**
 
 We therefore repeat the process described in [First pass].
 
@@ -710,52 +702,52 @@ We therefore repeat the process described in [First pass].
 ### Motivation
 
 ```{r, results = "hide"}
-prop_unknown <- tapply(
-  sce$Sample == "Unknown",
+prop_ambiguous <- tapply(
+  sce$Sample == "ambiguous",
   sce$cluster,
   function(x) sum(x) / length(x))
-sort(prop_unknown)
-prop_unknown_outliers <- isOutlier(
-  prop_unknown,
+sort(prop_ambiguous)
+prop_ambiguous_outliers <- isOutlier(
+  prop_ambiguous,
   type = "higher",
   # NOTE: Want the cluster(s) that are **way** out there.
   nmads = 5)
-unknown_enriched_clusters <- levels(sce$cluster)[prop_unknown_outliers]
-stopifnot(identical(unknown_enriched_clusters, c("4", "7")))
+ambiguous_enriched_clusters <- levels(sce$cluster)[prop_ambiguous_outliers]
+stopifnot(identical(ambiguous_enriched_clusters, c("2", "8")))
 ```
 
-There are still clusters with unusually large proportions of droplets being of `Unknown` origin, namely clusters `r glue::glue_collapse(unknown_enriched_clusters, sep = " and ")` (proportions = `r glue::glue_collapse(round(prop_unknown[unknown_enriched_clusters], 2), " and ")`, respectively).
+There are still clusters with unusually large proportions of droplets being of `ambiguous` origin, namely clusters `r glue::glue_collapse(ambiguous_enriched_clusters, sep = " and ")` (proportions = `r glue::glue_collapse(round(prop_ambiguous[ambiguous_enriched_clusters], 2), " and ")`, respectively).
 
 These droplets cannot be assigned to a sample of origin and so are not useful in downstream analyses.
 However, before we exclude them, we want to ensure we aren't systematically excluding a biologically relevant cell population.
 
 We would further like to know that this isn't systematically excluding droplets from a particular sample or treatment group.
-This is challenging because by definition most of these droplets are of `Unknown` origin.
+This is challenging because by definition most of these droplets are of `ambiguous` origin.
 However, we can check if the 'labelled' droplets in those clusters are enriched for particular samples.
 
 ### Analysis
 
-Figure \@ref(fig:refined-unknown-enriched-clusters-umap) highlights droplets from this cluster on the UMAP plot, showing that they are largely distinct from the bulk of droplets from the dataset.
+Figure \@ref(fig:refined-ambiguous-enriched-clusters-umap) highlights droplets from these clusters on the UMAP plot, showing that they are largely distinct from the bulk of droplets from the dataset.
 
-```{r refined-unknown-enriched-clusters-umap, fig.cap = "UMAP plot highlighting droplets from clusters that are enriched for `Unknown` droplets. Cluster labels are overlaid on cluster centroids."}
+```{r refined-ambiguous-enriched-clusters-umap, fig.cap = "UMAP plot highlighting droplets from clusters that are enriched for `ambiguous` droplets. Cluster labels are overlaid on cluster centroids."}
 plotUMAP(
   sce,
   colour_by = data.frame(
-    `Unknown enriched cluster` = sce$cluster %in% unknown_enriched_clusters),
+    `ambiguous enriched cluster` = sce$cluster %in% ambiguous_enriched_clusters),
   text_by = "cluster")
 ```
 
-Figure \@ref(fig:refined-unknown-enriched-clusters-qc-plot) shows that the QC metrics of droplets from this cluster are distinct from the other clusters, having smaller library sizes and fewer genes detected (but no difference in mitochondrial proportions).
+Figure \@ref(fig:refined-ambiguous-enriched-clusters-qc-plot) shows that the QC metrics of droplets from these clusters are distinct from the other clusters, having smaller library sizes and fewer genes detected (but no difference in mitochondrial proportions).
 
-```{r refined-unknown-enriched-clusters-qc-plot, fig.cap = "QC metrics of droplets by cluster, highlighting droplets from clusters that are enriched for `Unknown` droplets (orange)."}
+```{r refined-ambiguous-enriched-clusters-qc-plot, fig.cap = "QC metrics of droplets by cluster, highlighting droplets from clusters that are enriched for `ambiguous` droplets (orange)."}
 plot_grid(
   plotColData(
     sce, 
     "sum", 
     x = "cluster", 
     colour_by = data.frame(
-      `Unknown enriched cluster` = 
-        sce$cluster %in% unknown_enriched_clusters)) +
+      `ambiguous enriched cluster` = 
+        sce$cluster %in% ambiguous_enriched_clusters)) +
     scale_y_log10() + 
     guides(fill = FALSE),
   plotColData(
@@ -763,8 +755,8 @@ plot_grid(
     "detected", 
     x = "cluster", 
     colour_by = data.frame(
-      `Unknown enriched cluster` = 
-        sce$cluster %in% unknown_enriched_clusters)) +
+      `ambiguous enriched cluster` = 
+        sce$cluster %in% ambiguous_enriched_clusters)) +
     scale_y_log10() + 
     guides(fill = FALSE),
   plotColData(
@@ -772,8 +764,8 @@ plot_grid(
   "subsets_Mito_percent",
   x = "cluster",
   colour_by = data.frame(
-      `Unknown enriched cluster` = 
-        sce$cluster %in% unknown_enriched_clusters)) + 
+      `ambiguous enriched cluster` = 
+        sce$cluster %in% ambiguous_enriched_clusters)) + 
     guides(fill = FALSE),
   align = "v",
   ncol = 2)
@@ -786,10 +778,10 @@ Droplets with small library sizes are likely to contain ambient RNA rather than 
 
 We check for cell type loss by looking for systematic differences in gene expression between the discarded and retained droplets, doing this separately for each of the suspicious clusters.
 
-##### Cluster 4
+##### Cluster 2
 
 ```{r}
-keep <- !sce$cluster == "4"
+keep <- !sce$cluster == "2"
 lost <- calculateAverage(counts(sce)[, !keep])
 kept <- calculateAverage(counts(sce)[, keep])
 logged <- cpm(cbind(lost, kept), log = TRUE, prior.count = 2)
@@ -797,13 +789,13 @@ logFC <- logged[, 1] - logged[, 2]
 abundance <- rowMeans(logged)
 ```
 
-Figure \@ref(fig:refined-unknown-enriched-clusters-4-md-plot) shows the result of this analysis, highlighting that there are few genes with a large $logFC$ between 'lost' and 'kept' droplets and that the systematically downregulated genes are largely ribosomal protein genes.
+Figure \@ref(fig:refined-ambiguous-enriched-clusters-2-md-plot) shows the result of this analysis, highlighting that there are a few genes with a large $logFC$ between 'lost' and 'kept' droplets.
 
 <aside>
-An interactive version of Figure \@ref(fig:refined-unknown-enriched-clusters-4-md-plot) is available from [`output/glimma-plots/refined-unknown-enriched-clusters-4-md-plot.html`](../output/glimma-plots/refined-unknown-enriched-clusters-4-md-plot.html).
+An interactive version of Figure \@ref(fig:refined-ambiguous-enriched-clusters-4-md-plot) is available from [`output/glimma-plots/refined-ambiguous-enriched-clusters-2-md-plot.html`](../output/glimma-plots/refined-ambiguous-enriched-clusters-2-md-plot.html).
 </aside>
 
-```{r refined-unknown-enriched-clusters-4-md-plot, fig.cap = "Log-fold change in expression in the discarded cells compared to the retained cells. Each point represents a gene with mitochondrial transcripts in blue and ribosomal protein genes in orange. Dashed red lines indicate $|logFC| = 1$", fig.asp = 0.7}
+```{r refined-ambiguous-enriched-clusters-2-md-plot, fig.cap = "Log-fold change in expression in the discarded cells compared to the retained cells. Each point represents a gene with mitochondrial transcripts in blue and ribosomal protein genes in orange. Dashed red lines indicate $|logFC| = 1$", fig.asp = 0.7}
 is_mito <- rownames(sce) %in% mito_set
 is_ribo <- rownames(sce) %in% ribo_set
 plot(
@@ -843,41 +835,41 @@ glMDPlot(
   side.ylab = "Average count",
   cols = c("orange", "black", "dodgerBlue"),
   path = here("output"),
-  html = "refined-unknown-enriched-clusters-4-md-plot",
+  html = "refined-ambiguous-enriched-clusters-2-md-plot",
   launch = FALSE)
 ```
 
 If the discarded pool is enriched for a certain cell type, we should observe increased expression of the corresponding marker genes.
-Although there is a subset of genes with large $logFC$, Figure \@ref(fig:refined-unknown-enriched-clusters-4-markers) shows that these same genes are expressed in other clusters which means that we are unlikely to be systematically excluding a biologically relevant population of cells.
+Although there is a subset of genes with large $logFC$, Figure \@ref(fig:refined-ambiguous-enriched-clusters-2-markers) shows that these same genes are expressed in other clusters which means that we are unlikely to be systematically excluding a biologically relevant population of cells.
 
-```{r refined-unknown-enriched-clusters-4-markers, fig.cap = "Expression of genes with top-9 largest $|logFC|$ when comparing the the discarded cells to the retained cell. Each of these genes is expressed at a higher (or comparable) level in droplets from at least one of the retained clusters."}
+```{r refined-ambiguous-enriched-clusters-2-markers, fig.cap = "Expression of genes with top-9 largest $|logFC|$ when comparing the the discarded cells to the retained cell. Each of these genes is expressed at a higher (or comparable) level in droplets from at least one of the retained clusters."}
 plotExpression(
   sce,
   names(sort(logFC, decreasing = TRUE))[1:9],
   x = "cluster",
   colour_by = data.frame(
-    `Unknown enriched cluster` = 
-      sce$cluster %in% unknown_enriched_clusters),
+    `ambiguous enriched cluster` = 
+      sce$cluster %in% ambiguous_enriched_clusters),
   ncol = 3) +
   guides(fill = FALSE)
 ```
 
 Another concern is whether the cells removed by this procedure are preferentially derive from particular experimental groups.
-Reassuringly, Figure \@ref(fig:refined-unknown-enriched-clusters-4-barplot-highlighting-removed-droplets) shows that this is not the case; most of the removed droplets are `Unknown`, as we expect from the above analysis.
+Reassuringly, Figure \@ref(fig:refined-ambiguous-enriched-clusters-2-barplot-highlighting-removed-droplets) shows that this is not the case; most of the removed droplets are `ambiguous`, as we expect from the above analysis.
 
-```{r refined-unknown-enriched-clusters-4-barplot-highlighting-removed-droplets, fig.cap = "Droplets retained after excluding droplets from cluster 4, stratified by `Sample`."}
+```{r refined-ambiguous-enriched-clusters-2-barplot-highlighting-removed-droplets, fig.cap = "Droplets retained after excluding droplets from cluster 2, stratified by `Sample`."}
 ggplot(
-  data.frame(Sample = sce$Sample, keep = sce$cluster != "4")) + 
+  data.frame(Sample = sce$Sample, keep = sce$cluster != "2")) + 
   geom_bar(aes(x = Sample, fill = keep)) + 
   ylab("Number of droplets") + 
   theme_cowplot(font_size = 9) + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-##### Cluster 7
+##### Cluster 8
 
 ```{r}
-keep <- !sce$cluster == "7"
+keep <- !sce$cluster == "8"
 lost <- calculateAverage(counts(sce)[, !keep])
 kept <- calculateAverage(counts(sce)[, keep])
 logged <- cpm(cbind(lost, kept), log = TRUE, prior.count = 2)
@@ -885,13 +877,13 @@ logFC <- logged[, 1] - logged[, 2]
 abundance <- rowMeans(logged)
 ```
 
-Figure \@ref(fig:refined-unknown-enriched-clusters-7-md-plot) shows the result of this analysis, highlighting that there are few genes with a large $logFC$ between 'lost' and 'kept' droplets and that the systematically downregulated genes are largely ribosomal protein genes.
+Figure \@ref(fig:refined-ambiguous-enriched-clusters-8-md-plot) shows the result of this analysis, highlighting that there are few genes with a large $logFC$ between 'lost' and 'kept' droplets and that the systematically downregulated genes are largely ribosomal protein genes.
 
 <aside>
-An interactive version of Figure \@ref(fig:refined-unknown-enriched-clusters-7-md-plot) is available from [`output/glimma-plots/refined-unknown-enriched-clusters-7-md-plot.html`](../output/glimma-plots/refined-unknown-enriched-clusters-7-md-plot.html).
+An interactive version of Figure \@ref(fig:refined-ambiguous-enriched-clusters-8-md-plot) is available from [`output/glimma-plots/refined-ambiguous-enriched-clusters-8-md-plot.html`](../output/glimma-plots/refined-ambiguous-enriched-clusters-8-md-plot.html).
 </aside>
 
-```{r refined-unknown-enriched-clusters-7-md-plot, fig.cap = "Log-fold change in expression in the discarded cells compared to the retained cells. Each point represents a gene with mitochondrial transcripts in blue and ribosomal protein genes in orange. Dashed red lines indicate $|logFC| = 1$", fig.asp = 0.7}
+```{r refined-ambiguous-enriched-clusters-8-md-plot, fig.cap = "Log-fold change in expression in the discarded cells compared to the retained cells. Each point represents a gene with mitochondrial transcripts in blue and ribosomal protein genes in orange. Dashed red lines indicate $|logFC| = 1$", fig.asp = 0.7}
 is_mito <- rownames(sce) %in% mito_set
 is_ribo <- rownames(sce) %in% ribo_set
 plot(
@@ -931,31 +923,31 @@ glMDPlot(
   side.ylab = "Average count",
   cols = c("orange", "black", "dodgerBlue"),
   path = here("output"),
-  html = "refined-unknown-enriched-clusters-7-md-plot",
+  html = "refined-ambiguous-enriched-clusters-8-md-plot",
   launch = FALSE)
 ```
 
 If the discarded pool is enriched for a certain cell type, we should observe increased expression of the corresponding marker genes.
-Although there is a subset of genes with large $logFC$, Figure \@ref(fig:refined-unknown-enriched-clusters-7-markers) shows that these same genes are expressed in other clusters which means that we are unlikely to be systematically excluding a biologically relevant population of cells.
+Although there is a subset of genes with large $logFC$, Figure \@ref(fig:refined-ambiguous-enriched-clusters-8-markers) shows that these same genes are expressed in other clusters which means that we are unlikely to be systematically excluding a biologically relevant population of cells.
 
-```{r refined-unknown-enriched-clusters-7-markers, fig.cap = "Expression of genes with top-9 largest $|logFC|$ when comparing the the discarded cells to the retained cell. Each of these genes is expressed at a higher (or comparable) level in droplets from at least one of the retained clusters."}
+```{r refined-ambiguous-enriched-clusters-8-markers, fig.cap = "Expression of genes with top-9 largest $|logFC|$ when comparing the the discarded cells to the retained cell. Each of these genes is expressed at a higher (or comparable) level in droplets from at least one of the retained clusters."}
 plotExpression(
   sce,
   names(sort(logFC, decreasing = TRUE))[1:9],
   x = "cluster",
   colour_by = data.frame(
-    `Unknown enriched cluster` = 
-      sce$cluster %in% unknown_enriched_clusters),
+    `ambiguous enriched cluster` = 
+      sce$cluster %in% ambiguous_enriched_clusters),
   ncol = 3) +
   guides(fill = FALSE)
 ```
 
 Another concern is whether the cells removed by this procedure are preferentially derive from particular experimental groups.
-Reassuringly, Figure \@ref(fig:refined-unknown-enriched-clusters-7-barplot-highlighting-removed-droplets) shows that this is not the case; most of the removed droplets are `Unknown`, as we expect from the above analysis.
+Reassuringly, Figure \@ref(fig:refined-ambiguous-enriched-clusters-8-barplot-highlighting-removed-droplets) shows that this is not the case; most of the removed droplets are `ambiguous`, as we expect from the above analysis.
 
-```{r refined-unknown-enriched-clusters-7-barplot-highlighting-removed-droplets, fig.cap = "Droplets retained after excluding droplets from cluster 7, stratified by `Sample`."}
+```{r refined-ambiguous-enriched-clusters-8-barplot-highlighting-removed-droplets, fig.cap = "Droplets retained after excluding droplets from cluster 8, stratified by `Sample`."}
 ggplot(
-  data.frame(Sample = sce$Sample, keep = sce$cluster != "7")) + 
+  data.frame(Sample = sce$Sample, keep = sce$cluster != "8")) + 
   geom_bar(aes(x = Sample, fill = keep)) + 
   ylab("Number of droplets") + 
   theme_cowplot(font_size = 9) + 
@@ -965,17 +957,15 @@ ggplot(
 #### Summary
 
 ```{r}
-keep <- !sce$cluster %in% c("4", "7")
+keep <- !sce$cluster %in% c("2", "8")
 ```
-We conclude that droplets in clusters 4 and 7 do not contain intact cells, but rather comprises ambient RNA, and therefore remove all droplets in these clusters.
+We conclude that droplets in clusters 2 and 8 do not contain intact cells, but rather comprises ambient RNA, and therefore remove all droplets in these clusters.
 The removes `r sum(!keep)` droplets, retaining `r sum(keep)` for further analysis.
 
 ```{r}
 sce <- sce[, keep]
 colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")] <-
   droplevels(colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")])
-hto_colours <- hto_colours[levels(sce$HTO)]
-hto_cluster_colours <- hto_cluster_colours[levels(sce$hto_cluster)]
 sample_colours <- sample_colours[levels(sce$Sample)]
 treatment_colours <- treatment_colours[levels(sce$Treatment)]
 ```
@@ -1012,9 +1002,9 @@ cluster_colours <- setNames(
 sce$cluster_colours <- cluster_colours[sce$cluster]
 ```
 
-There are `r nlevels(sce$cluster)` clusters detected, shown on the UMAP plot Figure \@ref(fig:no-refined-unknown-enriched-clusters-clusterplot-umap) and broken down by experimental factors in Figure \@ref(fig:no-refined-unknown-enriched-clusters-cluster-barplot).
+There are `r nlevels(sce$cluster)` clusters detected, shown on the UMAP plot Figure \@ref(fig:no-refined-ambiguous-enriched-clusters-clusterplot-umap) and broken down by experimental factors in Figure \@ref(fig:no-refined-ambiguous-enriched-clusters-cluster-barplot).
 
-```{r no-refined-unknown-enriched-clusters-clusterplot-umap, fig.cap = "UMAP plot, where each point represents a droplet and is coloured according to the legend.", fig.asp = 0.7}
+```{r no-refined-ambiguous-enriched-clusters-clusterplot-umap, fig.cap = "UMAP plot, where each point represents a droplet and is coloured according to the legend.", fig.asp = 0.7}
 plot_grid(
   ggplot(aes(x = x, y = y), data = umap_df) +
     geom_point(aes(colour = cluster), size = 0.25) +
@@ -1038,7 +1028,7 @@ plot_grid(
   align = "v")
 ```
 
-```{r no-refined-unknown-enriched-clusters-cluster-barplot, fig.asp = 1 / 4, fig.cap = "Breakdown of clusters by experimental factors."}
+```{r no-refined-ambiguous-enriched-clusters-cluster-barplot, fig.asp = 1 / 4, fig.cap = "Breakdown of clusters by experimental factors."}
 plot_grid(
   ggplot(as.data.frame(colData(sce)[, c("cluster", "Sample")])) + 
     geom_bar(
@@ -1070,7 +1060,7 @@ plot_grid(
 Notably:
 
 - Still, some of the clusters are highly treatment-specific.
-- **Now, none of the clusters are enriched for `Unknown` droplets.**
+- **Now, none of the clusters are enriched for `ambiguous` droplets.**
 
 # Doublets
 
@@ -1092,117 +1082,7 @@ With 5 unique HTOs, there are ${5 \choose 2} = 10$ ways a droplet could be label
 The cell hashing data will not identify all doublets, most obviously those formed between cells from the same sample.
 It will also be near impossible to identify those doublets formed between a cell labelled with all 5 HTOs (i.e. a cell from the `uninfected_3` sample) and another cell labelled with a single HTO.
 
-We use the HTOs to identify doublets, we perform a high-resolution clustering of the HTO data^[This uses a higher resolution than that used in ['Demultiplexing the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney.demultiplex.html)].
-
-```{r, results = "hide"}
-g <- buildSNNGraph(altExp(sce, "Antibody Capture"), k = 25, d = NA)
-clusters <- igraph::cluster_louvain(g)$membership
-sce$hto_cluster_fine <- factor(clusters)
-hto_cluster_fine_colours <- setNames(
-  Polychrome::glasbey.colors(nlevels(sce$hto_cluster_fine) + 1)[-1],
-  levels(sce$hto_cluster_fine))
-sce$hto_cluster_fine_colours <- hto_cluster_colours[sce$hto_cluster_fine]
-  
-cluster_sizes <- table(sce$hto_cluster_fine)
-doublet_clusters <- names(which(cluster_sizes < 500))
-# NOTE: There should be `choose(5, 2)` `doublet_clusters`.
-stopifnot(
-  identical(doublet_clusters,
-            c("2", "3", "4", "6", "10", "11", "12", "13", "14", "15")))
-
-prop_unknown <- tapply(
-  sce$Sample == "Unknown",
-  sce$hto_cluster_fine,
-  function(x) sum(x) / length(x))
-sort(prop_unknown)
-prop_unknown_outliers <- isOutlier(
-  prop_unknown,
-  type = "higher",
-  batch = prop_unknown > 0,
-  # NOTE: Want the cluster(s) that are **way** out there.
-  nmads = 5)
-unknown_enriched_clusters <- levels(sce$hto_cluster_fine)[prop_unknown_outliers]
-stopifnot(identical(unknown_enriched_clusters, "7"))
-```
-
-Figure \@ref(fig:hto-doublet-umap) shows that there are many small clusters and that these are often visually 'in between' the larger clusters on the UMAP plot.
-
-```{r hto-doublet-umap, fig.cap = "UMAP plot of the HTO data. Each point represents a cell with the colour explained in the legend.", fig.asp = 0.8}
-plotReducedDim(
-  sce,
-  "HTO_UMAP",
-  colour_by = "hto_cluster_fine",
-  point_size = 0) +
-  geom_point(aes(colour = colour_by), size = 0.5) +
-  scale_colour_manual(
-    values = hto_cluster_fine_colours,
-    name = "hto_cluster_fine") +
-  ggtitle("UMAP: HTOs") +
-  theme_cowplot()
-```
-
-These small clusters very likely comprise doublets.
-To examine this directly, Figures \@ref(fig:hto-doublet-hto-heatmap), \@ref(fig:hto-doublet-hto-heatmap-doublets-and-unknowns), and \@ref(fig:hto-doublet-hto-heatmap-doublets) are heatmaps of the HTO counts, with each focusing on a more restricted set of cells, which collectively show:
-
-1. Five large clusters each containing droplets with large counts for a single HTO correspond to the droplets labelled with a single HTO.
-2. One large cluster containing droplets with moderate-to-large counts for all 5 HTOs corresponds to the droplets labelled with all 5 HTOs.
-3. One moderately sized cluster containing droplets with moderate-to-high counts of some (but not all) 5 HTOs. These correspond to droplets that we cannot assign to an individual sample.
-4. Ten small clusters containing droplets with large counts for 2 HTOs. These correspond to the ${5 \choose 2} = 10$ ways a doublet could be formed from two cells each labelled with a single one of the 5 distinct HTOs.
-
-```{r hto-doublet-hto-heatmap, fig.cap = "Heatmap of log2(counts) for the HTOs."}
-library(pheatmap)
-pheatmap(
-  log2(counts(altExp(sce)) + 1)[, order(sce$hto_cluster_fine)],
-  color = viridisLite::inferno(100),
-  cluster_rows = FALSE,
-  cluster_cols = FALSE,
-  annotation_col = data.frame(
-    hto_cluster_fine = sce$hto_cluster_fine,
-    row.names = colnames(sce)),
-  annotation_colors = list(
-    hto_cluster_fine = hto_cluster_fine_colours),
-  show_colnames = FALSE,
-  scale = "none")
-```
-
-```{r hto-doublet-hto-heatmap-doublets-and-unknowns, fig.cap = "Heatmap of log2(counts) for the HTOs, focusing on clusters that correspond to doublets and droplets that cannot confidently be assigned to a donor."}
-tmp_sce <- sce[, sce$hto_cluster_fine %in% 
-                 c(doublet_clusters, unknown_enriched_clusters)]
-pheatmap(
-  log2(counts(altExp(tmp_sce)) + 1)[, order(tmp_sce$hto_cluster_fine)],
-  color = viridisLite::inferno(100),
-  cluster_rows = FALSE,
-  cluster_cols = FALSE,
-  annotation_col = data.frame(
-    hto_cluster_fine = sce$hto_cluster_fine,
-    row.names = colnames(sce)),
-  annotation_colors = list(
-    # NOTE: Select 'active' colour levels.
-    hto_cluster_fine = hto_cluster_fine_colours[
-      levels(factor(tmp_sce$hto_cluster_fine))]),
-  show_colnames = FALSE,
-  scale = "none")
-```
-
-```{r hto-doublet-hto-heatmap-doublets, fig.cap = "Heatmap of log2(counts) for the HTOs, focusing on clusters that correspond to doublets."}
-tmp_sce <- sce[, sce$hto_cluster_fine %in% doublet_clusters]
-pheatmap(
-  log2(counts(altExp(tmp_sce)) + 1)[, order(tmp_sce$hto_cluster_fine)],
-  color = viridisLite::inferno(100),
-  cluster_rows = FALSE,
-  cluster_cols = FALSE,
-  annotation_col = data.frame(
-    hto_cluster_fine = sce$hto_cluster_fine,
-    row.names = colnames(sce)),
-  annotation_colors = list(
-    # NOTE: Select 'active' colour levels.
-    hto_cluster_fine = hto_cluster_fine_colours[
-      levels(factor(tmp_sce$hto_cluster_fine))]),
-  show_colnames = FALSE,
-  scale = "none")
-```
-
-We can easily identify the HTO-derived doublets (droplets from the clusters highlighted in Figure \@ref(fig:hto-doublet-hto-heatmap-doublets); n = `r sum(sce$hto_cluster_fine %in% doublet_clusters)`, `r round(100 * sum(sce$hto_cluster_fine %in% doublet_clusters) / ncol(sce), 1)`% of remaining droplets).
+We can easily identify the HTO-derived doublets (droplets with `Sample` labelled as `doublet`; n = `r sum(sce$Sample == "doublet")`, `r round(100 * sum(sce$Sample == "doublet") / ncol(sce), 1)`% of remaining droplets).
 We term these the 'labelled' droplets.
 
 ### 'Unlabelled' dropets
@@ -1217,12 +1097,11 @@ Intra-sample doublets should have values of this metric under the assumption tha
 ```{r}
 # NOTE: This is a hack to estimate the relative frequency of each 
 #       (labelled singlet) sample.
-tmp <- colData(sce)
-tmp <- tmp[!tmp$hto_cluster_fine %in% doublet_clusters, ]
-sample_freq <- table(tmp$HTO)
+sample_freq <- table(sce$Sample)[
+  c(paste0("infected_", 1:3), paste0("uninfected_", 1:3))]
 doublets_df <- doubletRecovery(
   sce,
-  doublets = sce$hto_cluster_fine %in% doublet_clusters,
+  doublets = sce$Sample == "doublet",
   use.dimred = "PCA",
   samples = sample_freq)
 ```
@@ -1274,7 +1153,7 @@ plot_grid(
   ncol = 3)
 ```
 
-Reassuringly, most of the 'unlabelled' doublets come from the droplets currently labelled as the `uninfected_3` sample, which was labelled with all 5 HTOs and for which it was difficult to identify 'labelled' doublets.
+Reassuringly, most of the 'unlabelled' doublets come from the droplets currently labelled as originating from the `uninfected_3` sample, which was labelled with all 5 HTOs and for which it was difficult to identify 'labelled' doublets, and the `ambiguous` sample.
 
 ```{r}
 library(janitor)
@@ -1356,7 +1235,6 @@ If the discarded pool is enriched for a certain cell type, we should observe inc
 
 Another concern is whether the cells removed by this procedure are preferentially derive from particular experimental groups.
 Reassuringly, Figure \@ref(fig:doublet-barplot-highlighting-removed-droplets) shows that this is not the case; most of the removed droplets are 'labelled' doublets, as we expect from the above analysis.
-There is a slightly larger proportion of droplets removed from the `Infected` samples, likely because these samples were labelled with the HTOs that seem to have performed best and so for which we have increased power to detect 'labelled' doublets.
 
 ```{r doublet-barplot-highlighting-removed-droplets, fig.cap = "Droplets removed after excluding 'labelled' and 'unlabelled' predicted doublets, stratified by `Sample`."}
 ggplot(
@@ -1380,8 +1258,6 @@ The dataset may still contain some 'unlabelled' doublets, but their number shoul
 ```{r}
 colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")] <-
   droplevels(colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")])
-hto_colours <- hto_colours[levels(sce$HTO)]
-hto_cluster_colours <- hto_cluster_colours[levels(sce$hto_cluster)]
 sample_colours <- sample_colours[levels(sce$Sample)]
 treatment_colours <- treatment_colours[levels(sce$Treatment)]
 ```
@@ -1476,7 +1352,7 @@ plot_grid(
 Notably:
 
 - Still, some of the clusters are highly treatment-specific.
-- Still, none of the clusters are enriched for `Unknown` droplets.
+- Still, none of the clusters are enriched for `ambiguous` droplets.
 - **Now, none of the clusters are highly sample-specific.**
 
 # Selection of 'labelled' singlets
@@ -1484,34 +1360,34 @@ Notably:
 ## Motivation
 
 ```{r, results = "hide"}
-prop_unknown <- tapply(
-  sce$Sample == "Unknown",
+prop_ambiguous <- tapply(
+  sce$Sample == "ambiguous",
   sce$cluster,
   function(x) sum(x) / length(x))
-sort(prop_unknown)
-prop_unknown_outliers <- isOutlier(
-  prop_unknown,
+sort(prop_ambiguous)
+prop_ambiguous_outliers <- isOutlier(
+  prop_ambiguous,
   type = "higher",
   # NOTE: Want the cluster(s) that are **way** out there.
   nmads = 5)
-unknown_enriched_clusters <- levels(sce$cluster)[prop_unknown_outliers]
-stopifnot(identical(unknown_enriched_clusters, character(0)))
+ambiguous_enriched_clusters <- levels(sce$cluster)[prop_ambiguous_outliers]
+stopifnot(identical(ambiguous_enriched_clusters, character(0)))
 ```
 
-There is no cluster with a notably large number of `Unknown` droplets.
+There is no cluster with a notably large number of `ambiguous` droplets.
 If there were, our concern would be that this could indicate a cell subpopulation (e.g., cell type) that is systematically failing to be labelled by one or more of the HTOs.
 
 ## Analysis
 
-Since there are no clusters enriched for `Unknown` droplets, there is no cluster-level analysis to be performed.
-Instead, we simply remove the droplets labelled as `Unknown`.
+Since there are no clusters enriched for `ambiguous` droplets, there is no cluster-level analysis to be performed.
+Instead, we simply remove the droplets labelled as `ambiguous`.
 
 ### Checking for removal of biologically relevant subpopulations
 
 We again check for cell type loss by looking for systematic differences in gene expression between the discarded and retained cells.
 
 ```{r}
-keep <- sce$Sample != "Unknown"
+keep <- sce$Sample != "ambiguous"
 lost <- calculateAverage(counts(sce)[, !keep])
 kept <- calculateAverage(counts(sce)[, keep])
 logged <- cpm(cbind(lost, kept), log = TRUE, prior.count = 2)
@@ -1572,7 +1448,7 @@ glMDPlot(
 If the discarded pool is enriched for a certain cell type, we should observe increased expression of the corresponding marker genes.
 
 Another concern is whether the cells removed by this procedure are preferentially derive from particular experimental groups.
-Reassuringly, Figure \@ref(fig:labelled-singlets-barplot-highlighting-removed-droplets) shows that this is not the case; all of the removed droplets are `Unknown` droplets, as we expect from the above analysis.
+Reassuringly, Figure \@ref(fig:labelled-singlets-barplot-highlighting-removed-droplets) shows that this is not the case; all of the removed droplets are `ambiguous` droplets, as we expect from the above analysis.
 
 ```{r labelled-singlets-barplot-highlighting-removed-droplets, fig.cap = "Droplets removed after excluding `Negative` and `unassigned` droplets, stratified by `Sample`."}
 ggplot(
@@ -1586,7 +1462,7 @@ ggplot(
 ### Summary
 
 We can conclude that it is unlikely that our HTO labelling has systematically under-labelled a biologically relevant cell type.
-Furthermore, the `Unknown` droplets are not useful in downstream analyses because we cannot match them to a treatment, and so we removed all `Unknown` droplets from the data.
+Furthermore, the `ambiguous` droplets are not useful in downstream analyses because we cannot match them to a treatment, and so we removed all `ambiguous` droplets from the data.
 The removes `r sum(!keep)` droplets, retaining `r sum(keep)` for further analysis.
 
 At this point, our dataset only contains 'labelled' singlets, i.e. those droplets we are confident are single cells and that we can assign to a single sample.
@@ -1596,8 +1472,6 @@ These are the cells we want to use in our downstream analysis.
 sce <- sce[, keep]
 colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")] <-
   droplevels(colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")])
-hto_colours <- hto_colours[levels(sce$HTO)]
-hto_cluster_colours <- hto_cluster_colours[levels(sce$hto_cluster)]
 sample_colours <- sample_colours[levels(sce$Sample)]
 treatment_colours <- treatment_colours[levels(sce$Treatment)]
 ```
@@ -1704,7 +1578,7 @@ However, an enrichment procedure is just that and unwanted cell types may sneak 
 We can categorise unwanted cell types as either:
 
 1. 'Known' unwanted cell types: Unwanted cell types that we did know to look for *a priori* (i.e. unwanted cell types we know may have snuck through the enrichment process)
-2. 'Unknown' unwanted cell types: Unwanted cell types that we didn't know to look for *a priori* (i.e. unwanted cell types that we didn't may have snuck through the enrichment process).
+2. 'ambiguous' unwanted cell types: Unwanted cell types that we didn't know to look for *a priori* (i.e. unwanted cell types that we didn't may have snuck through the enrichment process).
 
 We will use different analysis strategies to identify the 'known' and 'unknown' unwanted cell types.
 Once we have identified the unwanted cell types, we will exclude the unwanted these cells from further analysis.
@@ -2016,8 +1890,6 @@ If it is biologically relevant that the `Monocytes` are only found in `Uninfecte
 sce <- sce[, keep]
 colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")] <-
   droplevels(colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")])
-hto_colours <- hto_colours[levels(sce$HTO)]
-hto_cluster_colours <- hto_cluster_colours[levels(sce$hto_cluster)]
 sample_colours <- sample_colours[levels(sce$Sample)]
 treatment_colours <- treatment_colours[levels(sce$Treatment)]
 ```
@@ -2164,8 +2036,6 @@ label_fine_collapsed_colours <- setNames(
     Polychrome::glasbey.colors(nlevels(factor(labels_fine)) + 1)[-1],
     "orange"),
   c(levels(factor(labels_fine)), "other"))
-sce$label_fine_collapsed_colours <- label_fine_collapsed_colours[
-  as.character(sce$label_cell_fine_collapsed)]
 
 pred_cell_fine <- SingleR(
   test = sce,
@@ -2177,6 +2047,8 @@ sce$label_cell_fine_collapsed <- .collapseLabel(
   sce$label_cell_fine,
   sce$batch)
 umap_df$label_cell_fine_collapsed <- sce$label_cell_fine_collapsed
+sce$label_fine_collapsed_colours <- label_fine_collapsed_colours[
+  as.character(sce$label_cell_fine_collapsed)]
 ```
 
 The results using the 'main' label is summarised in the table below.
@@ -2217,7 +2089,7 @@ This consistency is further emphasised when we cross-tabulate the 'main' and 'fi
 tabyl(
   data.frame(
   label.main = sce$label_cell_main,
-  label.fine = sce$label_cell_fine,cluster = sce$cluster),
+  label.fine = sce$label_cell_fine, cluster = sce$cluster),
   label.fine, label.main) %>%
   adorn_totals("row") %>%
   adorn_percentages("col") %>%
@@ -2326,7 +2198,7 @@ Figure \@ref(fig:subset-test-dice-cd8-and-cd4-markers) shows that even amongst t
 
 ```{r subset-test-dice-cd8-and-cd4-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in our dataset at the cell-level for selected marker genes between the `T cells, CD8+` and `T cells, CD4+` labels. Each column is a sample, each row a gene. Only cells not labelled as `T cells, CD4+` are shown.", fig.asp = 1.1}
 plotHeatmap(
-  sce[, sce$label_cell_main != "T cells, CD4+"],
+  sce[, which(sce$label_cell_main != "T cells, CD4+")],
   features = markers,
   colour_columns_by = c("label_cell_main", "label_cell_fine", "cluster"),
   center = TRUE,
