@@ -327,13 +327,6 @@
       "Source": "Bioconductor",
       "Hash": "f5a9986c7ccf43d0941b7b069d08e2d7"
     },
-    "Rtsne": {
-      "Package": "Rtsne",
-      "Version": "0.15",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "f153432c4ca15b937ccfaa40f167c892"
-    },
     "S4Vectors": {
       "Package": "S4Vectors",
       "Version": "0.26.1",
@@ -398,6 +391,12 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "543776ae6848fde2f48ff3816d0628bc"
+    },
+    "batchelor": {
+      "Package": "batchelor",
+      "Version": "1.4.0",
+      "Source": "Bioconductor",
+      "Hash": "bfa23b5c713a2d069e58259da90ebdca"
     },
     "beachmat": {
       "Package": "beachmat",
@@ -896,6 +895,19 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "49f7258fd86ebeaea1df24d9ded00478"
+    },
+    "org.Hs.eg.db": {
+      "Package": "org.Hs.eg.db",
+      "Version": "3.11.4",
+      "Source": "Bioconductor",
+      "Hash": "30e8ecad485994b19435671c36a36290"
+    },
+    "patchwork": {
+      "Package": "patchwork",
+      "Version": "1.0.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "d6b817898a400e82e6777d4f7e027100"
     },
     "pheatmap": {
       "Package": "pheatmap",
