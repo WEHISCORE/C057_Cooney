@@ -109,6 +109,23 @@ sce <- sce[, which(empties$FDR <= 0.001)]
 
 # Demultiplexing with hashtag oligos (HTOs)
 
+## Motivation
+
+
+James provided me with a table linking HTOs to samples, shown below.
+
+```{r}
+hto_to_sample_df <- data.frame(
+  HTO = c(paste0("human_", 1:5), "human_1-human_2-human_3-human_4-human_5"),
+  Sample = c(paste0("infected_", 1:3), paste0("uninfected_", 1:3)),
+  Treatment = c(rep("Infected", 3), rep("Uninfected", 3)),
+  Replicate = rep(1:3, 2))
+
+knitr::kable(hto_to_sample_df, caption = "Table linking HTOs to samples")
+```
+
+## Analysis
+
 We only use the droplets identified as non-empty in [Calling cells from empty droplets].
 
 ```{r}
@@ -146,9 +163,16 @@ We therefore focus on assigning cells to just the `human_1`, `human_2`, `human_3
 ```{r}
 altExp(sce, "Antibody Capture") <- altExp(
   sce, "Antibody Capture")[paste0("human_", 1:5), ]
+
+sce$hto_sum <- colSums(counts(altExp(sce)))
+ambient <- rowMeans(counts(altExp(sce_empties)))[rownames(altExp(sce))]
+
+hto_low_counts_cutoff <- metadata(
+  barcodeRanks(counts(altExp(sce_empties))))$inflection
 ```
 
-We compute median-based size factors of the HTO counts and use these to normalize the HTO counts^[Median-based size factors can adjust for the composition bias that is inherent to the HTO counts; see [https://osca.bioconductor.org/integrating-with-protein-abundance.html#normalization-1](https://osca.bioconductor.org/integrating-with-protein-abundance.html#normalization-1) for details.].
+To do so, we will cluster the (log normalized) HTO expression profiles and manually annotate the resulting clusters.
+We perform median-based size normalization of the HTO count data.^[Median-based size factors can adjust for the composition bias that is inherent to the HTO counts; see [https://osca.bioconductor.org/integrating-with-protein-abundance.html#normalization-1](https://osca.bioconductor.org/integrating-with-protein-abundance.html#normalization-1) for details.].
 This requires an estimate of the ambient expression of each HTO, which we estimate from the empty droplets.
 
 <aside>
@@ -156,7 +180,6 @@ It's noteworthy that the ambient expression varies across the HTOs, with a 4-fol
 </aside>
 
 ```{r}
-ambient <- rowMeans(counts(altExp(sce_empties)))[rownames(altExp(sce))]
 as.data.frame(ambient) %>%
   knitr::kable(digits = 1, caption = "Estimated ambient counts for each HTO.")
 ```
@@ -168,145 +191,242 @@ sf_amb <- medianSizeFactors(
   reference = ambient)
 # NOTE: Size factors should be positive.
 sf_amb[sf_amb == 0] <- min(sf_amb[sf_amb > 0])
-```
-
-We then cluster the log-expression of the HTOs to identify samples with similar HTO expression profiles.
-
-```{r}
-library(scran)
 sizeFactors(altExp(sce, "Antibody Capture")) <- sf_amb
 altExp(sce, "Antibody Capture") <- logNormCounts(
   altExp(sce, "Antibody Capture"))
-# NOTE: `d = NA` means no dimensionality reduction is performed.
-# NOTE: `k = 100` was selected by trial and error to get a reasonable number of 
-#       clusters that avoided overclustering the multi-HTO samples.
-g <- buildSNNGraph(altExp(sce, "Antibody Capture"), k = 100, d = NA)
-clusters <- igraph::cluster_louvain(g)$membership
-sce$hto_cluster <- factor(clusters)
-hto_cluster_colours <- setNames(
-  palette("Okabe-Ito")[seq_len(nlevels(sce$hto_cluster))],
-  levels(sce$hto_cluster))
-sce$hto_cluster_colours <- hto_cluster_colours[sce$hto_cluster]
-stopifnot(nlevels(sce$hto_cluster) == 7)
 ```
 
-## Visualize demultiplexing results
-
-Figures \@ref(fig:pca) and \@ref(fig:pca-faceted) use principal component analysis (PCA) to show that five clusters are fairly distinguishable from each other and that there are two additional clusters that are more difficult to resolve.
-
-```{r pca, fig.cap = "PCA plot of the HTO data. Each point represents a cell with the colour explained in the legend.", fig.asp = 0.8}
-set.seed(666)
-sce <- runPCA(sce, altexp = "Antibody Capture", name = "HTO_PCA")
-
-plotReducedDim(sce, "HTO_PCA", colour_by = "hto_cluster", point_size = 0) +
-  geom_point(aes(colour = colour_by), size = 0.5) +
-  scale_colour_manual(values = hto_cluster_colours, name = "hto_cluster") +
-  ggtitle("PCA: HTOs") +
-  theme_cowplot()
-```
-
-```{r pca-faceted, fig.cap = "PCA plot of the HTO data. Each panel highlights cells from a particular cluster.", fig.asp = 1}
-pca <- cbind(
-  as.data.frame(colData(sce)),
-  x = reducedDim(sce, "HTO_PCA")[, 1],
-  y = reducedDim(sce, "HTO_PCA")[, 2])
-bg <- dplyr::select(pca, -hto_cluster)
-ggplot(aes(x = x, y = y), data = pca) +
-  geom_point(data = bg, colour = scales::alpha("grey", 0.7), size = 0.1) +
-  geom_point(aes(colour = hto_cluster), alpha = 1, size = 0.5) +
-  scale_fill_manual(values = hto_cluster_colours, name = "Cluster") + 
-  scale_colour_manual(values = hto_cluster_colours, name = "Cluster") +
-  theme_cowplot(font_size = 10) + 
-  xlab("Dimension 1") + 
-  ylab("Dimension 2") +
-  facet_wrap(~hto_cluster, ncol = 3, labeller = label_both) +
-  theme_cowplot() +
-  theme(legend.position = "none")
-```
-
-As an alternative to PCA, we can uniform manifold approximation and projection (UMAP) method [@McInnes2018-hy] to visualise the HTO data in 2-dimensions, overlaying the assigned cluster labels.
+We then apply graph-based clustering to the normalized log-expression of the HTOs to identify samples with similar HTO expression profiles.
+We deliberately overcluster the data in order to obtain quite specific clusters.
 
 ```{r}
-set.seed(666)
-library(uwot)
-sce <- runUMAP(sce, dimred = "HTO_PCA", name = "HTO_UMAP")
+library(scran)
+# NOTE: `d = NA` means no dimensionality reduction is performed.
+# NOTE: `k = 5` was selected by trial and error.
+g <- buildSNNGraph(altExp(sce, "Antibody Capture"), k = 5, d = NA)
+clusters <- igraph::cluster_louvain(g)$membership
+# NOTE: Orders cluster labels (1, ..., N) so that the biggest cluster is N and
+#       the smallest is 1.
+sce$hto_cluster <- factor(
+  as.integer(factor(clusters, names(sort(table(clusters), decreasing = TRUE)))))
+hto_cluster_colours <- setNames(
+  Polychrome::glasbey.colors(nlevels(sce$hto_cluster) + 1)[-1],
+  levels(sce$hto_cluster))
+sce$hto_cluster_colours <- hto_cluster_colours[sce$hto_cluster]
 ```
 
-Figures \@ref(fig:umap) and \@ref(fig:umap-faceted) show that five clusters are clearly distinguishable from each other and that the two additional clusters are a little harder to visually resolve.
+Figure \@ref(fig:hto-heatmap) is a heatmap of the counts for each HTO in each droplet.
+We can clearly see droplets corresponding to singlets from each of the six samples, i.e. those droplets with large counts for exactly one of the `human_1`, `human_2`, `human_3`, `human_4`, or `human_5` HTOs and droplets with large counts for all five HTOs.
 
-```{r umap, fig.cap = "UMAP plot of the HTO data. Each point represents a cell with the colour explained in the legend.", fig.asp = 0.8}
-plotReducedDim(sce, "HTO_UMAP", colour_by = "hto_cluster", point_size = 0) +
-  geom_point(aes(colour = colour_by), size = 0.5) +
-  scale_colour_manual(values = hto_cluster_colours, name = "hto_cluster") +
-  ggtitle("UMAP: HTOs") +
-  theme_cowplot()
-```
-
-```{r umap-faceted, fig.cap = "UMAP plot of the HTO data. Each panel highlights cells from a particular cluster.", fig.asp = 1}
-umap_df <- cbind(
-  as.data.frame(colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")]),
-  x = reducedDim(sce, "HTO_UMAP")[, 1],
-  y = reducedDim(sce, "HTO_UMAP")[, 2])
-bg <- dplyr::select(umap_df, -hto_cluster)
-ggplot(aes(x = x, y = y), data = umap_df) +
-  geom_point(data = bg, colour = scales::alpha("grey", 0.7), size = 0.1) +
-  geom_point(aes(colour = hto_cluster), alpha = 1, size = 0.5) +
-  scale_fill_manual(values = hto_cluster_colours, name = "Cluster") + 
-  scale_colour_manual(values = hto_cluster_colours, name = "Cluster") +
-  theme_cowplot(font_size = 10) + 
-  xlab("Dimension 1") + 
-  ylab("Dimension 2") +
-  facet_wrap(~hto_cluster, ncol = 3, labeller = label_both) +
-  theme_cowplot() +
-  theme(legend.position = "none")
-```
-
-Figure \@ref(fig:hto-heatmap) is a heatmap of the HTO counts by cluster and shows:
-
-- Five clusters each containing droplets with large counts for a single HTO correspond to the droplets labelled with a single HTO.
-- One cluster containing droplets with moderate-to-large counts for all 5 HTOs corresponds to the droplets labelled with all 5 HTOs.
-- One cluster containing a majority of droplets with low counts for all 5 HTOs and a minority of droplets with moderate-to-high counts of some (but not all) 5 HTOs. The majority correspond to droplets that we cannot assign to an individual sample whereas the minority may represent doublets.
-
-```{r hto-heatmap, fig.cap = "Heatmap of log2(counts) for the HTOs."}
-# NOTE: This plot is the same as the following, but allows me to specify the 
-#       `annotation_colours`.
-# assay(altExp(sce), "log2(counts+1)") <- log2(counts(altExp(sce)) + 1)
-# plotHeatmap(
-#   altExp(sce),
-#   color = viridisLite::inferno(100),
-#   rownames(altExp(sce)),
-#   colour_columns_by = "hto_cluster",
-#   exprs_values = "log2(counts+1)",
-#   order_columns_by = "hto_cluster",
-#   cluster_rows = FALSE)
-
+```{r hto-heatmap, fig.cap = "Heatmap of HTO log2(counts + 1) for the droplets. Columns are ordered by cluster and then HTO library size. Each droplet (column) is annotated by the (log10) HTO library size (`sum`) and whether that is smaller than the a cutoff estimated from the empty droplets. Each HTO (row) is annotated by the (log10) average count of the HTO in the empty droplets (`ambient`)."}
 library(pheatmap)
 pheatmap(
-  log2(counts(altExp(sce)) + 1)[, order(sce$hto_cluster)],
+  log2(counts(altExp(sce)) + 1)[
+    , order(sce$hto_cluster, sce$hto_sum, decreasing = c(FALSE, TRUE))],
   color = viridisLite::inferno(100),
   cluster_rows = FALSE,
   cluster_cols = FALSE,
   annotation_col = data.frame(
     hto_cluster = sce$hto_cluster,
+    sum = log10(sce$hto_sum),
+    low = ifelse(sce$hto_sum < hto_low_counts_cutoff, "Low", "High"),
     row.names = colnames(sce)),
-  annotation_colours = list(hto_cluster = hto_cluster_colours),
+  annotation_row = data.frame(ambient = log10(ambient)),
+  annotation_colors = list(
+    hto_cluster = hto_cluster_colours,
+    sum = viridisLite::viridis(101),
+    low = c("Low" = "red", "High" = "white"),
+    ambient = viridisLite::viridis(101)),
   show_colnames = FALSE,
-  scale = "none")
+  scale = "none",
+  fontsize = 6)
 ```
 
-## Assignment of HTO clusters to samples
-
-James provided me with a table linking HTOs to samples, shown below.
+On the basis of Figure \@ref(fig:hto-heatmap), we assign these singlets to their sample of origin:
 
 ```{r}
-hto_to_sample_df <- data.frame(
-  HTO = paste0("human_", c(1:5, paste0(1:5, collapse = "_"))),
-  Sample = c(paste0("infected_", 1:3), paste0("uninfected_", 1:3)),
-  Treatment = c(rep("Infected", 3), rep("Uninfected", 3)),
-  Replicate = rep(1:3, 2))
+singlet_clusters <- as.character(c(1:6, 9:12))
+singlet_cluster_to_hto_tbl <- tibble::tribble(
+  ~hto_cluster, ~HTO,
+  "1",          "human_3",
+  "2",          "human_2",
+  "3",          "human_5",
+  "4",          "human_5",
+  "5",          "human_4",
+  "6",          "human_4",
+  "9",          "human_1-human_2-human_3-human_4-human_5",
+  "10",         "human_1",
+  "11",         "human_1-human_2-human_3-human_4-human_5",
+  "12",         "human_1")
+stopifnot(identical(singlet_clusters, singlet_cluster_to_hto_tbl$hto_cluster))
 
-knitr::kable(hto_to_sample_df, caption = "Table linking HTOs to samples")
+left_join(singlet_cluster_to_hto_tbl, hto_to_sample_df) %>%
+  knitr::kable(., caption = "Assignments of singlet clusters to samples.")
 ```
+
+We then turn our attention to the remaining clusters.
+Figure \@ref(fig:not-yet-assigned-hto-heatmap) shows that the largest remaining clusters contain droplets with 'low' library sizes, which are hard to confidently assign to a sample.
+
+```{r not-yet-assigned-hto-heatmap, fig.cap = "Heatmap of HTO log2(counts + 1) for the droplets not yet assigned to a sample of origin. Columns are ordered by cluster and then HTO library size. Each droplet (column) is annotated by the (log10) HTO library size (`sum`) and whether that is smaller than the a cutoff estimated from the empty droplets. Each HTO (row) is annotated by the (log10) average count of the HTO in the empty droplets (`ambient`)."}
+tmp_sce <- sce[, !sce$hto_cluster %in% singlet_clusters]
+pheatmap(
+  log2(counts(altExp(tmp_sce)) + 1)[
+    , order(tmp_sce$hto_cluster, tmp_sce$hto_sum, decreasing = c(FALSE, TRUE))],
+  color = viridisLite::inferno(100),
+  cluster_rows = FALSE,
+  cluster_cols = FALSE,
+  annotation_col = data.frame(
+    hto_cluster = sce$hto_cluster,
+    sum = log10(sce$hto_sum),
+    low = ifelse(sce$hto_sum < hto_low_counts_cutoff, "Low", "High"),
+    row.names = colnames(sce)),
+  annotation_row = data.frame(ambient = log10(ambient)),
+  annotation_colors = list(
+    # NOTE: Select 'active' colour levels.
+    hto_cluster = hto_cluster_colours[
+      levels(factor(tmp_sce$hto_cluster))],
+    sum = viridisLite::viridis(101),
+    low = c("Low" = "red", "High" = "white"),
+    ambient = viridisLite::viridis(101)),
+  show_colnames = FALSE,
+  scale = "none",
+  fontsize = 6)
+```
+
+On the basis of Figure \@ref(fig:not-yet-assigned-hto-heatmap), we opt for a conservative approach that labels droplets in the these clusters as `ambiguous` (i.e. we cannot confidently assign them to a sample of origin).
+
+```{r}
+ambiguous_clusters <- as.character(c(7:8, 13:16))
+ambiguous_cluster_to_hto_tbl <- tibble::tribble(
+    ~hto_cluster, ~HTO,
+    "7",          "ambiguous",
+    "8",          "ambiguous",
+    "13",         "ambiguous",
+    "14",         "ambiguous",
+    "15",         "ambiguous",
+    "16",         "ambiguous")
+stopifnot(
+  identical(ambiguous_clusters, ambiguous_cluster_to_hto_tbl$hto_cluster))
+
+left_join(ambiguous_cluster_to_hto_tbl, hto_to_sample_df) %>%
+  knitr::kable(., caption = "Clusters containing `ambiguous` droplets.")
+```
+
+We then turn our attention to the remaining clusters.
+Figure \@ref(fig:mostly-doublets-hto-heatmap) shows that the remaining clusters largely contain droplets with 2 HTOs, which correspond to droplets containing two cells ('doublets'), as well as a small cluster of droplets that appear to contain all five HTOs.
+
+```{r mostly-doublets-hto-heatmap, fig.cap = "Heatmap of HTO log2(counts + 1) for the droplets not yet assigned to a sample of origin. Columns are ordered by cluster and then HTO library size. Each droplet (column) is annotated by the (log10) HTO library size (`sum`) and whether that is smaller than the a cutoff estimated from the empty droplets. Each HTO (row) is annotated by the (log10) average count of the HTO in the empty droplets (`ambient`)."}
+tmp_sce <- sce[, !sce$hto_cluster %in% c(singlet_clusters, ambiguous_clusters)]
+pheatmap(
+  log2(counts(altExp(tmp_sce)) + 1)[
+    , order(tmp_sce$hto_cluster, tmp_sce$hto_sum, decreasing = c(FALSE, TRUE))],
+  color = viridisLite::inferno(100),
+  cluster_rows = FALSE,
+  cluster_cols = FALSE,
+  annotation_col = data.frame(
+    hto_cluster = sce$hto_cluster,
+    sum = log10(sce$hto_sum),
+    low = ifelse(sce$hto_sum < hto_low_counts_cutoff, "Low", "High"),
+    row.names = colnames(sce)),
+  annotation_row = data.frame(ambient = log10(ambient)),
+  annotation_colors = list(
+    # NOTE: Select 'active' colour levels.
+    hto_cluster = hto_cluster_colours[
+      levels(factor(tmp_sce$hto_cluster))],
+    sum = viridisLite::viridis(101),
+    low = c("Low" = "red", "High" = "white"),
+    ambient = viridisLite::viridis(101)),
+  show_colnames = FALSE,
+  scale = "none",
+  fontsize = 6)
+```
+
+On the basis of Figure \@ref(fig:mosty-doublets-hto-heatmap), we assign droplets in these clusters accordingly:
+
+```{r}
+mostly_doublet_clusters <- as.character(17:26)
+mostly_doublet_cluster_to_hto_tbl <- tibble::tribble(
+    ~hto_cluster,  ~HTO,
+    "17",          "doublet",
+    "18",          "doublet",
+    "19",          "doublet",
+    "20",          "doublet",
+    "21",          "doublet",
+    "22",          "doublet",
+    "23",          "doublet",
+    "24",          "doublet",
+    "25",          "doublet",
+    "26",          "human_1-human_2-human_3-human_4-human_5")
+stopifnot(
+  identical(mostly_doublet_clusters,
+            mostly_doublet_cluster_to_hto_tbl$hto_cluster))
+    
+left_join(mostly_doublet_cluster_to_hto_tbl, hto_to_sample_df) %>%
+  knitr::kable(., caption = "Clusters containing doublets (and a cluster.")
+```
+
+We have now assigned all droplets to a sample of origin, or labelled them as ambiguous or a doublet, on the basis of the clustering.
+The following table summarises this assignment of clusters.
+
+```{r}
+sample_map <- left_join(
+  rbind(
+    singlet_cluster_to_hto_tbl,
+    ambiguous_cluster_to_hto_tbl, 
+    mostly_doublet_cluster_to_hto_tbl),
+  hto_to_sample_df) %>%
+  mutate(
+    hto_cluster = as.integer(hto_cluster),
+    Sample = factor(
+      case_when(
+        HTO == "ambiguous" ~ "ambiguous",
+        HTO == "doublet" ~ "doublet",
+        TRUE ~ Sample),
+      levels = c(
+        paste0("infected_", 1:3), 
+        paste0("uninfected_", 1:3),
+        "doublet",
+        "ambiguous"))) %>%
+  arrange(hto_cluster)
+knitr::kable(sample_map, caption = "HTO cluster assignment to samples.")
+
+# NOTE: Drop old 'Sample' column (which is useless).
+sce$Sample <- NULL
+colData(sce) <- cbind(
+  colData(sce),
+  sample_map[match(sce$hto_cluster, sample_map$hto_cluster), ])
+```
+
+Finally, Figure \@ref(fig:hto-heatmap-by-sample) is a heatmap of the counts for each HTO in each droplet ordered by sample.
+
+```{r hto-heatmap-by-sample, fig.cap = "Heatmap of HTO log2(counts + 1) for the droplets. Columns are ordered by sample and then HTO library size. Each droplet (column) is annotated by assigned sample of origin (`Sample`), the (log10) HTO library size (`sum`), and whether that is smaller than the a cutoff estimated from the empty droplets. Each HTO (row) is annotated by the (log10) average count of the HTO in the empty droplets (`ambient`)."}
+sample_colours <- setNames(
+  palette.colors(n = nlevels(sce$Sample)),
+  levels(sce$Sample))
+sce$sample_colours <- sample_colours[sce$Sample]
+
+pheatmap(
+  log2(counts(altExp(sce)) + 1)[, order(sce$Sample, sce$hto_sum, decreasing = c(FALSE, TRUE))],
+  color = viridisLite::inferno(100),
+  cluster_rows = FALSE,
+  cluster_cols = FALSE,
+  annotation_col = data.frame(
+    Sample = sce$Sample,
+    sum = log10(sce$hto_sum),
+    low = ifelse(sce$hto_sum < hto_low_counts_cutoff, "Low", "High"),
+    row.names = colnames(sce)),
+  annotation_row = data.frame(ambient = log10(ambient)),
+  annotation_colors = list(
+    Sample = sample_colours,
+    sum = viridisLite::viridis(101),
+    low = c("Low" = "red", "High" = "white"),
+    ambient = viridisLite::viridis(101)),
+  show_colnames = FALSE,
+  scale = "none",
+  fontsize = 6)
+```
+
+## Summary
 
 James was targeting ~2000 cells / sample.
 The table below shows that we largely hit that target for the uninfected samples but not so for the infected samples.
@@ -314,39 +434,11 @@ It also shows that the proportion of droplets that are 'unassigned' (i.e. those 
 These unassigned droplets likely include true doublets, mis-assigned singlets from the cells labelled with all five HTOs, and samples comprising ambient RNAs and HTOs (aka the 'soup' [@young10soupx]).
 
 ```{r}
-# Map clusters to HTOs to samples
-# NOTE: This is made by visually inspecting the above heatmaps.
-cluster_to_hto_df <- data.frame(
-  hto_cluster = factor(levels(sce$hto_cluster)),
-    HTO = c(
-    NA_character_,
-    "human_1",
-    "human_2",
-    paste0("human_", c(paste0(1:5, collapse = "_"))), 
-    "human_3",
-    "human_4",
-    "human_5"))
-
-hto_df <- left_join(cluster_to_hto_df, hto_to_sample_df)
-# NOTE: This is a bit clunky because the colData contains SplitDataFrameList
-#       columns that would otherwise not survive the conversion to a data.frame.
-tmp <- as.data.frame(
-  colData(sce)[, c("hto_cluster"), drop = FALSE]) %>%
-  left_join(hto_df)
-colData(sce) <- cbind(
-  colData(sce)[, c("Barcode", "project", "hto_cluster_colours", "TRA", "TRB")],
-  tmp)
-
 knitr::kable(
-  hto_df %>%
-    left_join(
-    tabyl(data.frame(hto_cluster = sce$hto_cluster), hto_cluster) %>%
-      adorn_pct_formatting(1)) %>%
-    dplyr::arrange(Sample), 
-  caption = "Tabulation of samples by treatment and replicate (mouse). The samples are unpaired. 'NA' values are those samples who HTOs could not be confidently assigned to a single `Sample`.")
+  as.data.frame(colData(sce)[, c("Sample", "Treatment", "Replicate")]) %>%
+    dplyr::count(Sample, Treatment, Replicate),
+  caption = "Tabulation of samples by treatment and replicate (mouse). The samples are unpaired.")
 ```
-
-We will keep these 'unknown' droplets as their own category to see if these cells are transcriptomically distinct, which may indicate an issue with cell hashing for certain types of cells.
 
 # Concluding remarks
 
