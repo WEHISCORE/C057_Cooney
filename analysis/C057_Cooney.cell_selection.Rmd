@@ -792,7 +792,7 @@ abundance <- rowMeans(logged)
 Figure \@ref(fig:refined-ambiguous-enriched-clusters-2-md-plot) shows the result of this analysis, highlighting that there are a few genes with a large $logFC$ between 'lost' and 'kept' droplets.
 
 <aside>
-An interactive version of Figure \@ref(fig:refined-ambiguous-enriched-clusters-4-md-plot) is available from [`output/glimma-plots/refined-ambiguous-enriched-clusters-2-md-plot.html`](../output/glimma-plots/refined-ambiguous-enriched-clusters-2-md-plot.html).
+An interactive version of Figure \@ref(fig:refined-ambiguous-enriched-clusters-2-md-plot) is available from [`output/glimma-plots/refined-ambiguous-enriched-clusters-2-md-plot.html`](../output/glimma-plots/refined-ambiguous-enriched-clusters-2-md-plot.html).
 </aside>
 
 ```{r refined-ambiguous-enriched-clusters-2-md-plot, fig.cap = "Log-fold change in expression in the discarded cells compared to the retained cells. Each point represents a gene with mitochondrial transcripts in blue and ribosomal protein genes in orange. Dashed red lines indicate $|logFC| = 1$", fig.asp = 0.7}
@@ -1719,8 +1719,6 @@ label_main_collapsed_colours <- setNames(
     Polychrome::glasbey.colors(nlevels(factor(labels_main)) + 1)[-1],
     "orange"),
   c(levels(factor(labels_main)), "other"))
-sce$label_main_collapsed_colours <- label_main_collapsed_colours[
-  as.character(sce$label_cluster_main)]
 ```
 
 ```{r}
@@ -1736,6 +1734,8 @@ sce$label_cluster_main <- factor(pred_cluster_main$pruned.labels[sce$cluster])
 sce$label_cluster_main_collapsed <- .collapseLabel(
   sce$label_cluster_main,
   sce$batch)
+sce$label_main_collapsed_colours <- label_main_collapsed_colours[
+  as.character(sce$label_cluster_main)]
 umap_df$label_cluster_main_collapsed <- sce$label_cluster_main_collapsed
 ```
 
@@ -2046,9 +2046,9 @@ sce$label_cell_fine <- factor(pred_cell_fine$pruned.labels)
 sce$label_cell_fine_collapsed <- .collapseLabel(
   sce$label_cell_fine,
   sce$batch)
-umap_df$label_cell_fine_collapsed <- sce$label_cell_fine_collapsed
 sce$label_fine_collapsed_colours <- label_fine_collapsed_colours[
   as.character(sce$label_cell_fine_collapsed)]
+umap_df$label_cell_fine_collapsed <- sce$label_cell_fine_collapsed
 ```
 
 The results using the 'main' label is summarised in the table below.
