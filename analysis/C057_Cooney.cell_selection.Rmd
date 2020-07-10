@@ -1153,7 +1153,7 @@ plot_grid(
   ncol = 3)
 ```
 
-Reassuringly, most of the 'unlabelled' doublets come from the droplets currently labelled as originating from the `uninfected_3` sample, which was labelled with all 5 HTOs and for which it was difficult to identify 'labelled' doublets, and the `ambiguous` sample.
+Reassuringly, most of the 'unlabelled' doublets come from the droplets currently labelled as originating from the `uninfected_3` sample, which was labelled with all 5 HTOs, or the `ambiguous` sample, for bth of which it was difficult to identify 'labelled' doublets.
 
 ```{r}
 library(janitor)
@@ -1161,11 +1161,11 @@ tabyl(
   data.frame(predicted_doublet = doublets_df$predicted, Sample = sce$Sample),
   Sample, predicted_doublet) %>%
   adorn_totals(c("row", "col")) %>%
-  adorn_percentages("col") %>%
+  adorn_percentages("row") %>%
   adorn_pct_formatting() %>%
   adorn_ns() %>%
   adorn_title(placement = "combined") %>%
-  knitr::kable(caption = "Number and percentage of predicted 'unlabelled' doublets (`TRUE` column) that were labelled as coming from each `Sample`.")
+  knitr::kable(caption = "Number of predicted 'unlabelled' doublets (`TRUE` column) that were labelled as coming from each `Sample`. Percentages are with respect to the total number of droplets from eahc `Sample`.")
 ```
 
 ### Checking for removal of biologically relevant subpopulations
@@ -2127,13 +2127,48 @@ p2 <- ggplot(aes(x = x, y = y), data = umap_df) +
   ylab("Dimension 2") +
   facet_wrap(~ label_cell_fine_collapsed, ncol = 3) +
   guides(colour = FALSE) + 
-  ggtitle("'Fine' cell-levl label")
+  ggtitle("'Fine' cell-level label")
 p1 + p2 + plot_layout(widths = c(1, 1))
 ```
 
 Essentially none of the cells are labelled as CD8+ T-cells by this approach.
 
 ###### Diagnostic plots
+
+```{r}
+library(tibble)
+library(tidyr)
+
+dir.create(here("output", "marker_genes", "SingleR"))
+
+cell_main_de_genes <- SingleRDEGsAsTibble(metadata(pred_cell_main)$de.genes)
+write.csv(
+    cell_main_de_genes,
+    gzfile(
+      here(
+        "output", 
+        "marker_genes", 
+        "SingleR", 
+        "SingleR_markers.DICE.label_cell_main.csv.gz")),
+    row.names = FALSE,
+    quote = FALSE)
+
+cell_fine_de_genes <- SingleRDEGsAsTibble(metadata(pred_cell_fine)$de.genes)
+write.csv(
+    cell_fine_de_genes,
+    gzfile(
+      here(
+        "output", 
+        "marker_genes", 
+        "SingleR", 
+        "SingleR_markers.DICE.label_cell_fine.csv.gz")),
+    row.names = FALSE,
+    quote = FALSE)
+```
+
+<aside>
+The lists of genes from the `DICE` reference used to annotate these cells with `r BiocStyle::Biocpkg("SingleR")` are available in [`output/marker_genes/SingleR/`](../output/marker_genes/SingleR/). You may wish to look at the expression of these genes yourself to verify/understand the annotations.
+</aside>
 
 As a sanity check, we again examine the expression of the marker genes for the relevant cell type labels by plotting a heatmap of their expression in:
 
@@ -2144,13 +2179,12 @@ The value of (1) is that we can assess if we believe the genes are indeed good m
 The value of (2) is that we can check that these genes are useful markers in our dataset (e.g., that they are reasonably well sampled in our data).
 
 ```{r}
-cd8_vs_cd4_markers <- metadata(
-  pred_cell_main)$de.genes$`T cells, CD8+`$`T cells, CD4+`
-cd4_vs_cd8_markers <- metadata(
-  pred_cell_main)$de.genes$`T cells, CD4+`$`T cells, CD8+`
-markers <- c(
-  head(cd8_vs_cd4_markers, 20),
-  head(cd4_vs_cd8_markers, 20))
+markers <- cell_main_de_genes %>%
+  dplyr::filter(
+    (group1 == "T cells, CD8+" & group2 == "T cells, CD4+") |
+      (group1 == "T cells, CD4+" & group2 == "T cells, CD8+")) %>%
+  dplyr::filter(rank <= 20) %>%
+  dplyr::pull(gene)
 ```
 
 Here, we specifically select (some of) the most strongly upregulated genes when comparing the `T cells, CD8+` to the `T cells, CD4+` (`dice.CD8_vs_CD4`) and vice-versa (`dice.CD4_vs_CD8`).
@@ -2291,6 +2325,7 @@ We can verify that we have selected CD4+ T-cells by looking at the expression of
 Figure \@ref(fig:cd4-markers-umap) gives an example using some marker genes of `T cells, CD4+` cells from the `DICE` reference dataset.
 
 ```{r cd4-markers-umap, fig.cap = "UMAP plot of the updated data, where each point represents a cell and is coloured according to expression of selected genes. The selected genes are markers of the `T cells, CD4+` cells in the `DICE` reference dataset that are also highly expressed in our dataset.", fig.asp = 0.8}
+# NOTE: This code was written before I had SingleRDEGsAsTibble().
 all_markers <- metadata(pred_cell_main)$de.genes
 cd4_markers <- all_markers[["T cells, CD4+"]]
 cd4_markers_t <- table(unlist(cd4_markers))
@@ -2315,7 +2350,7 @@ markers <- names(
 tmp <- sce
 colData(tmp) <- colData(tmp)[!colnames(colData(tmp)) %in% c("TRA", "TRB")]
 p <- lapply(head(markers, 9), function(marker) {
-  b <- makePerCellDF(sce, features = marker) %>%
+  b <- makePerCellDF(tmp, features = marker) %>%
     tidyr::pivot_longer(
       all_of(marker),
       names_to = "feature",
@@ -2328,7 +2363,6 @@ p <- lapply(head(markers, 9), function(marker) {
 })
 plot_grid(plotlist = p, ncol = 3)
 ```
-
 
 ## Re-processing
 
