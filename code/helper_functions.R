@@ -281,3 +281,14 @@ plotScoreReducedDim <- function(results, sce, use_dimred = "TSNE",
     "other")
   factor(tmp4, names(sort(table(tmp4), decreasing = TRUE)))
 }
+
+SingleRDEGsAsTibble <- function(de_genes) {
+  as_tibble(de_genes) %>%
+    pivot_longer(everything(), names_to = "group1", values_to = "gene") %>%
+    dplyr::mutate(group2 = names(gene)) %>%
+    unnest(gene) %>%
+    dplyr::group_by(group1, group2) %>%
+    dplyr::mutate(rank = dplyr::row_number()) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(group1, group2, rank, gene)
+}
