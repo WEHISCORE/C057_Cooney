@@ -34,16 +34,6 @@ register(MulticoreParam(workers = getOption("mc.cores")))
 knitr::opts_chunk$set(fig.path = "C057_Cooney.annotate_files/")
 ```
 
-# Motivation
-
-scRNA-seq has enabled an unprecedented level of granularity in characterizing gene expression changes in disease models.
-The classification of clusters by cell type relies heavily on known marker genes and the annotation of clusters is typically performed manually, although (semi)automated methods are becoming available.
-
-In ['Selection of biologically relevant cells for the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney.cell_selection.html) we annotated the cells with cell type labels using the [Database of Immune Cell Expression (`DICE`)](https://dice-database.org/) [@diceRef] reference dataset.
-Here, we perform clustering and marker gene detection, which can be used for manual annotation of clusters.
-
-In practice, some combination of manual and automated classification methods are usually necessary to properly annotate an scRNA-seq data set.
-
 # Preparing the data
 
 We start from the preprocessed *SingleCellExperiment* object created in ['Selection of biologically relevant cells for the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney.cell_selection.html).
@@ -60,12 +50,6 @@ umap_df <- cbind(
   as.data.frame(colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")]))
 
 # Some useful colours
-hto_cluster_colours <- setNames(
-  unique(sce$hto_cluster_colours),
-  unique(names(sce$hto_cluster_colours)))
-hto_colours <- setNames(
-  unique(sce$hto_colours),
-  unique(names(sce$hto_colours)))
 sample_colours <- setNames(
   unique(sce$sample_colours),
   unique(names(sce$sample_colours)))
@@ -94,12 +78,22 @@ ribo_set <- union(
   c2_sets[c2_sets$gs_name == "KEGG_RIBOSOME", ]$human_gene_symbol)
 ```
 
-# 'Mismatch' between clusters and 'fine' cell-level labels
 
-As a reminder, Figure \@ref(fig:umap-with-fine-cell-labels) shows the 'fine' cell-levels labels and cluster labels we obtained in ['Selection of biologically relevant cells for the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney.cell_selection.html)
+# Motivation
 
-```{r umap-with-fine-cell-labels, fig.asp = 1 / 2, fig.cap = "UMAP plot. Each point represents a cluster and is coloured by the 'fine' cell-level label. Each panel highlights droplets from a particular predicted cluster type. Cluster labels with < 1% frequency are grouped together as `other`."}
-p1 <- ggplot(aes(x = x, y = y), data = umap_df) +
+The most challenging task in scRNA-seq data analysis is arguably the annotation of cells with meaningful labels.
+We might attempt to label cells individually or to label clusters (with cells assigned to those clusters 'inheriting' the cluster-level label).
+
+In ['Selection of biologically relevant cells for the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney.cell_selection.html), we obtained two sets of labels:
+
+1. 'cell-type' labels using `r BiocStyle::Biocpkg("SingleR")`. These labels can be very useful, but are limited by the resolution of the reference dataset(s). For example, the cell-type labels we obtained are unlikely to be able to distinguish more subtle differences between cells, such as changes in activation or differentiation state.
+2. 'cluster' labels using clustering. Obtaining clusters of cells is fairly straightforward, but it is more difficult to determine what biological state is represented by each of those clusters.
+
+These two sets of labels need not be in perfect agreement.
+For example, Figure \@ref(fig:umap-with-clusters-and-fine-labels) shows that there are regions of the UMAP plot that are enriched for certain `r BiocStyle::Biocpkg("SingleR")` labels but that these regions do not always correspond precisely to the cluster labels.
+
+```{r umap-with-clusters-and-fine-labels, fig.asp = 1 / 2, fig.cap = "UMAP plot. Each point represents a cluster and is coloured by the 'fine' cell-level label. Each panel highlights droplets from a particular predicted cluster type. Cluster labels with < 1% frequency are grouped together as `other`."}
+p_cluster <- ggplot(aes(x = x, y = y), data = umap_df) +
   geom_point(
     aes(colour = cluster),
     alpha = 1,
@@ -110,8 +104,9 @@ p1 <- ggplot(aes(x = x, y = y), data = umap_df) +
   xlab("Dimension 1") +
   ylab("Dimension 2") +
   ggtitle("Clusters")
-bg <- dplyr::select(umap_df, -label_cell_fine_collapsed)
-p2 <- ggplot(aes(x = x, y = y), data = umap_df) +
+
+bg <- dplyr::select(umap_df, -label_cell_fine)
+p_label_cell_fine <- ggplot(aes(x = x, y = y), data = umap_df) +
   geom_point(data = bg, colour = scales::alpha("grey", 0.5), size = 0.125) +
   geom_point(
     aes(colour = label_cell_fine_collapsed),
@@ -119,45 +114,25 @@ p2 <- ggplot(aes(x = x, y = y), data = umap_df) +
     size = 0.25) +
   scale_fill_manual(values = label_fine_collapsed_colours) +
   scale_colour_manual(values = label_fine_collapsed_colours) +
-  theme_cowplot(font_size = 6) +
+  theme_cowplot(font_size = 4) +
   xlab("Dimension 1") +
   ylab("Dimension 2") +
-  facet_wrap(~ label_cell_fine_collapsed, ncol = 3) +
+  facet_wrap(~ label_cell_fine, ncol = 4) +
   guides(colour = FALSE) + 
-  ggtitle("'Fine' cell-levl label")
-p1 + p2 + plot_layout(widths = c(1, 1))
+  ggtitle("'Fine' cell-level label")
+
+p_cluster + p_label_cell_fine + plot_layout(widths = c(1, 4 / 3))
 ```
 
-Two things are clear from Figure \@ref(fig:umap-with-fine-cell-labels):
+More importantly, this 'disagreement' between the two sets of labels need not be cause for concern because there are several reasons why these may not match up, including:
 
-1. There are regions of the UMAP plot that are enriched for certain 'fine' cell-level labels.
-2. These regions do not correspond precisely to the clusters.
+1. The genes driving the cluster labels may be different to the genes driving the `r BiocStyle::Biocpkg("SingleR")` labels. For example, the genes driving the clustering may be related to biological processes other than 'cell type' (e.g., T-cell activation, cell cycle, etc.).
+2. The choice of clustering resolution depends on the question being asked (i.e. it may be focused on sub-cell type details or super-cell-type details).
+3. The cell-level labels do not make use of the clustering information and so may be noisy.
 
-There are several reasons why these may not match up perfectly:
+In practice, a combination of automated and manual classification methods are usually necessary to properly annotate an scRNA-seq data set.
 
-1. The choice of clustering resolution depends on the question being asked
-2. The 'fine' cell-level labels do not make use of the clustering information
-3. The genes driving the clustering are related to biological processes other than 'cell type' (e.g., T-cell activation, cell cycle, etc.) or technical factors
-
-We touch on each of these issues in what follows.
-
-# Choice of clustering resolution
-
-A reminder that the relevant clustering resolution depends on the question being asked of the data.
-
-<aside>
-Clustering resolution is discussed in the 'Clustering' subsection of ['Selection of biologically relevant cells for the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney.cell_selection.html).
-</aside>
-
-The key parameter in our clustering procedure is called $k$.
-The value of $k$ can be roughly interpreted as the anticipated size of the smallest subpopulation, with smaller values of $k$ generally yielding smaller, finer clusters.
-If a subpopulation in the data has fewer than $k+1$ cells, then it is very unlikely that this subpopulation will form its own cluster
-
-We provide results using a 'high' ($k=10$) and a 'low' ($k=200$) resolution clustering.
-
-## Analysis
-
-**TODO:** UP TO HERE. 'high' and 'low' resolution clustering of the data with summary figures. Might even try a subclustering approach.
+In this section we identify the genes that drive separation between clusters to help us interpret the clustering results.
 
 # Cluster marker gene detection
 
@@ -183,12 +158,7 @@ This section gives an overview.
 
 For each cluster, the DE results of the relevant comparisons are consolidated into a single output table.
 This allows a set of marker genes to be easily defined by taking the top DE genes from each pairwise comparison between clusters.
-Other statistics are also reported for each gene, including the adjusted p-values and the log-fold changes relative to every other cluster.
-
-<aside>
-It must be stressed that the (adjusted) p-values computed here cannot be properly interpreted as measures of significance because the clusters have been empirically identified from the data.
-Nonetheless, they can still be used as way to rank 'interesting' genes.
-</aside>
+Other statistics are also reported for each gene, including the adjusted p-values^[It must be stressed that the (adjusted) p-values computed here cannot be properly interpreted as measures of significance because the clusters have been empirically identified from the data. Nonetheless, they can still be used as way to rank 'interesting' genes.] and the log-fold changes relative to every other cluster.
 
 ### Use of pairwise comparisons
 
@@ -197,7 +167,7 @@ The latter approach is sensitive to the population composition, potentially resu
 In the worst case, the presence of a single dominant subpopulation will drive the selection of top markers for every other cluster, pushing out useful genes that can resolve the various minor subpopulations.
 Moreover, pairwise comparisons naturally provide more information to interpret of the utility of a marker, e.g., by providing log-fold changes to indicate which clusters are distinguished by this gene.
 
-### Choice of test regime
+### Choice of test statistic
 
 The Welch $t$-test is an obvious choice of statistical method to test for differences in expression between clusters.
 It is quickly computed and has good statistical properties for large numbers of cells [@soneson2018bias].
@@ -208,7 +178,7 @@ The WMW test statistic is proportional to the area-under-the-curve (AUC), i.e., 
 In a pairwise comparison, AUCs of 1 or 0 indicate that the two clusters have perfectly separated expression distributions. 
 Thus, the WMW test directly addresses the most desirable property of a candidate marker gene, while the $t$-test only does so indirectly via the difference in the means and the intra-group variance.
 
-The binomial test identifies genes that differ in the proportion of expressing cells between clusters^[For the purposes of this test, a cell is considered to express a gene simply if it has non-zero expression for that gene.].
+Another alternative, the binomial test, identifies genes that differ in the proportion of expressing cells between clusters^[For the purposes of this test, a cell is considered to express a gene simply if it has one or more counts for that gene.].
 This represents a much more stringent definition of marker genes compared to the other methods, as differences in expression between clusters are effectively ignored if both distributions of expression values are not near zero.
 The premise is that genes are more likely to contribute to important biological decisions if they were active in one cluster and silent in another, compared to more subtle 'tuning' effects from changing the expression of an active gene.
 From a practical perspective, a binary measure of presence/absence is easier to validate.
@@ -243,16 +213,8 @@ test.type <- "t"
 #### Cluster-specific marker genes
 
 ```{r}
-dir.create(
-  here("output", "marker_genes", test.type, "uniquely_up"), recursive = TRUE)
-```
-
-CSV files of these cluster marker gene lists can be found in the [`output/marker_genes/t/uniquely_up/`](../output/marker_genes/t/uniquely_up/) directory.
-
-```{r}
 markers_uniquely_up <- findMarkers(
   sce,
-  # TODO: Produce markers for both clustering resolutions
   groups = sce$cluster,
   block = sce$donor_id,
   pval.type = "all",
@@ -260,21 +222,27 @@ markers_uniquely_up <- findMarkers(
   test = test.type)
 ```
 
+CSV files of these cluster marker gene lists can be found in the [`output/marker_genes/t/uniquely_up/`](../output/marker_genes/t/uniquely_up/) directory.
+
 ```{r}
+dir.create(
+  here("output", "marker_genes", test.type, "uniquely_up"), recursive = TRUE)
 message("Writing 'uniquely_up' marker genes to file.")
-for (n in names(markers_union_any)) {
-  message(n)
+for (cluster in levels(sce$cluster)) {
+  message(cluster)
   gzout <- gzfile(
     description = here(
       "output", 
       "marker_genes", 
       test.type,
       "uniquely_up",
-        # TODO: Produce markers for both clustering resolutions
-      sprintf("cluster_%02d.%s.uniquely_up.csv.gz", as.integer(n), test)),
+      sprintf(
+        "cluster_%02d.%s.uniquely_up.csv.gz",
+        as.integer(cluster),
+        test.type)),
     open = "wb")
   write.table(
-    x = markers_union_any[[n]] %>%
+    x = markers_uniquely_up[[cluster]] %>%
       as.data.frame() %>%
       tibble::rownames_to_column("gene_ID"), 
     file = gzout, 
@@ -287,12 +255,75 @@ for (n in names(markers_union_any)) {
 ```
 
 ```{r}
-# TODO: Insert a heatmap highlighting the top-k cluster-specific markers (like 
-#       I did in the EDA, below).
+k <- 10
 ```
+
+As an example of the information available in these gene lists, Figure \@ref(fig:cluster-markers-heatmap) is heatmap showing the expression of the top-`r k` cluster-specific marker genes across the dataset.
+
+```{r cluster-markers-heatmap, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values of top-10 cluster-specific marker genes for each cluster. Each column is a sample, each row a gene", fig.asp = 1.5}
+markers <- lapply(markers_uniquely_up, function(x) {
+  xx <- x[x$FDR < 0.05, ]
+  rownames(xx[order(xx$summary.logFC, decreasing = TRUE), ])
+})
+
+# NOTE: The code below basically does what the commented out code does but 
+#       allows me to provide annotation_colors.
+# plotHeatmap(
+#   sce,
+#   features = unlist(lapply(markers, head, n = k)),
+#   colour_columns_by = c("cluster", "Treatment"),
+#   center = TRUE,
+#   symmetric = TRUE,
+#   order_columns_by = c("cluster", "Treatment"),
+#   cluster_rows = FALSE,
+#   cluster_cols = FALSE,
+#   zlim = c(-3, 3))
+k <- 10
+features <- unlist(lapply(markers, head, n = k))
+mat <- logcounts(sce)[features, ]
+mat <- mat - rowMeans(mat)
+zlim <- c(-3, 3)
+mat[mat < zlim[1]] <- zlim[1]
+mat[mat > zlim[2]] <- zlim[2]
+library(pheatmap)
+o <- order(sce$cluster, sce$Treatment)
+pheatmap(
+  mat = mat[, o],
+  cluster_rows = FALSE,
+  cluster_cols = FALSE,
+  show_colnames = FALSE,
+  annotation_row = data.frame(
+    cluster = rep(levels(sce$cluster), each = k),
+    row.names = features),
+  annotation_col = data.frame(
+    cluster = sce$cluster[o],
+    Treatment = sce$Treatment[o],
+    row.names = colnames(sce)[o]),
+  annotation_colors = list(
+    cluster = cluster_colours[levels(sce$cluster)],
+    Treatment = treatment_colours))
+```
+
+## Summary
+
+The provided cluster marker gene lists can be analysed like any other gene list, such as by using gene set enrichment analysis against the Gene Ontology (GO) or Kyoto Encyclopedia of Genes and Genomes (KEGG) databases.
+We strongly recommend that you visualise the expression patterns of any genes of interest to better understand what is driving their inclusion in the marker gene lists.
+
+<aside>
+The `r BiocStyle::Biocpkg("iSEE")` package may be useful for visualizing the expression patterns of these genes. Please let me know if you would like a lesson in how to use it.
+</aside>
+
+If the provided gene lists are insufficient for annotating the clusters, we may consider other strategies for identifying cluster marker genes.
+As previously mentioned, these could be a different choice of test statistic or a different choice of strategy for combining the pairwise differential expression results into a marker list.
+To better characterise specific clusters, it may also be necessary to perform differential expression analysis between a selected subset of clusters.
+
+If the clusters themselves are thought to be inadequate, we can use a different clustering resolution and repeat the entire process.
 
 # Cell cycle
 
+**TODO**: UP TO HERE
+
+- [ ] Just look at cyclins
 - [x] How to handle the 'cell cycle' looking cluster. Put in 'annotation'
      - [x] Perhaps exclude cell cycle genes from clustering? No, didn't make a difference.
      - "For example, regression would potentially remove interesting signal if cell cycle activity varied across clusters or conditions, with a prime example being the increased proliferation of activated T cells (Richard et al. 2018). We suggest only performing cell cycle adjustment on an as-needed basis in populations with clear cell cycle effects."
@@ -300,11 +331,12 @@ for (n in names(markers_union_any)) {
 
 # Summary
 
-**TODO:** Synthesis the results of SingleR, marker genes, and cell cycle analysis to arrive at `colLabels(sce)`.
+**TODO:** Synthese the results of SingleR, marker genes, and cell cycle analysis to arrive at `colLabels(sce)`.
 
 # Concluding remarks
 
 ```{r}
+# TODO: Is this object any different to the cell_selected version?
 saveRDS(
   sce,
   here("data", "SCEs", "C057_Cooney.annotated.SCE.rds"),
@@ -331,179 +363,4 @@ sessioninfo::session_info()
 
 ```{r}
 knitr::knit_exit()
-```
-
-
-# EDA of 'mismatch' between clusters and 'fine' cell-level labels
-
-This was EDA and won't be included in the report
-
-## Cluster resolution
-
-```{r}
-set.seed(256)
-sce$cluster_k5 <- factor(
-  igraph::cluster_louvain(
-    buildSNNGraph(sce, use.dimred = "PCA", k = 5))$membership)
-sce$cluster_k10 <- factor(
-  igraph::cluster_louvain(
-    buildSNNGraph(sce, use.dimred = "PCA", k = 10))$membership)
-sce$cluster_k50 <- factor(
-  igraph::cluster_louvain(
-    buildSNNGraph(sce, use.dimred = "PCA", k = 50))$membership)
-sce$cluster_k100 <- factor(
-  igraph::cluster_louvain(
-    buildSNNGraph(sce, use.dimred = "PCA", k = 100))$membership)
-sce$cluster_k200 <- factor(
-  igraph::cluster_louvain(
-    buildSNNGraph(sce, use.dimred = "PCA", k = 200))$membership)
-
-plot_grid(
-  plotUMAP(sce, colour_by = "cluster_k5"),
-  plotUMAP(sce, colour_by = "cluster_k10"),
-  plotUMAP(sce, colour_by = "cluster_k50"),
-  # plotUMAP(sce, colour_by = "cluster_k100"),
-  plotUMAP(sce, colour_by = "cluster_k200"),
-  plotUMAP(sce[, sce$Treatment == "Infected"], colour_by = "Treatment"),
-  plotUMAP(sce[, sce$Treatment == "Uninfected"], colour_by = "Treatment"),
-  ncol = 2)
-
-sce$cluster_k500 <- factor(
-  igraph::cluster_louvain(
-    buildSNNGraph(sce, use.dimred = "PCA", k = 500))$membership)
-z500 <- findMarkers(sce, groups = sce$cluster_k200, direction = "up", pval.type = "all")
-
-z200 <- findMarkers(sce, groups = sce$cluster_k200, direction = "up", pval.type = "all")
-z200[[1]][1:10, ]
-z200[[2]][1:10, ]
-z200[[3]][1:10, ]
-z200[[4]][1:10, ]
-# zz200 <- lapply(z200, function(x) rownames(x[x$FDR < 0.05, ]))
-zz200 <- lapply(z200, function(x) {
-  xx <- x[x$FDR < 0.05, ]
-  rownames(xx[order(xx$summary.logFC, decreasing = TRUE), ])
-})
-lengths(zz200)
-
-# TODO: Could add row annotations
-plotHeatmap(
-  sce,
-  features = unlist(lapply(zz200, head, n = 10)),
-  colour_columns_by = c("cluster_k200", "Treatment"),
-  center = TRUE,
-  symmetric = TRUE,
-  order_columns_by = c("cluster_k200", "Treatment"),
-  cluster_rows = FALSE,
-  cluster_cols = FALSE,
-  zlim = c(-3, 3))
-
-z100 <- findMarkers(sce, groups = sce$cluster_k100, direction = "up", pval.type = "all")
-z100[[1]][1:10, ]
-z100[[2]][1:10, ]
-z100[[3]][1:10, ]
-z100[[4]][1:10, ]
-z100[[5]][1:10, ]
-z100[[6]][1:10, ]
-zz100 <- lapply(z100, function(x) rownames(x[x$FDR < 0.01, ]))
-lengths(zz100)
-plotHeatmap(
-  sce,
-  features = unlist(lapply(zz100, head, n = 5)),
-  colour_columns_by = c("cluster_k100", "Treatment"),
-  center = TRUE,
-  symmetric = TRUE,
-  order_columns_by = c("cluster_k100", "Treatment"),
-  cluster_rows = FALSE,
-  cluster_cols = FALSE,
-  zlim = c(-3, 3))
-
-z10 <- findMarkers(sce, groups = sce$cluster_k10, direction = "up", pval.type = "all")
-z10[[1]][1:10, ]
-z10[[2]][1:10, ]
-z10[[3]][1:10, ]
-z10[[4]][1:10, ]
-z10[[5]][1:10, ]
-z10[[6]][1:10, ]
-z10[[7]][1:10, ]
-z10[[8]][1:10, ]
-z10[[9]][1:10, ]
-z10[[10]][1:10, ]
-# zz10 <- lapply(z10, function(x) rownames(x[x$FDR < 0.01, ]))
-zz10 <- lapply(z10, function(x) {
-  xx <- x[x$FDR < 0.05, ]
-  rownames(xx[order(xx$summary.logFC, decreasing = TRUE), ])
-})
-lengths(zz10)
-plotHeatmap(
-  sce,
-  features = unlist(lapply(zz10, head, n = 5)),
-  colour_columns_by = c("cluster_k10", "Treatment"),
-  center = TRUE,
-  symmetric = TRUE,
-  order_columns_by = c("cluster_k10", "Treatment"),
-  cluster_rows = FALSE,
-  cluster_cols = FALSE,
-  zlim = c(-3, 3))
-
-z5 <- 
-z5[[1]][1:10, ]
-z5[[2]][1:10, ]
-z5[[3]][1:10, ]
-z5[[4]][1:10, ]
-z5[[5]][1:10, ]
-z5[[6]][1:10, ]
-z5[[7]][1:10, ]
-z5[[8]][1:10, ]
-z5[[9]][1:10, ]
-z5[[10]][1:10, ]
-z5[[11]][1:10, ]
-z5[[12]][1:10, ]
-
-zz5 <- lapply(z5, function(x) rownames(x[x$FDR < 0.01, ]))
-lengths(zz5)
-plotHeatmap(
-  sce,
-  features = unlist(lapply(zz5, head, n = 5)),
-  colour_columns_by = c("cluster_k5", "Treatment"),
-  center = TRUE,
-  symmetric = TRUE,
-  order_columns_by = c("cluster_k5", "Treatment"),
-  cluster_rows = FALSE,
-  cluster_cols = FALSE,
-  zlim = c(-3, 3))
-```
-
-## Cluster-level 'fine' labels
-
-```{r}
-pred_cluster_fine <- SingleR(
-  test = sce,
-  ref = ref,
-  labels = labels_fine,
-  method = "cluster",
-  cluster = sce$cluster,
-  BPPARAM = bpparam())
-sce$label_cluster_fine <- factor(pred_cluster_fine$pruned.labels[sce$cluster])
-sce$label_cluster_fine_collapsed <- .collapseLabel(
-  sce$label_cluster_fine,
-  sce$batch)
-umap_df$label_cluster_fine_collapsed <- sce$label_cluster_fine_collapsed
-
-bg <- dplyr::select(umap_df, -label_cluster_fine_collapsed)
-p3 <- ggplot(aes(x = x, y = y), data = umap_df) +
-  geom_point(data = bg, colour = scales::alpha("grey", 0.5), size = 0.125) +
-  geom_point(
-    aes(colour = label_cluster_fine_collapsed),
-    alpha = 1,
-    size = 0.25) +
-  scale_fill_manual(values = label_fine_collapsed_colours) +
-  scale_colour_manual(values = label_fine_collapsed_colours) +
-  theme_cowplot(font_size = 6) +
-  xlab("Dimension 1") +
-  ylab("Dimension 2") +
-  facet_wrap(~ label_cluster_fine_collapsed, ncol = 3) +
-  guides(colour = FALSE) + 
-  ggtitle("'Fine' cluster-levl label")
-
-p1 + (p3 + p2 + plot_layout(nrow = 2, heights = c(1, 3)))
 ```
