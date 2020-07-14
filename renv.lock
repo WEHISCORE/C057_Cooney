@@ -364,6 +364,27 @@
       "Source": "Bioconductor",
       "Hash": "a5669a9d44010120a5c10be7977f0626"
     },
+    "ade4": {
+      "Package": "ade4",
+      "Version": "1.7-15",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "afb4cb7b51681e837275748658f28738"
+    },
+    "alakazam": {
+      "Package": "alakazam",
+      "Version": "1.0.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "afe951c21b1b219dfebca8f612858979"
+    },
+    "ape": {
+      "Package": "ape",
+      "Version": "5.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "82370851316f464d3b04fd6f84ecfcb7"
+    },
     "askpass": {
       "Package": "askpass",
       "Version": "1.1",
@@ -391,12 +412,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "543776ae6848fde2f48ff3816d0628bc"
-    },
-    "batchelor": {
-      "Package": "batchelor",
-      "Version": "1.4.0",
-      "Source": "Bioconductor",
-      "Hash": "bfa23b5c713a2d069e58259da90ebdca"
     },
     "beachmat": {
       "Package": "beachmat",
@@ -465,6 +480,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "ff0becff7bfdfe3f75d29aff8f3172dd"
+    },
+    "clipr": {
+      "Package": "clipr",
+      "Version": "0.7.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "08cf4045c149a0f0eaf405324c7495bd"
     },
     "colorspace": {
       "Package": "colorspace",
@@ -923,6 +945,13 @@
       "Repository": "CRAN",
       "Hash": "b01d2494d0e2b6b02fae40e1543fbcb0"
     },
+    "pixmap": {
+      "Package": "pixmap",
+      "Version": "0.4-11",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "908b83da165aa591d7f38fe0ad376f10"
+    },
     "pkgbuild": {
       "Package": "pkgbuild",
       "Version": "1.0.8",
@@ -1014,6 +1043,13 @@
       "Repository": "CRAN",
       "Hash": "8c8298583adbbe76f3c2220eef71bebc"
     },
+    "readr": {
+      "Package": "readr",
+      "Version": "1.3.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "af8ab99cd936773a148963905736907b"
+    },
     "renv": {
       "Package": "renv",
       "Version": "0.10.0",
@@ -1094,6 +1130,20 @@
       "Source": "Bioconductor",
       "Hash": "cf4b761ffa48b8e047a44988cfcfcdc2"
     },
+    "segmented": {
+      "Package": "segmented",
+      "Version": "1.2-0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "6c68f376126e3b086978bda4727a96a3"
+    },
+    "seqinr": {
+      "Package": "seqinr",
+      "Version": "3.6-1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "149d176bf3a470545c910f9ce1cee9a4"
+    },
     "sessioninfo": {
       "Package": "sessioninfo",
       "Version": "1.1.1",
@@ -1135,6 +1185,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "947e4e02a79effa5d512473e10f41797"
+    },
+    "sp": {
+      "Package": "sp",
+      "Version": "1.4-2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "3290eebc34ba4df5e213878d54c1e623"
     },
     "statmod": {
       "Package": "statmod",
