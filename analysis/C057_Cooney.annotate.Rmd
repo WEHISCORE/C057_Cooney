@@ -222,14 +222,24 @@ markers_uniquely_up <- findMarkers(
   test = test.type)
 ```
 
+The following table gives the number of cluster-specific marker genes ($FDR < 0.05$) for each cluster.
+
+```{r}
+n <- sapply(markers_uniquely_up, function(x) sum(x$FDR < 0.05))
+knitr::kable(
+  data.frame(
+    cluster = names(markers_uniquely_up),
+    n = sapply(markers_uniquely_up, function(x) sum(x$FDR < 0.05))),
+  caption = "Number of cluster-specific genes for each cluster.")
+most_unique_markers <- names(which.max(n))
+```
+
 CSV files of these cluster marker gene lists can be found in the [`output/marker_genes/t/uniquely_up/`](../output/marker_genes/t/uniquely_up/) directory.
 
 ```{r}
 dir.create(
   here("output", "marker_genes", test.type, "uniquely_up"), recursive = TRUE)
-message("Writing 'uniquely_up' marker genes to file.")
 for (cluster in levels(sce$cluster)) {
-  message(cluster)
   gzout <- gzfile(
     description = here(
       "output", 
@@ -259,6 +269,12 @@ k <- 10
 ```
 
 As an example of the information available in these gene lists, Figure \@ref(fig:cluster-markers-heatmap) is heatmap showing the expression of the top-`r k` cluster-specific marker genes across the dataset.
+From this was can observe that:
+
+- Most clusters only have a small number of marker genes with strong logFCs compared to all other clusters.
+- Cluster 3, comprised mostly of `Infected` cells, has very high and distinct expression of several key immune genes (e.g., *GNLY*, *CCL5*, *CST7*, *CD74*). Some of the only other cells with such high expression of these genes appear to be the `Infected` cells in cluster 7, suggesting that those cells in cluster 7 may be of similar cell type to cells in cluster 3 but distinguished by strong upregualation of an additional set of genes.
+- Cluster 7, comprised of `Infected` and `Uninfected` cells in a roughly 50:50 split, has very high and distinct expression of genes that are not obviously immune genes.
+- Cluster 8 has very high expression of *FOXP3*, a classic marker of regulatory T cells. Indeed, most cells in this cluster were annotated by `r BiocStyle::Biocpkg("SingleR")` as being `T cells, CD4+, memory TREG`. However, so too were many cells from other clusters that have almost no expression of *FOXP3*. This perhaps highlights both the power of using a multi-gene approach to annotation (such as that used by `r BiocStyle::Biocpkg("SingleR")`) and the limitations of relying on 'known' marker genes for cell type annotation.
 
 ```{r cluster-markers-heatmap, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values of top-10 cluster-specific marker genes for each cluster. Each column is a sample, each row a gene", fig.asp = 1.5}
 markers <- lapply(markers_uniquely_up, function(x) {
@@ -306,6 +322,8 @@ pheatmap(
 
 ## Summary
 
+Cluster `r most_unique_markers` has the the largest number of cluster-specific marker genes ($n =$ `r n[most_unique_markers]`)).
+
 The provided cluster marker gene lists can be analysed like any other gene list, such as by using gene set enrichment analysis against the Gene Ontology (GO) or Kyoto Encyclopedia of Genes and Genomes (KEGG) databases.
 We strongly recommend that you visualise the expression patterns of any genes of interest to better understand what is driving their inclusion in the marker gene lists.
 
@@ -321,29 +339,160 @@ If the clusters themselves are thought to be inadequate, we can use a different 
 
 # Cell cycle
 
-**TODO**: UP TO HERE
+On occasion, it can be desirable to determine cell cycle activity from scRNA-seq data.
+In and of itself, the distribution of cells across phases of the cell cycle is not usually informative, but we can use this to determine if there are differences in cell cycle progression between subpopulations or across treatment conditions.
+Many of the key events in the cell cycle (e.g., passage through checkpoints) are post-translational and thus not directly visible in transcriptomic data; nonetheless, there are enough changes in expression that can be exploited to determine cell cycle phase.
 
-- [ ] Just look at cyclins
-- [x] How to handle the 'cell cycle' looking cluster. Put in 'annotation'
-     - [x] Perhaps exclude cell cycle genes from clustering? No, didn't make a difference.
-     - "For example, regression would potentially remove interesting signal if cell cycle activity varied across clusters or conditions, with a prime example being the increased proliferation of activated T cells (Richard et al. 2018). We suggest only performing cell cycle adjustment on an as-needed basis in populations with clear cell cycle effects."
-     - Highlight that this cluster has large library sizes
+## Using the cyclins
+
+```{r, results = "hide"}
+cyclin_genes <- grep("^CCN[ABDE][0-9]$", rowData(sce)$Symbol)
+cyclin_genes <- rownames(sce)[cyclin_genes]
+cyclin_genes
+```
+
+The cyclins control progression through the cell cycle and have well-characterized patterns of expression across cell cycle phases.
+The cyclins available in this dataset are as follows: `r glue::glue_collapse(cyclin_genes, ", ", last = ", and ")`.
+
+- Cyclin A is expressed across S and G2.
+- cyclin B is expressed highest in late G2 and mitosis.
+- Cyclin D is expressed throughout but peaks at G1.
+- Cyclin E is expressed highest in the G1/S transition.
+
+Inspection of the relative expression of cyclins across the population can often be sufficient to determine the relative cell cycle activity in each cluster.
+
+For example, Figure \@ref(fig:cyclin-heatmap) shows that cluster 7 may be in G2/M phase while the other clusters are scattered across the later phases.
+
+```{r cyclin-heatmap, fig.cap = "Heatmap of the log-normalized expression values of the cyclin genes in the dataset."}
+# NOTE: The code below basically does what the commented out code does but 
+#       allows me to provide annotation_colors.
+# plotHeatmap(
+#   sce,
+#   color = viridisLite::magma(101),
+#   colour_columns_by = "cluster",
+#   cluster_cols = FALSE,
+#   columns = order(sce$cluster),
+#   cluster_rows = FALSE,
+#   features = sort(cyclin_genes),
+#   show_colnames = FALSE)
+features <- sort(cyclin_genes)
+mat <- logcounts(sce)[features, ]
+o <- order(sce$cluster, sce$Treatment)
+pheatmap(
+  mat = mat[, o],
+  color = viridisLite::magma(101),
+  cluster_rows = FALSE,
+  cluster_cols = FALSE,
+  show_colnames = FALSE,
+  # NOTE: These annotations are a little clunky to be useful.
+  # annotation_row = data.frame(
+  #   cycle = dplyr::case_when(
+  #     grepl("^CCNA", features) ~ "S,G2",
+  #     grepl("^CCNB", features) ~ "G2,M",
+  #     grepl("^CCND", features) ~ "G0,*G1*,S,G2,M",
+  #     grepl("^CCNE", features) ~ "G1/S"),
+  #   row.names = features),
+  annotation_col = data.frame(
+    cluster = sce$cluster[o],
+    Treatment = sce$Treatment[o],
+    row.names = colnames(sce)[o]),
+  annotation_colors = list(
+    cluster = cluster_colours[levels(sce$cluster)],
+    Treatment = treatment_colours))
+```
+
+We can also use standard differential expression methods to look for upregulation of each cyclin, allowing us to determine if there are more cells in the corresponding phase of the cell cycle between subpopulations.
+
+Here we use pairwise Wilcoxon rank sum tests to compute differential expression of cycline genes between each pair of clusters.
+The Wilcoxon test estimates effect sizes as overlap proportions (`overlap` in the tables below).
+The overlap proportion is defined as the probability that a randomly selected cell in $A$ has a greater expression value of $X$ than a randomly selected cell in $B$.
+Overlap proportions near 0 ($A$ is lower than $B$) or 1 ($A$ is higher than $B$) indicate that the expression distributions are well-separated.
+The Wilcoxon rank sum test effectively tests for significant deviations from an overlap proportion of 0.5.
+
+```{r}
+cyclin_markers <- findMarkers(
+  sce, 
+  subset.row = sort(cyclin_genes), 
+  group = sce$cluster, 
+  block = sce$Sample, 
+  direction = "up", 
+  pval.type = "any")
+
+g2_cluster <- "7"
+```
+
+We can infer that cluster `r g2_cluster` likely has more cells in S,G2 or G2/M than the other clusters, based on higher expression of some of the cyclin A and B genes.
+
+```{r}
+knitr::kable(
+  as.data.frame(cyclin_markers[[g2_cluster]]),
+  caption = paste0(
+    "Cyclin DE analysis comparing cluster ",
+    g2_cluster,
+    " to all other clusters."),
+  digits = 2)
+```
+
+Direct examination of cyclin expression is easily understood, interpreted and validated with other technologies.
+However, it is best suited for statements about relative cell cycle activity; for example, we would find it difficult to assign cell cycle phase in Figure \@ref(fig:cyclin-heatmap) without the presence of clusters spanning all phases to provide benchmarks for "high" and "low" expression of each cyclin.
+We also assume that cyclin expression is not affected by biological processes other than the cell cycle, which may be a strong assumption in some cases, e.g., malignant cells.
+
+## Summary
+
+We can infer that cluster `r g2_cluster` likely contains cells in S,G2 or G2/M (based on higher expression of some of the cyclin A and B genes) and that the remaining clusters are likely in G1 (based on fairly ubiquitous expression of cyclin D genes).
+
+For some time, it was popular to regress out the cell cycle phase prior to downstream analyses.
+The aim was to remove uninteresting variation due to cell cycle, thus improving resolution of other biological processes of interest.
+However, we do not consider adjusting for cell cycle to be a necessary step in routine scRNA-seq analyses.
+
+Any attempt at removal would need to assume that the cell cycle effect is orthogonal to other biological processes.
+If this was violated (i.e. the cell cycle effect was associated with other biological processes), then the regression would potentially remove interesting signal if cell cycle activity varied across clusters or conditions.
+
+A prime example of cell cycle being associated with other biological processes is the increased proliferation of activated T cells [@richard2018tcell].
+As these data are from CD4+ T-cells, for this reason we are hesitate perform cell cycle adjustment.
 
 # Summary
 
-**TODO:** Synthese the results of SingleR, marker genes, and cell cycle analysis to arrive at `colLabels(sce)`.
+We have now identified cluster-specific marker genes (i.e. genes that are uniquely upregulated in each cluster compared to all other clusters) and performed a focused analysis using the cyclin genes.
 
-# Concluding remarks
+<aside>
+Additional analyses focused on specific gene sets could be considered.
+</aside>
 
-```{r}
-# TODO: Is this object any different to the cell_selected version?
-saveRDS(
-  sce,
-  here("data", "SCEs", "C057_Cooney.annotated.SCE.rds"),
-  compress = "xz")
+The cluster marker gene analysis analysis identified cluster `r g2_cluster` as having by far the largest number of cluster-specific marker genes.
+Cells in this same cluster had high expression of genes associated with a different phase of the cell cycle (G2) to the majority of cells in other clusters (G1).
+Figure \@ref(fig:libsize) shows that cells in this cluster also have larger library sizes than cells in other clusters.
+
+```{r libsize, fig.cap = "Library sizes of cells in each cluster."}
+plotColData(sce, "sum", x = "cluster", colour_by = "cluster") + 
+  scale_fill_manual(values = cluster_colours) + 
+  scale_y_log10() + 
+  guides(FALSE)
 ```
-The processed *SingleCellExperiment* object is available (see [`data/SCEs/C057_Cooney.annotated.SCE.rds`](../data/SCEs/C057_Cooney.annotated.SCE.rds)).
-This will be used in downstream analyses, e.g., differential expression analysis between conditions within each cluster and differential abundance analyses between conditions for each cluster.
+
+However, based on the `r BiocStyle::Biocpkg("SingleR")` analysis, the cells in this cluster appear to be CD4+ T-cells, just like the other cells in the dataset and not of any unique subtype.
+
+One possibility that is suggested by this set of results is that these are activated T-cells that are actively proliferating.
+
+<aside>
+It is worth noting that cells in this cluster are split roughly 50:50 between `Infected` and `Uninfected` samples. So this 'activation' signal does not appear to be associated with `Treatment`.
+</aside>
+
+These marker gene lists should be used in combination with the automated cell type labelling from `r BiocStyle::Biocpkg("SingleR")` to develop biologically relevant, meaningful, and useful labels for cells in this dataset.
+
+<!-- # Concluding remarks -->
+
+<!-- TODO: If James provides cell or cluster-level annotation, I'll add them to the bottom of this report and add to the SCE. -->
+
+<!-- ```{r} -->
+<!-- saveRDS( -->
+<!--   sce, -->
+<!--   here("data", "SCEs", "C057_Cooney.annotated.SCE.rds"), -->
+<!--   compress = "xz") -->
+<!-- ``` -->
+
+<!-- The processed *SingleCellExperiment* object is available (see [`data/SCEs/C057_Cooney.annotated.SCE.rds`](../data/SCEs/C057_Cooney.annotated.SCE.rds)). -->
+<!-- This will be used in downstream analyses, e.g., differential expression analysis between conditions within each cluster and differential abundance analyses between conditions for each cluster. -->
 
 # Additional information {.appendix}
 
@@ -359,8 +508,4 @@ The following are available on request:
 
 ```{r}
 sessioninfo::session_info()
-```
-
-```{r}
-knitr::knit_exit()
 ```
