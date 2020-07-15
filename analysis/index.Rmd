@@ -13,13 +13,6 @@ editor_options:
 bibliography: ref.bib
 ---
 
-```{r setup}
-library(BiocStyle)
-library(here)
-
-source(here("code", "helper_functions.R"))
-```
-
 # Overview
 
 This study uses 10x Genomics single cell V(D)J + 5′ gene expression to study human T-lymphotropic virus 1 (HTLV1).
@@ -41,7 +34,7 @@ After sequencing, expression was quantified by aligning, filtering, barcode coun
 [Version `3.1.0` of the **CellRanger** reference files](https://support.10xgenomics.com/single-cell-gene-expression/software/release-notes/build#GRCh38mm10_3.1.0) was used, which maps against GRCh38 of the reference genome and quantifies expression using gene models from Ensembl release 93.
 Count data for all endogeneous genes, as well as the HTOs and the VDJ regions, are available in this repository.
 
-This analysis is adapted from the `r BiocStyle::Biocpkg("simpleSingleCell")` workflow as well as the [**Orchestrating Single-Cell Analysis with Bioconductor book**](https://osca.bioconductor.org).
+This analysis is adapted from the [**Orchestrating Single-Cell Analysis with Bioconductor book**](https://osca.bioconductor.org).
 
 # Analysis version information  {.appendix}
 
