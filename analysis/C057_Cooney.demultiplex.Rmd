@@ -93,14 +93,14 @@ We call cells at a false discovery rate (FDR) of 1%, meaning that no more than 1
 ```{r}
 empties <- readRDS(
   here("data", "emptyDrops", "C057_Cooney.emptyDrops.rds"))
-dplyr::mutate(as.data.frame(empties), Sample = rep("C057", nrow(empties))) %>%
-  dplyr::group_by(Sample) %>%
-  dplyr::summarise(
+mutate(as.data.frame(empties), Sample = rep("C057", nrow(empties))) %>%
+  group_by(Sample) %>%
+  summarise(
     keep = sum(FDR < 0.001, na.rm = TRUE), 
-    n = dplyr::n(),
+    n = n(),
     remove = n - keep) %>%
-  dplyr::mutate(library = factor(Sample)) %>%
-  dplyr::select(library, keep, remove) %>%
+  mutate(library = factor(Sample)) %>%
+  select(library, keep, remove) %>%
   knitr::kable(
     caption = "Number of droplets kept and removed after filtering empty drops.")
 sce_empties <- sce[, -which(empties$FDR <= 0.001)]
@@ -392,9 +392,15 @@ knitr::kable(sample_map, caption = "HTO cluster assignment to samples.")
 
 # NOTE: Drop old 'Sample' column (which is useless).
 sce$Sample <- NULL
+# Add new 'Sample' column to colData.
+# NOTE: This is a clunky join that is necessary because colData(sce) contains 
+#       `TRA` and `TRB` which are SplitDataFrameList objects and not easily 
+#       coercible to columns of a dataframe (if at all).
 colData(sce) <- cbind(
   colData(sce),
-  sample_map[match(sce$hto_cluster, sample_map$hto_cluster), ])
+  sample_map[
+    match(sce$hto_cluster, sample_map$hto_cluster),
+    !colnames(sample_map) %in% "hto_cluster"])
 ```
 
 Finally, Figure \@ref(fig:hto-heatmap-by-sample) is a heatmap of the counts for each HTO in each droplet ordered by sample.
