@@ -45,7 +45,7 @@ Examples of unwanted droplets include:
 - Droplets without phenotype data, such as droplets for which we can't infer the sample identify based on cell hashing or genetic variation data
 - Droplets containing unwanted cell types, such as those that might sneak through a FACS or magnetic bead enrichment sample preparation
 
-Once we are confident that we have selected the biologically relevant cells, we will perform [Data integration] and a further round of clustering in preparation for downstream analysis.
+Once we are confident that we have selected the biologically relevant cells, we will perform data integration (if necessary) and a further round of clustering in preparation for downstream analysis.
 
 The removal of unwanted droplets is an iterative process where at each step we:
 
@@ -53,7 +53,7 @@ The removal of unwanted droplets is an iterative process where at each step we:
     a. Perform diagnostic checks to ensure we aren't discarding biologically relevant droplets.
     b. Remove the unwanted cells.
 2. Re-process the remaining droplets.
-    a. Identify HVGs^[Throughout, we will exclude mitochondrial and ribosomal protein genes from the HVGs.].
+    a. Identify HVGs.
     b. Perform dimensionality reduction (PCA and UMAP).
     c. Cluster droplets.
 
