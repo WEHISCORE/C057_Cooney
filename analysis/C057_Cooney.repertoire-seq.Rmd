@@ -45,10 +45,10 @@ We aim to analyse the immune repertoire and integrate it with the RNA sequencing
 
 ## RNA-sequencing
 
-For the RNA-sequencing data, start from the preprocessed *SingleCellExperiment* object created in ['Annotating the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney.annotate.html).
+For the RNA-sequencing data, we start from the preprocessed *SingleCellExperiment* object created in ['Annotating the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney.annotate.html).
 
 ```{r}
-# TODO: Use the 'annotated' data when it's ready.
+# TODO: Use the 'annotated' data if and when it's constructed.
 # sce <- readRDS(here("data", "SCEs", "C057_Cooney.annotated.SCE.rds"))
 sce <- readRDS(here("data", "SCEs", "C057_Cooney.cells_selected.SCE.rds"))
 
@@ -81,10 +81,7 @@ label_fine_collapsed_colours <- setNames(
 ## TCR-sequencing
 
 CellRanger generates a file containing filtered TCR contig annotations from the set of cells that passed CellRanger's internal quality controls of the RNA-sequencing data ([`data/CellRanger/HTLV.filtered_contig_annotations.csv`](../data/CellRanger/HTLV.filtered_contig_annotations.csv)).
-
-<aside>
-I have further filtered this file such that it only contains annotations from the set of cells remaining at the end of ['Annotating the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney.annotate.html).
-</aside>
+The results in this file were added to the initial *SingleCellExperiment* object and so the annotations from the set of cells remaining at the end of ['Annotating the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney.annotate.html) are immediately available.
 
 Each row of the file contains information about a single TCR component sequence in one cell, broken down into the alleles of the V(D)J genes making up that component (`v_gene`, `d_gene`, `j_gene`) where possible.
 The number of reads and UMIs supporting the set of allele assignments for a cell is also shown, though only the UMI count should be used for quantifying expression of a particular TCR sequence.
@@ -99,7 +96,7 @@ rmarkdown::paged_table(as.data.frame(unlist(head(sce$TRA), use.names = FALSE)))
 
 <aside>
 A challenge lies in the fact that each cell may have zero, one, or many TCR sequences.
-For example, the `r example_barcode` barcode has two TRA sequences.
+For example, the `r example_barcode` barcode has two TRA sequences, each with > 10 UMIs supporting it.
 </aside>
 
 # Basic diagnostics
@@ -109,6 +106,8 @@ For example, the `r example_barcode` barcode has two TRA sequences.
 We start by generating some basic cell-level diagnostics to assess the quality and utility of the TCR sequencing data.
 
 ## Analysis
+
+### Proportion of cells expressing TRA or TRB
 
 Figure \@ref(fig:prop-expressing) plots the proportion of cells that express each of the α-chain and β-chain for each cluster.
 `r round(100 * sum(lengths(sce$TRA) >= 1 & lengths(sce$TRB) >= 1) / ncol(sce), 1)`% of cells express both the α-chain and β-chain.
@@ -189,8 +188,10 @@ plot_grid(
   nrow = 1)
 ```
 
-For completeness, we also count the number of cells in each cluster that have multiple sequences for a component (Figure \@ref(fig:prop-expressing-multiple)).
-The percentages are clearly lower but this phenomenon is still surprisingly common.
+### Proportion of cells expression multiple TRA or TRBs
+
+We also count the number of cells in each cluster that have multiple sequences for a component.
+Figure \@ref(fig:prop-expressing-multiple) shows that this is a surprisingly common phenomenon.
 
 ```{r prop-expressing-multiple, fig.cap = "UMAP plot of data with points coloured by cluster (left) and a barplot of the proportion of cells in each cluster that express two or more sequences of the TCR α or β-chains (right).", fig.asp = 1 / 3}
 tra_tbl <- tibble(
@@ -224,7 +225,7 @@ plot_grid(
   nrow = 1)
 ```
 
-However, if we focus only those sequences deemed *productive*, then Figure \@ref(fig:prop-expressing-multiple-productive) shows that this percentage drops.
+However, if we focus only those sequences deemed *productive*, then Figure \@ref(fig:prop-expressing-multiple-productive) shows that this proportion drops considerably.
 
 ```{r prop-expressing-multiple-productive, fig.cap = "UMAP plot of data with points coloured by cluster (left) and a barplot of the proportion of cells in each cluster that express two or more **productive** sequences of the TCR α or β-chains (right).", fig.asp = 1 / 3}
 tra_tbl <- tibble(
@@ -265,45 +266,114 @@ plot_grid(
   nrow = 1)
 ```
 
+```{r}
+# NOTE: Sanity check the claim below
+stopifnot(
+  sum(sapply(sce$TRA[, "productive"], function(x) sum(x == "True")) > 2) == 0,
+  sum(sapply(sce$TRB[, "productive"], function(x) sum(x == "True")) > 2) == 0)
+```
+
+Furthermore, when we focus on *productive* sequences, we find that cells express at most two productive sequences for a component (i.e. there aren't any cells expressing 3 or more distinct productive sequences for TRA or TRB; data not shown).
+
+Figure \@ref(fig:umis) shows that the number of UMIs supporting the most abundant productive sequence for a component is similar (or slightly higher) in cells expressing two productive sequences for a component compared to those cells expressing just one productive sequence for a component.
+It also shows that there is still a good number of UMIs supporting the second-most abundant productive sequence for a component in those cells expressing multiple productive sequences for a component.
+
+```{r umis, fig.cap = "Distribution of the number of UMIs supporting the most abundant and second-most abundance productive sequences for each component. Cells are stratified according to the number of productive sequences for each component."}
+prod_sequences_per_cell_tbl <- as_tibble(
+  rbind(
+    unlist(sce$TRA, use.names = FALSE), unlist(sce$TRB, use.names = FALSE))) %>%
+  filter(productive == "True") %>%
+  group_by(chain, barcode) %>%
+  mutate(n = n()) %>%
+  group_by(chain, barcode, n) %>%
+  summarise(
+    `Most abundant` = sort(umis, decreasing = TRUE)[1],
+    `Second-most abundant` = sort(umis, decreasing = TRUE)[2]) %>%
+  tidyr::pivot_longer(cols = c(`Most abundant`, `Second-most abundant`))
+
+ggplot(
+  prod_sequences_per_cell_tbl, 
+  aes(value, colour = factor(n), fill = factor(n))) +
+  geom_density(alpha = 0.1) + 
+  scale_x_continuous(trans = "log2") +
+  theme_cowplot(font_size = 10) + 
+  guides(
+    fill = guide_legend(title = "Number of productive sequences"),
+    colour = guide_legend(title = "Number of productive sequences")) + 
+  facet_grid(name ~ chain) + 
+  annotation_logticks(sides = "b")
+```
+
 ## Summary
 
 As we would expect of (CD4+) T-cells:
 
 - `r round(100 * sum(lengths(sce$TRA) >= 1 & lengths(sce$TRB) >= 1) / ncol(sce), 1)`% of cells express both the α-chain and β-chain.
 - `r round(100 * sum(any(sce$TRA[, "productive"] == "True") & any(sce$TRB[, "productive"] == "True")) / ncol(sce), 1)`% of cells express *productive* versions of both the α-chain and β-chain.
-- Somewhat surprisingly, `r round(100 * sum(sapply(sce$TRA[, "productive"], function(x) sum(x == "True")) >= 2) / ncol(sce))`% and `r round(100 * sum(sapply(sce$TRB[, "productive"], function(x) sum(x == "True")) >= 2) / ncol(sce))`% of cells express multiple productive versions of the α-chain and β-chain, respectively.
 
-**It is still not clear to me if a single T cell can really express multiple (productive) sequences for a TCR component.**
-However, a quick Google search suggests that it is possible (e.g., [https://www.ncbi.nlm.nih.gov/pubmed/8211163](https://www.ncbi.nlm.nih.gov/pubmed/8211163); [https://www.jimmunol.org/content/202/3/637](https://www.jimmunol.org/content/202/3/637); [https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4701647/](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4701647/))^[An alternative interpretation is that these are really doublets and hence would likely have multiple distinct TCR components (although this assumes a higher doublet rate than we expect).].
+Somewhat surprisingly, `r round(100 * sum(sapply(sce$TRA[, "productive"], function(x) sum(x == "True")) == 2) / ncol(sce))`% and `r round(100 * sum(sapply(sce$TRB[, "productive"], function(x) sum(x == "True")) == 2) / ncol(sce))`% of cells express two productive versions of the α-chain and β-chain, respectively.
+It is still not clear to me if a single T cell can really express multiple productive sequences for a TCR component.
+However, a quick Google search suggests that it is possible^[E.g., [https://www.ncbi.nlm.nih.gov/pubmed/8211163](https://www.ncbi.nlm.nih.gov/pubmed/8211163); [https://www.jimmunol.org/content/202/3/637](https://www.jimmunol.org/content/202/3/637); [https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4701647/](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4701647/)].
+An alternative interpretation is that these are really doublets (comprising cells labelled with the same HTO) and hence would likely have multiple distinct TCR components.
+However, we have performed quite stringent doublet filtering and these percentages are far higher than we would expect for intra-sample doublets, so this interpretation is unlikely.
 
 # Quantifying clonotype expansion
 
 ## Motivation
 
-Quantification of clonal expansion is the most obvious application of repertoire sequencing data.
+A distinct TCR sequence is referred to as a *clonotype* and the number of copies of that particular sequence is referred to as its clone size[@venturi2007methods].
 Cells with the same T cell clonotype are assumed to target the same antigen, and any increase in the frequency of a clonotype provides evidence for T cell activation and proliferation upon stimulation by the corresponding antigen.
 Thus, we can gain some insights into the immune activity of each sample by counting the frequency of clonotypes in each sample.
 
+## Statistical methodology and considerations
+
+To compare the diversity/clonality of two groups of samples, we would typically perform a Wilcoxon rank sum test (also known as the Wilcoxon-Mann-Whitney test, or WMW test) to compare a diversity measure between the two groups.
+However, with only $n=6$ samples in total ($n=3$ `Infected` and $n=3$ `Uninfected` samples), the smallest achievable P-value is 0.1.
+We therefore limit ourselves to a descriptive analysis of the data.
+
 ## Analysis
+
+```{r}
+productive_clonotype_tbl <- as_tibble(
+  rbind(unlist(sce$TRA), unlist(sce$TRB))) %>%
+  filter(productive == "True") %>%
+  mutate(raw_clonotype_id = factor(
+    raw_clonotype_id, 
+    # NOTE: This orders the clonotypes from 1 to ncol(sce). 
+    paste0("clonotype", seq(1, ncol(sce))),
+    ordered = TRUE)) %>%
+  select(barcode, raw_clonotype_id) %>%
+  distinct() %>%
+  inner_join(
+    as.data.frame(colData(sce)[, c("Sample", "Treatment", "Barcode")]),
+    by = c("barcode" = "Barcode"))
+```
+
+The table below is a high-level a summary of the TCR data.
+
+```{r}
+productive_clonotype_tbl %>%
+  group_by(Sample) %>%
+  summarise(
+    `Number of productive TCR sequences` = n(),
+    `Number of distinct clonotypes` = length(unique(raw_clonotype_id))) %>%
+  knitr::kable(
+    caption = "Summary of the TCR data.")
+```
 
 CellRanger includes a histogram of top-10 clonotypes by frequency in the dataset.
 Only productive sequences are included in this analysis.
-This histogram is reproduced in Figure \@ref(fig:cellranger) but is of limited use because it doesn't distinguish which sample each observation came from.
+This histogram is reproduced in Figure \@ref(fig:cellranger) but is of limited use because it does not distinguish which sample each observation came from.
 
 ```{r cellranger, fig.cap = "Top-10 clonotype frequencies (all droplets in the 'cell selected' dataset). A clonotype is defined as a unique set of CDR3 nucleotide sequences. Only productive sequences are counted."}
-rbind(unlist(sce$TRA), unlist(sce$TRB)) %>%
-  as.data.frame() %>%
-  dplyr::filter(productive == "True") %>%
-  dplyr::distinct(barcode, raw_clonotype_id) %>%
-  dplyr::group_by(raw_clonotype_id) %>%
-  dplyr::count() %>%
-  dplyr::arrange(desc(n)) %>%
-  dplyr::ungroup() %>%
-  dplyr::mutate(prop = n / sum(n)) %>%
-  head(n = 10) %>%
-  dplyr::mutate(clonotype = factor(
+productive_clonotype_tbl %>%
+  count(raw_clonotype_id) %>%
+  arrange(desc(n)) %>%
+  mutate(prop = n / sum(n)) %>%
+  mutate(clonotype = factor(
     gsub("clonotype", "", raw_clonotype_id),
     1:10)) %>%
+  filter(clonotype %in% 1:10) %>%
   ggplot(aes(x = clonotype, y = prop)) +
   geom_col() + 
   xlab("Clonotype") +
@@ -312,35 +382,21 @@ rbind(unlist(sce$TRA), unlist(sce$TRB)) %>%
 ```
 
 For this project, we are interested in stratifying the analysis by sample to look clonal expansions associated with the treatment.
-Figure \@ref(fig:cellranger-faceted) stratifies by sample the histogram of the top-10 clonotypes by frequency.
+Figure \@ref(fig:cellranger-faceted) recapitulates the CellRanger histogram of the top-10 clonotypes by frequency but stratifies by sample.
+This shows an apparent clonal expansion in the `infected_2` and `infected_3` samples, which we want to investigate further.
 
-```{r cellranger-faceted, fig.cap = "Top-10 clonotype frequencies by sample. A clonotype is defined as a unique set of CDR3 nucleotide sequences. Only productive sequences are counted."}
-b <- dplyr::inner_join(
-  as.data.frame(colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")]),
-  as.data.frame(rbind(unlist(sce$TRA), unlist(sce$TRB))),
-  by = c("Barcode" = "barcode")) %>%
-  dplyr::filter(productive == "True", Treatment != "Unknown") %>%
-  dplyr::distinct(Sample, Barcode, raw_clonotype_id, Treatment) %>%
-  dplyr::group_by(raw_clonotype_id, Sample, Treatment) %>%
-  dplyr::count() %>%
-  dplyr::arrange(desc(n)) %>%
-  dplyr::group_by(Sample) %>%
-  dplyr::mutate(prop = n / sum(n))
-
-bb <- b %>% 
-  dplyr::group_by(Sample) %>%
-  dplyr::mutate(
+```{r cellranger-faceted, fig.cap = "Top-10 clonotype frequencies within each sample. A clonotype is defined as a unique set of CDR3 nucleotide sequences. Only productive sequences are counted."}
+productive_clonotype_tbl %>%
+  count(raw_clonotype_id, Sample, Treatment) %>%
+  arrange(desc(n)) %>%
+  group_by(Sample) %>%
+  mutate(prop = n / sum(n)) %>%
+  mutate(
     cumsum_prop = cumsum(prop),
-    x = row_number(),
-    xx = x / max(x))
-
-bb %>% 
-  dplyr::filter(x <= 10) %>%
-  dplyr::arrange(Sample, x) %>%
-  dplyr::mutate(raw_clonotype_id = factor(x)) %>%
-  ggplot(aes(x = raw_clonotype_id, y = prop, fill = Sample)) +
+    clonotype = factor(row_number())) %>%
+  filter(clonotype %in% 1:10) %>%
+  ggplot(aes(x = clonotype, y = prop, fill = Sample)) +
   geom_col() + 
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
   facet_wrap(~Sample, ncol = 3) + 
   xlab("Clonotype") +
   ylab("Proportion of cells") + 
@@ -349,150 +405,107 @@ bb %>%
   guides(fill = FALSE)
 ```
 
-This shows an apparent clonal expansion in the `infected_2` and `infected_3` samples, which we want to investigate further.
-When I started this analysis, I was not very familiar with the aims of TCR sequencing, the data it generated, or the methods used for its analysis.
+When I started this analysis, I was not very familiar with the aims of TCR sequencing, the data it generated, nor the methods used for its analysis.
 I therefore started with a [Naive analysis] which has subsequently developed into a more [Sophisticated analysis] of TCR diversity.
 
 ### Naive analysis
 
-Figure \@ref(fig:cumulative-clonotype-frequencies) plots the cumulative clonotype frequencies in each sample as an alternative to simply visualising the frequency of the top-10 clonotypes in each sample. 
+```{r}
+clonotype_by_sample_tbl <- productive_clonotype_tbl %>%
+  count(Treatment, Sample, raw_clonotype_id) %>%
+  group_by(Treatment, Sample) %>%
+  dplyr::mutate(
+    N = sum(n),
+    prop = n / N,
+    cumsum_prop = cumsum(prop),
+    ranked_clonotype = row_number(),
+    scaled_ranked_clonotype = ranked_clonotype / N)
+```
+
+Figure \@ref(fig:cumulative-clonotype-frequencies) plots the cumulative clonotype frequencies in each sample; this is richer alternative to simply visualising the frequency of the top-10 clonotypes in each sample. 
 
 ```{r cumulative-clonotype-frequencies, fig.cap = "Cumulative clonotype frequencies by sample. Frequencies are computed within each sample."}
-ggplot(bb) + 
-  geom_step(
-    aes(x = x, y = cumsum_prop, colour = Sample, lty = Treatment),
-    lwd = 1) +
+ggplot(
+  clonotype_by_sample_tbl,
+  aes(
+    x = ranked_clonotype,
+    y = cumsum_prop,
+    colour = Sample,
+    lty = Treatment)) +
+  geom_step(lwd = 1) +
   scale_colour_manual(values = sample_colours) + 
   xlab("Clonotype") + 
   ylab("Proportion of cells") +
   cowplot::theme_cowplot()
 ```
 
-This shows, for example, that more than 75% of cells from the `infected_3` sample share a very small number of clonotypes..
+This shows, for example, that more than 75% of cells from the `infected_3` sample share a very small number of clonotypes.
 This figure also shows that fewer clonotypes are observed in the `Infected` samples.
 However, this could arise simply because we sampled fewer infected cells.
 We therefore need to account for the number of *potential* clonotypes in each sample, i.e. if we sampled $n$ cells there would be $n$ *potential* clonotypes.
+We estimate the number of *potential* clonotypes by the number of cells in each sample with a productive TCR sequence (i.e. the 'Number of productive TCR sequences' in the earlier table).
 
-Two possible estimates of the number of *potential* clonotypes in each sample are:
-
-1. The number of cells from that sample (likely an overestimate as not all cells necessarily express a TCR).
-2. The number of droplets with a TCR sequence from that sample (likely an underestimate as some of the cells with a TCR didn't have the TCR sequenced).
-
-I opt to estimate the number of potential clonotypes by (1).
-Fortunately, the table below shows that these two estimates do not differ much (they are roughly within 5% of each other) so the results will not be sensitive to the choice of estimate.
-
-```{r}
-knitr::kable(
-  data.frame(
-    Sample = levels(factor(sce$Sample)),
-    est_1 = tabulate(factor(sce$Sample)),
-    est_2 = tapply(bb$n, factor(bb$Sample), sum)),
-  caption = "Two estimates of the number of *potential* clonotypes in each sample. 'est_1' = The number of cells from that sample (likely an overestimate as not all droplets necessarily express a TCR). 'est_2' = The number of cells with a TCR sequence from that sample (likely an underestimate as some of the cells with a TCR didn't have the TCR sequenced).")
-```
-
-Figure \@ref(fig:cumulative-potential-clonotype-frequencies) basically repeats Figure \@ref(fig:cumulative-clonotype-frequencies) but extends the x-axis out to the number of *potential* clonotypes.
-
-```{r cumulative-potential-clonotype-frequencies, fig.cap = "Cumulative potential clonotype frequencies by sample. Frequencies are computed within each sample."}
-z <- lapply(levels(factor(sce$Sample)), function(s) {
-  a <- dplyr::filter(b, Sample == s)
-  # NOTE: Opted to use the (1) estimator
-  n <- c(a$n, rep(0, sum(sce$Sample == s) - length(a$n)))
-  # n <- c(a$n, rep(0, sum(a$n) - length(a$n)))
-  n
-})
-
-tmp <- data.frame(
-  Sample = rep(levels(factor(sce$Sample)), lengths(z)),
-  Treatment = rep(sub("\\_[0-9]", "", levels(factor(sce$Sample))), lengths(z)),
-  n = unlist(z))
-
-tmp %>%
-  dplyr::group_by(Sample) %>%
-  dplyr::mutate(
-    x = seq_along(n),
-    y = cumsum(n) / sum(n)) %>%
-  ggplot(.) +
-  geom_step(
-    aes(x = x, y = y, colour = Sample, lty = Treatment),
-    lwd = 1) +
-  scale_colour_manual(values = sample_colours) + 
-  xlab("Potential clonotypes") +
-  ylab("Proportion of cells") +
-  cowplot::theme_cowplot()
-```
-
-Finally, Figure \@ref(fig:cumulative-potential-clonotype-frequencies-normalized) normalises by the number of *potential* haplotypes in each sample to make the samples comparable.
+Figure \@ref(fig:cumulative-potential-clonotype-frequencies-normalized) normalises by the number of *potential* clonotypes in each sample to make the samples comparable.
+From this we see evidence that fewer clonotypes are found in infected cells than in uninfected cells.
 
 ```{r cumulative-potential-clonotype-frequencies-normalized, fig.cap = "Normalised cumulative potential clonotype frequencies by sample. Frequencies are computed within each sample."}
-tmp %>%
-  dplyr::group_by(Sample) %>%
-  dplyr::mutate(
-    x = seq_along(n) / length(n),
-    y = cumsum(n) / sum(n)) %>%
-  ggplot(.) +
-  geom_step(
-    aes(x = x, y = y, colour = Sample, lty = Treatment),
-    lwd = 1) +
+ggplot(
+  clonotype_by_sample_tbl, 
+  aes(
+    x = scaled_ranked_clonotype, 
+    y = cumsum_prop, 
+    colour = Sample, 
+    lty = Treatment)) + 
+  geom_step(lwd = 1) +
   scale_colour_manual(values = sample_colours) + 
-  xlab("Proportion of potential clonotypes") +
+  xlab("Proportion of potential clonotypes") + 
   ylab("Proportion of cells") +
-  cowplot::theme_cowplot()
+  cowplot::theme_cowplot() + 
+  xlim(0, 1)
 ```
 
-From this, we see evidence that fewer clonotypes are found in infected cells than in uninfected cells.
-We would like to quantify 
-For example, the table below reports the proportion of potential clonotypes required to 'cover' 75% of cells in each sample and shows that this number is somewhat smaller in infected cells than in uninfected cells.
+We would like to quantify this result in some way.
+For example, the table below reports the proportion of potential clonotypes required to 'cover' 75% of cells in each sample.
+This shows that this number is smaller in infected cells than in uninfected cells.
+
+<aside>
+But do recall that we cannot perform any meaningful statistical inference with only $n=6$ samples.
+</aside>
 
 ```{r}
-tmp %>%
-  dplyr::group_by(Sample) %>%
-  dplyr::mutate(
-    x = seq_along(n) / length(n),
-    y = cumsum(n) / sum(n)) %>%
-  dplyr::filter(y > 0.75) %>%
-  dplyr::group_by(Sample) %>%
-  dplyr::mutate(i = dplyr::row_number()) %>%
-  dplyr::filter(i == 1) %>%
-  dplyr::select(Sample, x) %>%
-  dplyr::rename("Proportion of potential clonotypes" = x) %>%
-  knitr::kable(caption = "Proportion of potential clonotypes required to 'cover' 75% of cells in each sample.", digits = 3)
+clonotype_by_sample_tbl %>%
+  filter(cumsum_prop > 0.75) %>%
+  filter(ranked_clonotype == min(ranked_clonotype)) %>%
+  select(Sample, ranked_clonotype, N, cumsum_prop) %>%
+  rename(
+    "Number of distinct clonotypes" = ranked_clonotype, 
+    "Number of productive TCR sequences" = N,
+    "Proportion of potential clonotypes" = cumsum_prop) %>%
+  knitr::kable(caption = "Number of clonotypes, and proportion of potential clonotypes, required to 'cover' 75% of cells in each sample.", digits = 3)
 ```
 
 ### Sophisticated analysis
 
-I use the `r BiocStyle::CRANpkg("alakazam")` R package to perform a more sophisticated diversity analysis.
+Following recommendations in [@venturi2007methods], along with methods impelemented in the `r BiocStyle::CRANpkg("alakazam")` R package, we perform a more sophisticated diversity analysis.
 
-<aside>
-The caveat to this is that I don't understand the methodology as much as I might like.
-</aside>
+```{r}
+library(alakazam)
+```
 
 The authors of `r BiocStyle::CRANpkg("alakazam")` [write that](https://alakazam.readthedocs.io/en/stable/vignettes/Diversity-Vignette/#diversity-analysis):
 
 > The clonal diversity of the repertoire can be analysed using the general form of the diversity index, as proposed by Hill[@hill1973diversity].
 > [This is] coupled with re-sampling strategies to correct for variations in sequencing depth, as well as inference of complete clonal abundance distributions[@chao2014rarefaction,@chao2015unveiling].
 
-```{r}
-library(alakazam)
-
-alakazam_df <- as.data.frame(unlist(sce$TRA)) %>%
-  filter(productive == "True") %>%
-  select(barcode, raw_clonotype_id) %>%
-  mutate(seq_count = 1) %>%
-  inner_join(
-    as.data.frame(
-      colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")]),
-    by = c("barcode" = "Barcode"))
-```
-
 We start by generating a clonal abundance curve for each `Sample` and each `Treatment` (Figure \@ref(fig:clonal-abundance)).
 
 <aside>
-These curves are similar in flavour to Figure \@ref(fig:cellranger-faceted), but more detailed and sophisticated.
+These curves are similar in flavour to Figure \@ref(fig:cellranger-faceted), but more detailed and sophisticated because they estimate the variation around the curve using a statistical technique called the *bootstrap*.
 </aside>
 
 ```{r clonal-abundance, fig.cap = "Rank abundance curve (with 95% CI) of the relative clonal abundance for each `Sample` (left) and `Treatment` (right). The 95% confidence interval is estimated via bootstrapping (B = 200).", fig.asp = 1 / 3}
 sample_curve <- estimateAbundance(
-  alakazam_df,
+  productive_clonotype_tbl,
   group = "Sample",
   ci = 0.95,
   nboot = 200,
@@ -500,7 +513,7 @@ sample_curve <- estimateAbundance(
 p1 <- plot(sample_curve, colors = sample_colours, silent = TRUE)
 
 treatment_curve <- estimateAbundance(
-  alakazam_df,
+  productive_clonotype_tbl,
   group = "Treatment",
   ci = 0.95,
   nboot = 200,
@@ -517,6 +530,7 @@ At $q = 0$ different clones weight equally, regardless of their size.
 As the parameter $q$ increase from $0$ to $+\infty$ the diversity index ($D$) depends less on rare clones and more on common (abundant) ones, thus encompassing a range of definitions that can be visualized as a single curve^[Values of q < 0 are valid, but are generally not meaningful.].
 
 Figure \@ref(fig:diversity) plots these diversity curves and shows that the `Uninfected` samples are 'more diverse' for a range of $q$.
+From this we see that the uninfected samples are generally more diverse than the infected samples.
 
 ```{r diversity, fig.cap = "Diveristy curve (with 95% CI) for each `Sample` (left) and `Treatment` (right). The 95% confidence interval is estimated via bootstrapping (B = 200).", fig.asp = 1 / 3}
 sample_alpha_curve <- alphaDiversity(
@@ -540,18 +554,34 @@ p2 <- plot(treatment_alpha_curve, colors = treatment_colours, silent = TRUE)
 plot_grid(p1, p2, ncol = 2)
 ```
 
-Finally, significance testing across groups is performed using the delta of the bootstrap distributions between groups when running.
+We would like to quantify this result in some way.
+For example, in @venturi2007methods, the authors chose to use the Simpson's diversity index, noting that:
 
-**TODO:** Not real confident how these methods work.
+> This diversity index has the advantages that it has a direct interpretation, is easy to calculate, is not highly sensitive to sample size, and can be used to compare diversities with smaller sample sizes, proportional to the total population size, than required by other methods.
 
-```{r}
-filter(sample_alpha_curve@tests, q %in% c(0, 1, 2, 4))
-```
+They also write that:
+
+> Simpson's diversity index also tends to be more sensitive to the dominant clonotypes and less sensitive to the number of clonotypes (Magurran, 2004), making it an appropriate measure of diversity if we wish to assess clonal dominance.
+> In the context of TCR repertoire studies, Simpson's diversity index is the probability that any two TCRs chosen at random from the sample will have different
+clonotypes (i.e.: distinct CDR3 sequences for the TCR α- or β-chain)
+
+From Figure \@ref(fig:diversity) we can conclude that:
+
+- The number of clonotypes was higher in the `Uninfected` samples than in the `Infected` samples (medians: `r round(median(sample_alpha_curve@diversity$d[sample_alpha_curve@diversity$q == 0 & grepl("^uninfected", sample_alpha_curve@diversity$Sample)]), 0)` vs. `r round(median(sample_alpha_curve@diversity$d[sample_alpha_curve@diversity$q == 0 & grepl("^infected", sample_alpha_curve@diversity$Sample)]), 0)`).
+- Using the Simpson's diversity index to account for the clonal
+dominance hierarchy, the `Uninfected` samples were more diverse than the `Infected` samples (medians: `r round(median(sample_alpha_curve@diversity$d[sample_alpha_curve@diversity$q == 2 & grepl("^uninfected", sample_alpha_curve@diversity$Sample)]), 0)` vs. `r round(median(sample_alpha_curve@diversity$d[sample_alpha_curve@diversity$q == 2 & grepl("^infected", sample_alpha_curve@diversity$Sample)]), 0)`)
+
+<aside>
+But do recall that we cannot perform any meaningful statistical inference with only $n=6$ samples.
+</aside>
 
 # Summary
 
-- Infected samples have fewer clonotypes (i.e. have less TCR diversity) than uninfected cells, even after normalising for cell numbers.
-- Infected samples show evidence of clonal expansion (alternatively, of reduced polyclonality) compared to uninfected samples as evidenced by more cells sharing a smaller number of clonotypes.
+The central limitation of this analysis is that with only $n=6$ samples we cannot perform any meaningful statistical analysis of the clonal diversity.
+However, in all the descriptive analyses we have observed that:
+
+- `Infected` samples have fewer clonotypes (i.e. have less TCR diversity) than `Uninfected` samples, even after normalising for cell numbers.
+- `Infected` samples show evidence of clonal expansion (alternatively, of reduced polyclonality) compared to `Uninfected` samples, as evidenced by more `Infected` cells sharing a smaller number of clonotypes.
 
 # Additional information {.appendix}
 
