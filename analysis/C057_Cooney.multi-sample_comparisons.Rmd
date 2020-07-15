@@ -4,10 +4,10 @@ description: |
 author:
   - name: Peter Hickey 
     url: https://peterhickey.org
-    affiliation: Single Cell Open Research Endeavour (SCORE), WEHI
+    affiliation: WEHI SCORE
     affiliation_url: https://www.wehi.edu.au/people/shalin-naik/3310/score
 date: "`r Sys.Date()`"
-output: radix::radix_article
+output: distill::distill_article
 editor_options: 
   chunk_output_type: console
 bibliography: ref.bib
@@ -20,13 +20,19 @@ library(BiocStyle)
 library(BiocParallel)
 library(pheatmap)
 
-source(here("analysis", "helper_functions.R"))
+source(here("code", "helper_functions.R"))
 
 # NOTE: Using multiple cores siezes up my laptop. Can use more on unix box.
 options("mc.cores" = ifelse(Sys.info()[["nodename"]] == "PC1331", 1L, 9L))
 register(MulticoreParam(workers = getOption("mc.cores")))
 knitr::opts_chunk$set(
-  fig.path = "C057_Cooney_multi-sample_comparisons_files/")
+  fig.path = "C057_Cooney.multi-sample_comparisons_files/")
+```
+
+**TODO**: This needs a complete re-write to modernise it to current best practices and in light of changes to the preceding steps in the analysis workflow.
+
+```{r}
+knitr::knit_exit()
 ```
 
 # Introduction
