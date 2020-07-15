@@ -88,7 +88,7 @@ legend(
 We use the `emptyDrops()` function from the `r Biocpkg("DropletUtils")` package to test whether the expression profile for each cell barcode is significantly different from the ambient RNA pool [@lun2018distinguishing].
 This tends to be less conservative than the cell calling algorithm from the **CellRanger** pipeline, which often discards genuine cells with low RNA content (and thus low total counts).
 Any significant deviation indicates that the barcode corresponds to a cell-containing droplet.
-We call cells at a false discovery rate (FDR) of 1%, meaning that no more than 1% of our called barcodes should be empty droplets on average.
+We call cells at a false discovery rate (FDR) of 0.1%, meaning that no more than 0.1% of our called barcodes should be empty droplets on average.
 
 ```{r}
 empties <- readRDS(
@@ -96,7 +96,7 @@ empties <- readRDS(
 mutate(as.data.frame(empties), Sample = rep("C057", nrow(empties))) %>%
   group_by(Sample) %>%
   summarise(
-    keep = sum(FDR < 0.001, na.rm = TRUE), 
+    keep = sum(FDR <= 0.001, na.rm = TRUE), 
     n = n(),
     remove = n - keep) %>%
   mutate(library = factor(Sample)) %>%
