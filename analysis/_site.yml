@@ -19,8 +19,6 @@ navbar:
       href: C057_Cooney.repertoire-seq.html
     - text: "Supplementary files"
       menu:
-        - text: "FastQC reports"
-          href: ../output/FastQC/
         - text: "CellRanger reports"
           href: ../output/CellRanger/
         - text: "Marker gene tables"
@@ -28,7 +26,7 @@ navbar:
         - text: "Differentially expressed genes"
           href: ../output/DEGs/
         - text: "Glimma plots"
-          href: glimma-plots/
+          href: ../output/glimma-plots/
   right:
     - icon: fa-github
       href: https://github.com/WEHISCORE/C057_Cooney
