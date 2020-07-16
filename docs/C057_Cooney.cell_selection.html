@@ -24,8 +24,8 @@
   
   
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2020-07-15"/>
-  <meta property="article:created" itemprop="dateCreated" content="2020-07-15"/>
+  <meta property="article:published" itemprop="datePublished" content="2020-07-17"/>
+  <meta property="article:created" itemprop="dateCreated" content="2020-07-17"/>
   <meta name="article:author" content="Peter Hickey"/>
   
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
@@ -50,7 +50,7 @@
   <!--radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","editor_options","bibliography"]}},"value":[{"type":"character","attributes":{},"value":["Selection of biologically relevant cells for the Cooney (C057) memory CD4+ T-cell data set"]},{"type":"NULL"},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Peter Hickey"]},{"type":"character","attributes":{},"value":["https://peterhickey.org"]},{"type":"character","attributes":{},"value":["Single Cell Open Research Endeavour (SCORE), WEHI"]},{"type":"character","attributes":{},"value":["https://www.wehi.edu.au/people/shalin-naik/3310/score"]}]}]},{"type":"character","attributes":{},"value":["2020-07-15"]},{"type":"character","attributes":{},"value":["distill::distill_article"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]},{"type":"character","attributes":{},"value":["ref.bib"]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","editor_options","bibliography"]}},"value":[{"type":"character","attributes":{},"value":["Selection of biologically relevant cells for the Cooney (C057) memory CD4+ T-cell data set"]},{"type":"NULL"},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Peter Hickey"]},{"type":"character","attributes":{},"value":["https://peterhickey.org"]},{"type":"character","attributes":{},"value":["Single Cell Open Research Endeavour (SCORE), WEHI"]},{"type":"character","attributes":{},"value":["https://www.wehi.edu.au/people/shalin-naik/3310/score"]}]}]},{"type":"character","attributes":{},"value":["2020-07-17"]},{"type":"character","attributes":{},"value":["distill::distill_article"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]},{"type":"character","attributes":{},"value":["ref.bib"]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   <!--radix_placeholder_navigation_in_header-->
@@ -1291,7 +1291,7 @@
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Selection of biologically relevant cells for the Cooney (C057) memory CD4+ T-cell data set","authors":[{"author":"Peter Hickey","authorURL":"https://peterhickey.org","affiliation":"Single Cell Open Research Endeavour (SCORE), WEHI","affiliationURL":"https://www.wehi.edu.au/people/shalin-naik/3310/score"}],"publishedDate":"2020-07-15T00:00:00.000+10:00","citationText":"Hickey, 2020"}
+{"title":"Selection of biologically relevant cells for the Cooney (C057) memory CD4+ T-cell data set","authors":[{"author":"Peter Hickey","authorURL":"https://peterhickey.org","affiliation":"Single Cell Open Research Endeavour (SCORE), WEHI","affiliationURL":"https://www.wehi.edu.au/people/shalin-naik/3310/score"}],"publishedDate":"2020-07-17T00:00:00.000+10:00","citationText":"Hickey, 2020"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -1341,7 +1341,7 @@ Supplementary files
 <div class="d-byline">
   Peter Hickey <a href="https://peterhickey.org" class="uri">https://peterhickey.org</a> (Single Cell Open Research Endeavour (SCORE), WEHI)<a href="https://www.wehi.edu.au/people/shalin-naik/3310/score" class="uri">https://www.wehi.edu.au/people/shalin-naik/3310/score</a>
   
-<br/>2020-07-15
+<br/>2020-07-17
 </div>
 
 <div class="d-article">
@@ -1390,7 +1390,7 @@ Supplementary files
 <p>Clustering is a critical component of this process, so we discuss it in further detail in the next subsection.</p>
 <h2 id="clustering">Clustering</h2>
 <p>Clustering is an unsupervised learning procedure that is used in scRNA-seq data analysis to empirically define groups of cells with similar expression profiles. Its primary purpose is to summarize the data in a digestible format for human interpretation. This allows us to describe population heterogeneity in terms of discrete labels that are easily understood, rather than attempting to comprehend the high-dimensional manifold on which the cells truly reside. Clustering is thus a critical step for extracting biological insights from scRNA-seq data.</p>
-<p>Clustering calculations are usually performed using the top PCs to take advantage of data compression and denoising<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>
+<p>Clustering calculations are usually performed using the top PCs to take advantage of data compression and denoising.</p>
 <h3 id="clusters-vs.-cell-types">Clusters vs. cell types</h3>
 <p>It is worth stressing the distinction between clusters and cell types. The former is an empirical construct while the latter is a biological truth (albeit a vaguely defined one). For this reason, questions like “what is the true number of clusters?” are usually meaningless. We can define as many clusters as we like, with whatever algorithm we like - each clustering will represent its own partitioning of the high-dimensional expression space, and is as “real” as any other clustering.</p>
 <p>A more relevant question is “how well do the clusters approximate the cell types?” Unfortunately, this is difficult to answer given the context-dependent interpretation of biological truth. Some analysts will be satisfied with resolution of the major cell types; other analysts may want resolution of subtypes; and others still may require resolution of different states (e.g., metabolic activity, stress) within those subtypes. Two clusterings can also be highly inconsistent yet both valid, simply partitioning the cells based on different aspects of biology. Indeed, asking for an unqualified “best” clustering is akin to asking for the best magnification on a microscope without any context.</p>
@@ -1740,9 +1740,9 @@ Figure 24: Breakdown of clusters by experimental factors.
 <p>For this experiment, the sample labelling is done with HTOs. With 5 unique HTOs, there are <span class="math inline">\({5 \choose 2} = 10\)</span> ways a droplet could be labelled with 2 HTOs. The cell hashing data will not identify all doublets, most obviously those formed between cells from the same sample. It will also be near impossible to identify those doublets formed between a cell labelled with all 5 HTOs (i.e. a cell from the <code>uninfected_3</code> sample) and another cell labelled with a single HTO.</p>
 <p>We can easily identify the HTO-derived doublets (droplets with <code>Sample</code> labelled as <code>doublet</code>; n = 410, 4% of remaining droplets). We term these the ‘labelled’ droplets.</p>
 <h3 id="unlabelled-dropets">‘Unlabelled’ dropets</h3>
-<p>One obvious limitation of relying solely on the HTO-derived doublets is that doublets of cells marked with the same HTO or those doublets formed between a cell labelled with all 5 HTOs (i.e. a cell from the <code>uninfected_3</code> sample) and another cell labelled with a single HTO are not detected<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
+<p>One obvious limitation of relying solely on the HTO-derived doublets is that doublets of cells marked with the same HTO or those doublets formed between a cell labelled with all 5 HTOs (i.e. a cell from the <code>uninfected_3</code> sample) and another cell labelled with a single HTO are not detected<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>
 <p>To avoid this, we recover the remaining intra-sample doublets based on their similarity with ‘known’ doublets in gene expression space, i.e. ‘guilt by association’.</p>
-<p>For each droplet, we calculate the proportion of its nearest neighbours that are ‘labelled’ doublets<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>. Intra-sample doublets should have values of this metric under the assumption that their gene expression profiles are similar to inter-sample doublets involving the same combination of cell states/types.</p>
+<p>For each droplet, we calculate the proportion of its nearest neighbours that are ‘labelled’ doublets<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. Intra-sample doublets should have values of this metric under the assumption that their gene expression profiles are similar to inter-sample doublets involving the same combination of cell states/types.</p>
 <div class="layout-chunk" data-layout="l-body">
 
 </div>
@@ -1966,7 +1966,7 @@ Figure 33: Breakdown of clusters by experimental factors.
 <h2 id="unknown-unwanted-cell-types">‘Unknown’ unwanted cell types</h2>
 <h3 id="motivation-6">Motivation</h3>
 <p>A conceptually straightforward annotation approach is to compare the single-cell expression profiles with previously annotated reference data sets. Labels can then be assigned to each cell in our uncharacterised test data set based on the most similar reference sample(s), for some definition of “similar”. Any published and labelled RNA-seq data set (bulk or single-cell) can be used as a reference, though its reliability depends greatly on the expertise of the original authors who assigned the labels in the first place.</p>
-<p><em><a href="https://bioconductor.org/packages/3.11/SingleR">SingleR</a></em> is one such automatic annotation method for scRNA-seq data <span class="citation" data-cites="aran2019reference">(Aran et al. <a href="#ref-aran2019reference" role="doc-biblioref">2019</a>)</span>. Given a reference data set(s) of samples<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> with known labels, it labels new cells from a test data set based on similarity to the reference set(s). Specifically, for each test cell:</p>
+<p><em><a href="https://bioconductor.org/packages/3.11/SingleR">SingleR</a></em> is one such automatic annotation method for scRNA-seq data <span class="citation" data-cites="aran2019reference">(Aran et al. <a href="#ref-aran2019reference" role="doc-biblioref">2019</a>)</span>. Given a reference data set(s) of samples<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> with known labels, it labels new cells from a test data set based on similarity to the reference set(s). Specifically, for each test cell:</p>
 <ol type="1">
 <li>We compute the Spearman correlation between its expression profile and that of each reference sample.</li>
 <li>We define the per-label score as a fixed quantile (by default, 0.8) of the distribution of correlations.</li>
@@ -1991,7 +1991,7 @@ Figure 33: Breakdown of clusters by experimental factors.
 <li><code>MonacoImmuneData</code> (<code>MI</code>): The <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE107011">Monaco Immune Cell Data (GSE107011)</a> <span class="citation" data-cites="monaco_immuneRef">(Monaco et al. <a href="#ref-monaco_immuneRef" role="doc-biblioref">2019</a>)</span>.</li>
 </ul>
 <p>These bulk RNA-seq and microarray data sets were obtained from pre-sorted cell populations, i.e., the cell labels of these samples were mostly derived based on the respective sorting/purification strategy, not via <em>in silico</em> prediction methods.</p>
-<p>The characteristics of each data set are summarized below<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>:</p>
+<p>The characteristics of each data set are summarized below<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>:</p>
 <table>
 <colgroup>
 <col style="width: 21%" />
@@ -3716,7 +3716,7 @@ Figure 39: Breakdown of clusters by experimental factors.
 </ul>
 <h2 id="known-unwanted-cell-types">‘Known’ unwanted cell types</h2>
 <h3 id="motivation-7">Motivation</h3>
-<p>James indicated that there may be a subpopulation of CD8+ T-cells in this dataset. CD4+ and CD8+ T-cells are notoriously difficult to distinguish from one another using scRNA-seq data<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>.</p>
+<p>James indicated that there may be a subpopulation of CD8+ T-cells in this dataset. CD4+ and CD8+ T-cells are notoriously difficult to distinguish from one another using scRNA-seq data<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>.</p>
 <aside>
 Specifically, James believes that there may be a population of CD8+ T-cells that upregulated the cell-surface expression of CD4 and hence were retained in the enrichment step.
 </aside>
@@ -4391,7 +4391,7 @@ Figure 46: UMAP plot of the updated data, where each point represents a cell and
 <div class="layout-chunk" data-layout="l-body">
 
 </div>
-<p>We find that the most highly variable genes in this dataset are somewhat enriched for ribosomal protein genes<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a> (n = 106) and mitochondrial genes (n = 13), with Figure <a href="#fig:perc-mito-and-ribo">47</a> showing that more than 20% of the top-200 HVGs are ribosomal protein or mitochondrial genes.</p>
+<p>We find that the most highly variable genes in this dataset are somewhat enriched for ribosomal protein genes<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a> (n = 106) and mitochondrial genes (n = 13), with Figure <a href="#fig:perc-mito-and-ribo">47</a> showing that more than 20% of the top-200 HVGs are ribosomal protein or mitochondrial genes.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="figure"><span id="fig:perc-mito-and-ribo"></span>
 <img src="C057_Cooney.cell_selection_files/perc-mito-and-ribo-1.png" alt="Percentage of top-K HVGs that are mitochondrial or ribosomal protein genes." width="624" />
@@ -4470,7 +4470,7 @@ Figure 49: Breakdown of clusters by experimental factors.
  collate  en_US.UTF-8                 
  ctype    en_US.UTF-8                 
  tz       Australia/Melbourne         
- date     2020-07-15                  
+ date     2020-07-17                  
 
 ─ Packages ─────────────────────────────────────────────────────────
  ! package                * version  date       lib source        
@@ -4598,7 +4598,7 @@ Figure 49: Breakdown of clusters by experimental factors.
  P zlibbioc                 1.34.0   2020-04-27 [?] Bioconductor  
 
 [1] /stornext/General/data/user_managed/grpu_mritchie_1/hickey/SCORE/C057_Cooney/renv/library/R-4.0/x86_64-pc-linux-gnu
-[2] /tmp/Rtmp1azGTB/renv-system-library
+[2] /tmp/RtmpdwSjLx/renv-system-library
 [3] /stornext/System/data/apps/R/R-4.0.0/lib64/R/library
 
  P ── Loaded and on-disk path mismatch.</code></pre>
@@ -4633,13 +4633,12 @@ Figure 49: Breakdown of clusters by experimental factors.
 <section class="footnotes" role="doc-endnotes">
 <hr />
 <ol>
-<li id="fn1" role="doc-endnote"><p>But see the ‘Data integration’ section of this report for an exception to the rule.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2" role="doc-endnote"><p>In a simple multiplexing experiment involving <span class="math inline">\(N\)</span> HTOs (here <span class="math inline">\(N=5\)</span>) with similar numbers of cells, we would expect around <span class="math inline">\(1 / N = 1 / 5 = 20\%\)</span> of all doublets to involve cells from the same sample. This may still be enough to cause the formation of misleading doublet clusters even after the majority of ‘labelled’ doublets are removed.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3" role="doc-endnote"><p>The use of experimentally derived doublet calls avoids any assumptions about the relative quantity of total RNA or the probability of doublet formation across different cell types.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4" role="doc-endnote"><p>This can be individual cells or bulk samples.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn5" role="doc-endnote"><p>Table adapted from <a href="https://bioconductor.org/packages/release/bioc/vignettes/SingleR/inst/doc/SingleR.html#5_available_references">https://bioconductor.org/packages/release/bioc/vignettes/SingleR/inst/doc/SingleR.html#5_available_references</a><a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn6" role="doc-endnote"><p>E.g., see <a href="https://osca.bioconductor.org/cell-type-annotation.html#assigning-cell-labels-from-reference-data">https://osca.bioconductor.org/cell-type-annotation.html#assigning-cell-labels-from-reference-data</a><a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn7" role="doc-endnote"><p>Here, ribosomal protein genes are defined as those gene symbols starting with “RPL” or “RPS” or otherwise found in the <a href="https://www.gsea-msigdb.org/gsea/msigdb/cards/KEGG_RIBOSOME.html">“KEGG_RIBOSOME” gene set published by MSigDB</a>, namely: FAU, MRPL13, RPL10, RPL10A, RPL10L, RPL11, RPL12, RPL13, RPL13A, RPL14, RPL15, RPL17, RPL17-C18orf32, RPL18, RPL18A, RPL19, RPL21, RPL22, RPL22L1, RPL23, RPL23A, RPL24, RPL26, RPL26L1, RPL27, RPL27A, RPL28, RPL29, RPL3, RPL30, RPL31, RPL32, RPL34, RPL34-AS1, RPL35, RPL35A, RPL36, RPL36A, RPL36A-HNRNPH2, RPL36AL, RPL37, RPL37A, RPL38, RPL39, RPL39L, RPL3L, RPL4, RPL41, RPL5, RPL6, RPL7, RPL7A, RPL7L1, RPL8, RPL9, RPLP0, RPLP1, RPLP2, RPS10, RPS10-NUDT3, RPS11, RPS12, RPS13, RPS14, RPS15, RPS15A, RPS16, RPS17, RPS18, RPS19, RPS19BP1, RPS2, RPS20, RPS21, RPS23, RPS24, RPS25, RPS26, RPS27, RPS27A, RPS27L, RPS28, RPS29, RPS3, RPS3A, RPS4X, RPS4Y1, RPS4Y2, RPS5, RPS6, RPS6KA1, RPS6KA2, RPS6KA3, RPS6KA4, RPS6KA5, RPS6KA6, RPS6KB1, RPS6KB2, RPS6KB2-AS1, RPS6KC1, RPS6KL1, RPS7, RPS8, RPS9, RPSA, RSL24D1, RSL24D1P11, UBA52<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn1" role="doc-endnote"><p>In a simple multiplexing experiment involving <span class="math inline">\(N\)</span> HTOs (here <span class="math inline">\(N=5\)</span>) with similar numbers of cells, we would expect around <span class="math inline">\(1 / N = 1 / 5 = 20\%\)</span> of all doublets to involve cells from the same sample. This may still be enough to cause the formation of misleading doublet clusters even after the majority of ‘labelled’ doublets are removed.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>The use of experimentally derived doublet calls avoids any assumptions about the relative quantity of total RNA or the probability of doublet formation across different cell types.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p>This can be individual cells or bulk samples.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p>Table adapted from <a href="https://bioconductor.org/packages/release/bioc/vignettes/SingleR/inst/doc/SingleR.html#5_available_references">https://bioconductor.org/packages/release/bioc/vignettes/SingleR/inst/doc/SingleR.html#5_available_references</a><a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5" role="doc-endnote"><p>E.g., see <a href="https://osca.bioconductor.org/cell-type-annotation.html#assigning-cell-labels-from-reference-data">https://osca.bioconductor.org/cell-type-annotation.html#assigning-cell-labels-from-reference-data</a><a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6" role="doc-endnote"><p>Here, ribosomal protein genes are defined as those gene symbols starting with “RPL” or “RPS” or otherwise found in the <a href="https://www.gsea-msigdb.org/gsea/msigdb/cards/KEGG_RIBOSOME.html">“KEGG_RIBOSOME” gene set published by MSigDB</a>, namely: FAU, MRPL13, RPL10, RPL10A, RPL10L, RPL11, RPL12, RPL13, RPL13A, RPL14, RPL15, RPL17, RPL17-C18orf32, RPL18, RPL18A, RPL19, RPL21, RPL22, RPL22L1, RPL23, RPL23A, RPL24, RPL26, RPL26L1, RPL27, RPL27A, RPL28, RPL29, RPL3, RPL30, RPL31, RPL32, RPL34, RPL34-AS1, RPL35, RPL35A, RPL36, RPL36A, RPL36A-HNRNPH2, RPL36AL, RPL37, RPL37A, RPL38, RPL39, RPL39L, RPL3L, RPL4, RPL41, RPL5, RPL6, RPL7, RPL7A, RPL7L1, RPL8, RPL9, RPLP0, RPLP1, RPLP2, RPS10, RPS10-NUDT3, RPS11, RPS12, RPS13, RPS14, RPS15, RPS15A, RPS16, RPS17, RPS18, RPS19, RPS19BP1, RPS2, RPS20, RPS21, RPS23, RPS24, RPS25, RPS26, RPS27, RPS27A, RPS27L, RPS28, RPS29, RPS3, RPS3A, RPS4X, RPS4Y1, RPS4Y2, RPS5, RPS6, RPS6KA1, RPS6KA2, RPS6KA3, RPS6KA4, RPS6KA5, RPS6KA6, RPS6KB1, RPS6KB2, RPS6KB2-AS1, RPS6KC1, RPS6KL1, RPS7, RPS8, RPS9, RPSA, RSL24D1, RSL24D1P11, UBA52<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 <!--radix_placeholder_article_footer-->

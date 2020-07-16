@@ -66,7 +66,7 @@ Its primary purpose is to summarize the data in a digestible format for human in
 This allows us to describe population heterogeneity in terms of discrete labels that are easily understood, rather than attempting to comprehend the high-dimensional manifold on which the cells truly reside.
 Clustering is thus a critical step for extracting biological insights from scRNA-seq data.
 
-Clustering calculations are usually performed using the top PCs to take advantage of data compression and denoising^[But see the 'Data integration' section of this report for an exception to the rule.].
+Clustering calculations are usually performed using the top PCs to take advantage of data compression and denoising.
 
 ### Clusters vs. cell types
 
