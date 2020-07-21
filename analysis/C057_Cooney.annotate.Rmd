@@ -416,7 +416,8 @@ cyclin_markers <- findMarkers(
   group = sce$cluster, 
   block = sce$Sample, 
   direction = "up", 
-  pval.type = "any")
+  pval.type = "any",
+  test.type = "wilcox")
 
 g2_cluster <- "7"
 ```
