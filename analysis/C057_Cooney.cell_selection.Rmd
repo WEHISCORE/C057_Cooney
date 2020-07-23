@@ -1578,7 +1578,7 @@ However, an enrichment procedure is just that and unwanted cell types may sneak 
 We can categorise unwanted cell types as either:
 
 1. 'Known' unwanted cell types: Unwanted cell types that we did know to look for *a priori* (i.e. unwanted cell types we know may have snuck through the enrichment process)
-2. 'ambiguous' unwanted cell types: Unwanted cell types that we didn't know to look for *a priori* (i.e. unwanted cell types that we didn't may have snuck through the enrichment process).
+2. 'Unknown' unwanted cell types: Unwanted cell types that we didn't know to look for *a priori* (i.e. unwanted cell types that we didn't may have snuck through the enrichment process).
 
 We will use different analysis strategies to identify the 'known' and 'unknown' unwanted cell types.
 Once we have identified the unwanted cell types, we will exclude the unwanted these cells from further analysis.
