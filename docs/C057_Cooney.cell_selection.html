@@ -4375,9 +4375,7 @@ We could extend this analysis using a different set of ‘CD8+ T-cell’ marker 
 <li>Instead, we found strong evidence that almost all the remaining cells are various subtypes of CD4+ T-cells.</li>
 </ul>
 <h1 id="summary-8">Summary</h1>
-<p>After extensive analysis we have now identified those droplets containing ‘biologically relevant’ cells (n = 9010). Specifically, we have selected for singlets that are CD4+ T-cells. We can verify that we have selected CD4+ T-cells by looking at the expression of known marker genes.</p>
-<h3 id="exclusion-of-ribosomal-protein-and-mitochondrial-genes-from-hvgs">Exclusion of ribosomal protein and mitochondrial genes from HVGs</h3>
-<p>Figure <a href="#fig:cd4-markers-umap">46</a> gives an example using some marker genes of <code>T cells, CD4+</code> cells from the <code>DICE</code> reference dataset.</p>
+<p>After extensive analysis we have now identified those droplets containing ‘biologically relevant’ cells (n = 9010). Specifically, we have selected for singlets that are CD4+ T-cells. We can verify that we have selected CD4+ T-cells by looking at the expression of known marker genes. Figure <a href="#fig:cd4-markers-umap">46</a> gives an example using some marker genes of <code>T cells, CD4+</code> cells from the <code>DICE</code> reference dataset.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="figure"><span id="fig:cd4-markers-umap"></span>
 <img src="C057_Cooney.cell_selection_files/cd4-markers-umap-1.png" alt="UMAP plot of the updated data, where each point represents a cell and is coloured according to expression of selected genes. The selected genes are markers of the `T cells, CD4+` cells in the `DICE` reference dataset that are also highly expressed in our dataset." width="624" />
@@ -4387,7 +4385,8 @@ Figure 46: UMAP plot of the updated data, where each point represents a cell and
 </div>
 </div>
 <h2 id="re-processing-5">Re-processing</h2>
-<p>We perform a final re-processing of the ‘biologically relevant’ cells. Notably, we opt at this stage to exclude ribosomal protein and mitochondrial genes from the list of highly variable genes, for reasons example below.</p>
+<p>We perform a final re-processing of the ‘biologically relevant’ cells. Notably, we opt at this stage to exclude ribosomal protein and mitochondrial genes from the list of highly variable genes, for reasons explained below.</p>
+<h3 id="exclusion-of-ribosomal-protein-and-mitochondrial-genes-from-hvgs">Exclusion of ribosomal protein and mitochondrial genes from HVGs</h3>
 <div class="layout-chunk" data-layout="l-body">
 
 </div>
@@ -4598,7 +4597,7 @@ Figure 49: Breakdown of clusters by experimental factors.
  P zlibbioc                 1.34.0   2020-04-27 [?] Bioconductor  
 
 [1] /stornext/General/data/user_managed/grpu_mritchie_1/hickey/SCORE/C057_Cooney/renv/library/R-4.0/x86_64-pc-linux-gnu
-[2] /tmp/Rtmp2xL3US/renv-system-library
+[2] /tmp/RtmpDU6s4S/renv-system-library
 [3] /stornext/System/data/apps/R/R-4.0.0/lib64/R/library
 
  P ── Loaded and on-disk path mismatch.</code></pre>

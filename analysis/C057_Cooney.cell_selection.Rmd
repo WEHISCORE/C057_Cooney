@@ -2320,9 +2320,6 @@ We could extend this analysis using a different set of 'CD8+ T-cell' marker gene
 After extensive analysis we have now identified those droplets containing 'biologically relevant' cells (n = `r ncol(sce)`).
 Specifically, we have selected for singlets that are CD4+ T-cells.
 We can verify that we have selected CD4+ T-cells by looking at the expression of known marker genes.
-
-### Exclusion of ribosomal protein and mitochondrial genes from HVGs
-
 Figure \@ref(fig:cd4-markers-umap) gives an example using some marker genes of `T cells, CD4+` cells from the `DICE` reference dataset.
 
 ```{r cd4-markers-umap, fig.cap = "UMAP plot of the updated data, where each point represents a cell and is coloured according to expression of selected genes. The selected genes are markers of the `T cells, CD4+` cells in the `DICE` reference dataset that are also highly expressed in our dataset.", fig.asp = 0.8}
@@ -2368,7 +2365,9 @@ plot_grid(plotlist = p, ncol = 3)
 ## Re-processing
 
 We perform a final re-processing of the 'biologically relevant' cells.
-Notably, we opt at this stage to exclude ribosomal protein and mitochondrial genes from the list of highly variable genes, for reasons example below.
+Notably, we opt at this stage to exclude ribosomal protein and mitochondrial genes from the list of highly variable genes, for reasons explained below.
+
+### Exclusion of ribosomal protein and mitochondrial genes from HVGs
 
 ```{r}
 var_fit <- modelGeneVarByPoisson(sce, block = sce$batch)
