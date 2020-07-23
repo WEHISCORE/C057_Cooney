@@ -137,6 +137,7 @@ umap_df$cluster <- sce$cluster
 cluster_colours <- setNames(
   Polychrome::glasbey.colors(nlevels(sce$cluster) + 1)[-1],
   levels(sce$cluster))
+sce$cluster_colours <- cluster_colours[sce$cluster]
 ```
 
 There are `r nlevels(sce$cluster)` clusters detected, shown on the UMAP plot Figure \@ref(fig:clusterplot-umap) and broken down by experimental factors in Figure \@ref(fig:cluster-barplot).
