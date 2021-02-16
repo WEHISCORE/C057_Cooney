@@ -7,7 +7,6 @@ author:
     affiliation: WEHI SCORE
     affiliation_url: https://www.wehi.edu.au/people/shalin-naik/3310/score
 date: "`r Sys.Date()`"
-output: distill::distill_article
 editor_options: 
   chunk_output_type: console
 bibliography: ref.bib
@@ -111,7 +110,6 @@ sce <- sce[, which(empties$FDR <= 0.001)]
 
 ## Motivation
 
-
 James provided me with a table linking HTOs to samples, shown below.
 
 ```{r}
@@ -172,7 +170,7 @@ hto_low_counts_cutoff <- metadata(
 ```
 
 To do so, we will cluster the (log normalized) HTO expression profiles and manually annotate the resulting clusters.
-We perform median-based size normalization of the HTO count data.^[Median-based size factors can adjust for the composition bias that is inherent to the HTO counts; see [https://osca.bioconductor.org/integrating-with-protein-abundance.html#normalization-1](https://osca.bioconductor.org/integrating-with-protein-abundance.html#normalization-1) for details.].
+We perform median-based size normalization of the HTO count data.^[Median-based size factors can adjust for the composition bias that is inherent to the HTO counts; see [http://bioconductor.org/books/release/OSCA/integrating-with-protein-abundance.html#cite-seq-median-norm](http://bioconductor.org/books/release/OSCA/integrating-with-protein-abundance.html#cite-seq-median-norm) for details.].
 This requires an estimate of the ambient expression of each HTO, which we estimate from the empty droplets.
 
 <aside>
@@ -245,19 +243,18 @@ pheatmap(
 On the basis of Figure \@ref(fig:hto-heatmap), we assign these singlets to their sample of origin:
 
 ```{r}
-singlet_clusters <- as.character(c(1:6, 9:12))
+singlet_clusters <- as.character(c(1:8, 12))
 singlet_cluster_to_hto_tbl <- tibble::tribble(
   ~hto_cluster, ~HTO,
-  "1",          "human_3",
-  "2",          "human_2",
-  "3",          "human_5",
-  "4",          "human_5",
-  "5",          "human_4",
-  "6",          "human_4",
-  "9",          "human_1-human_2-human_3-human_4-human_5",
-  "10",         "human_1",
-  "11",         "human_1-human_2-human_3-human_4-human_5",
-  "12",         "human_1")
+  "1",          "human_4",
+  "2",          "human_3",
+  "3",          "human_1",
+  "4",          "human_2",
+  "5",          "human_5",
+  "6",          "human_5",
+  "7",          "human_1-human_2-human_3-human_4-human_5",
+  "8",          "human_1-human_2-human_3-human_4-human_5",
+  "12",         "human_4")
 stopifnot(identical(singlet_clusters, singlet_cluster_to_hto_tbl$hto_cluster))
 
 left_join(singlet_cluster_to_hto_tbl, hto_to_sample_df) %>%
@@ -296,15 +293,17 @@ pheatmap(
 On the basis of Figure \@ref(fig:not-yet-assigned-hto-heatmap), we opt for a conservative approach that labels droplets in the these clusters as `ambiguous` (i.e. we cannot confidently assign them to a sample of origin).
 
 ```{r}
-ambiguous_clusters <- as.character(c(7:8, 13:16))
+ambiguous_clusters <- as.character(c(9:11, 13:16, 18))
 ambiguous_cluster_to_hto_tbl <- tibble::tribble(
     ~hto_cluster, ~HTO,
-    "7",          "ambiguous",
-    "8",          "ambiguous",
+    "9",          "ambiguous",
+    "10",          "ambiguous",
+    "11",         "ambiguous",
     "13",         "ambiguous",
     "14",         "ambiguous",
     "15",         "ambiguous",
-    "16",         "ambiguous")
+    "16",         "ambiguous",
+    "18",         "ambiguous")
 stopifnot(
   identical(ambiguous_clusters, ambiguous_cluster_to_hto_tbl$hto_cluster))
 
@@ -313,7 +312,7 @@ left_join(ambiguous_cluster_to_hto_tbl, hto_to_sample_df) %>%
 ```
 
 We then turn our attention to the remaining clusters.
-Figure \@ref(fig:mostly-doublets-hto-heatmap) shows that the remaining clusters largely contain droplets with 2 HTOs, which correspond to droplets containing two cells ('doublets'), as well as a small cluster of droplets that appear to contain all five HTOs.
+Figure \@ref(fig:mostly-doublets-hto-heatmap) shows that the remaining clusters largely contain droplets with 2 HTOs, which correspond to droplets containing two cells ('doublets'), a cluster that appears to be droplets with the `human-5` HTO, and a small cluster of droplets that appear to contain all five HTOs. 
 
 ```{r mostly-doublets-hto-heatmap, fig.cap = "Heatmap of HTO log2(counts + 1) for the droplets not yet assigned to a sample of origin. Columns are ordered by cluster and then HTO library size. Each droplet (column) is annotated by the (log10) HTO library size (`sum`) and whether that is smaller than the a cutoff estimated from the empty droplets. Each HTO (row) is annotated by the (log10) average count of the HTO in the empty droplets (`ambient`)."}
 tmp_sce <- sce[, !sce$hto_cluster %in% c(singlet_clusters, ambiguous_clusters)]
@@ -344,11 +343,10 @@ pheatmap(
 On the basis of Figure \@ref(fig:mostly-doublets-hto-heatmap), we assign droplets in these clusters accordingly:
 
 ```{r}
-mostly_doublet_clusters <- as.character(17:26)
+mostly_doublet_clusters <- as.character(c(17, 19:28))
 mostly_doublet_cluster_to_hto_tbl <- tibble::tribble(
     ~hto_cluster,  ~HTO,
-    "17",          "doublet",
-    "18",          "doublet",
+    "17",          "human_5",
     "19",          "doublet",
     "20",          "doublet",
     "21",          "doublet",
@@ -356,7 +354,9 @@ mostly_doublet_cluster_to_hto_tbl <- tibble::tribble(
     "23",          "doublet",
     "24",          "doublet",
     "25",          "doublet",
-    "26",          "human_1-human_2-human_3-human_4-human_5")
+    "26",          "doublet",
+    "27",          "doublet",
+    "28",          "human_1-human_2-human_3-human_4-human_5")
 stopifnot(
   identical(mostly_doublet_clusters,
             mostly_doublet_cluster_to_hto_tbl$hto_cluster))
@@ -403,7 +403,7 @@ colData(sce) <- cbind(
     !colnames(sample_map) %in% "hto_cluster"])
 ```
 
-Finally, Figure \@ref(fig:hto-heatmap-by-sample) is a heatmap of the counts for each HTO in each droplet ordered by sample.
+Figure \@ref(fig:hto-heatmap-by-sample) is a heatmap of the counts for each HTO in each droplet ordered by sample.
 
 ```{r hto-heatmap-by-sample, fig.cap = "Heatmap of HTO log2(counts + 1) for the droplets. Columns are ordered by sample and then HTO library size. Each droplet (column) is annotated by assigned sample of origin (`Sample`), the (log10) HTO library size (`sum`), and whether that is smaller than the a cutoff estimated from the empty droplets. Each HTO (row) is annotated by the (log10) average count of the HTO in the empty droplets (`ambient`)."}
 sample_colours <- setNames(
@@ -430,6 +430,22 @@ pheatmap(
   show_colnames = FALSE,
   scale = "none",
   fontsize = 6)
+```
+
+Figure \@ref(fig:hto-umap) is a UMAP plot of the HTO data coloured by the inferred sample.
+
+```{r hto-umap, fig.cap = "UMAP of HTO data coloured according to the inferred sample."}
+set.seed(194)
+sce <- runUMAP(sce, altexp = "Antibody Capture", name = "UMAP_HTO")
+plotReducedDim(
+  sce, 
+  dimred = "UMAP_HTO",
+  colour_by = "Sample",
+  point_size = 0.5,
+  point_alpha = 1) +
+  scale_colour_manual(values = sample_colours, name = "Sample") +
+  theme_cowplot() +
+  guides(colour = guide_legend(override.aes = list(size = 5)))
 ```
 
 ## Summary
