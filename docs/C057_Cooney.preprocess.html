@@ -2303,12 +2303,60 @@ Figure 2: Breakdown of the two treatments.
 <span class='va'>ah</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/AnnotationHub/man/AnnotationHub-class.html'>AnnotationHub</a></span><span class='op'>(</span><span class='op'>)</span>
 <span class='va'>EnsDb.Hsapiens.v94</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/AnnotationHub/man/AnnotationHub-class.html'>query</a></span><span class='op'>(</span><span class='va'>ah</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"EnsDb"</span>, <span class='st'>"Homo Sapiens"</span>, <span class='fl'>94</span><span class='op'>)</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span>
 <span class='va'>location</span> <span class='op'>&lt;-</span> <span class='fu'>mapIds</span><span class='op'>(</span>
-  x <span class='op'>=</span> <span class='va'>EnsDb.Hsapiens.v94</span>, 
+  x <span class='op'>=</span> <span class='va'>EnsDb.Hsapiens.v94</span>,
   <span class='co'># NOTE: Need to remove gene version number prior to lookup.</span>
   keys <span class='op'>=</span> <span class='fu'>rowData</span><span class='op'>(</span><span class='va'>sce</span><span class='op'>)</span><span class='op'>$</span><span class='va'>ID</span>,
   keytype <span class='op'>=</span> <span class='st'>"GENEID"</span>,
   column <span class='op'>=</span> <span class='st'>"SEQNAME"</span><span class='op'>)</span>
 <span class='fu'>rowData</span><span class='op'>(</span><span class='va'>sce</span><span class='op'>)</span><span class='op'>$</span><span class='va'>CHR</span> <span class='op'>&lt;-</span> <span class='va'>location</span>
+</code></pre>
+</div>
+</details>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># Additional gene metadata from ENSEMBL and NCBI</span>
+<span class='co'># NOTE: These columns were customised for this project.</span>
+<span class='va'>ensdb_columns</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span>
+  <span class='st'>"GENEBIOTYPE"</span>, <span class='st'>"GENENAME"</span>, <span class='st'>"GENESEQSTART"</span>, <span class='st'>"GENESEQEND"</span>, <span class='st'>"SEQNAME"</span>, <span class='st'>"SYMBOL"</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>ensdb_columns</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='st'>"ENSEMBL."</span>, <span class='va'>ensdb_columns</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/stopifnot.html'>stopifnot</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/all.html'>all</a></span><span class='op'>(</span><span class='va'>ensdb_columns</span> <span class='op'>%in%</span> <span class='fu'>columns</span><span class='op'>(</span><span class='va'>EnsDb.Hsapiens.v94</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>ensdb_df</span> <span class='op'>&lt;-</span> <span class='fu'>DataFrame</span><span class='op'>(</span>
+  <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>ensdb_columns</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>column</span><span class='op'>)</span> <span class='op'>{</span>
+    <span class='fu'>mapIds</span><span class='op'>(</span>
+      x <span class='op'>=</span> <span class='va'>EnsDb.Hsapiens.v94</span>,
+      keys <span class='op'>=</span> <span class='fu'>rowData</span><span class='op'>(</span><span class='va'>sce</span><span class='op'>)</span><span class='op'>$</span><span class='va'>ID</span>,
+      keytype <span class='op'>=</span> <span class='st'>"GENEID"</span>,
+      column <span class='op'>=</span> <span class='va'>column</span>,
+      multiVals <span class='op'>=</span> <span class='st'>"CharacterList"</span><span class='op'>)</span>
+  <span class='op'>}</span><span class='op'>)</span>,
+  row.names <span class='op'>=</span> <span class='fu'>rowData</span><span class='op'>(</span><span class='va'>sce</span><span class='op'>)</span><span class='op'>$</span><span class='va'>ID</span><span class='op'>)</span>
+<span class='co'># NOTE: Can't look up GENEID column with GENEID key, so have to add manually.</span>
+<span class='va'>ensdb_df</span><span class='op'>$</span><span class='va'>ENSEMBL.GENEID</span> <span class='op'>&lt;-</span> <span class='fu'>rowData</span><span class='op'>(</span><span class='va'>sce</span><span class='op'>)</span><span class='op'>$</span><span class='va'>ID</span>
+<span class='co'># NOTE: Homo.sapiens combines org.Hs.eg.db and</span>
+<span class='co'>#       TxDb.Hsapiens.UCSC.hg19.knownGene (as well as others) and therefore</span>
+<span class='co'>#       uses entrez gene and RefSeq based data.</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'>Homo.sapiens</span><span class='op'>)</span>
+<span class='co'># NOTE: These columns were customised for this project.</span>
+<span class='va'>ncbi_columns</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span>
+  <span class='co'># From TxDB: None required</span>
+  <span class='co'># From OrgDB</span>
+  <span class='st'>"ALIAS"</span>, <span class='st'>"ENTREZID"</span>, <span class='st'>"GENENAME"</span>, <span class='st'>"REFSEQ"</span>, <span class='st'>"SYMBOL"</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>ncbi_columns</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='st'>"NCBI."</span>, <span class='va'>ncbi_columns</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/stopifnot.html'>stopifnot</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/all.html'>all</a></span><span class='op'>(</span><span class='va'>ncbi_columns</span> <span class='op'>%in%</span> <span class='fu'>columns</span><span class='op'>(</span><span class='va'>Homo.sapiens</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>ncbi_df</span> <span class='op'>&lt;-</span> <span class='fu'>DataFrame</span><span class='op'>(</span>
+  <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>ncbi_columns</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>column</span><span class='op'>)</span> <span class='op'>{</span>
+    <span class='fu'>mapIds</span><span class='op'>(</span>
+      x <span class='op'>=</span> <span class='va'>Homo.sapiens</span>,
+      keys <span class='op'>=</span> <span class='fu'>rowData</span><span class='op'>(</span><span class='va'>sce</span><span class='op'>)</span><span class='op'>$</span><span class='va'>ID</span>,
+      keytype <span class='op'>=</span> <span class='st'>"ENSEMBL"</span>,
+      column <span class='op'>=</span> <span class='va'>column</span>,
+      multiVals <span class='op'>=</span> <span class='st'>"CharacterList"</span><span class='op'>)</span>
+  <span class='op'>}</span><span class='op'>)</span>,
+  row.names <span class='op'>=</span> <span class='fu'>rowData</span><span class='op'>(</span><span class='va'>sce</span><span class='op'>)</span><span class='op'>$</span><span class='va'>ID</span><span class='op'>)</span>
+<span class='fu'>rowData</span><span class='op'>(</span><span class='va'>sce</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/cbind.html'>cbind</a></span><span class='op'>(</span><span class='fu'>rowData</span><span class='op'>(</span><span class='va'>sce</span><span class='op'>)</span>, <span class='va'>ensdb_df</span>, <span class='va'>ncbi_df</span><span class='op'>)</span>
 </code></pre>
 </div>
 </details>
@@ -2501,7 +2549,7 @@ We opt not to filter on ribosomal protein gene proportion at this stage as it’
 </div>
 </details>
 <table>
-<caption><span id="tab:unnamed-chunk-8">Table 1: </span>Sample-specific QC metric cutoffs</caption>
+<caption><span id="tab:unnamed-chunk-9">Table 1: </span>Sample-specific QC metric cutoffs</caption>
 <thead>
 <tr class="header">
 <th style="text-align: left;">batch</th>
@@ -2573,7 +2621,7 @@ We opt not to filter on ribosomal protein gene proportion at this stage as it’
 </div>
 </details>
 <table>
-<caption><span id="tab:unnamed-chunk-9">Table 2: </span>Number of samples removed by each QC step and the number of samples remaining.</caption>
+<caption><span id="tab:unnamed-chunk-10">Table 2: </span>Number of samples removed by each QC step and the number of samples remaining.</caption>
 <thead>
 <tr class="header">
 <th style="text-align: left;">batch</th>
@@ -3231,156 +3279,320 @@ Figure 16: UMAP plot of the dataset. Each point represents a droplets and is col
  date     2021-03-04                  
 
 ─ Packages ─────────────────────────────────────────────────────────
- ! package                * version  date       lib source        
- P annotate                 1.68.0   2020-10-27 [?] Bioconductor  
- P AnnotationDbi          * 1.52.0   2020-10-27 [?] Bioconductor  
- P AnnotationFilter       * 1.14.0   2020-10-27 [?] Bioconductor  
- P AnnotationHub          * 2.22.0   2020-10-27 [?] Bioconductor  
- P askpass                  1.1      2019-01-13 [?] CRAN (R 4.0.0)
- P assertthat               0.2.1    2019-03-21 [?] CRAN (R 4.0.0)
- P beachmat                 2.6.4    2020-12-20 [?] Bioconductor  
- P beeswarm                 0.2.3    2016-04-25 [?] CRAN (R 4.0.0)
- P Biobase                * 2.50.0   2020-10-27 [?] Bioconductor  
-   BiocFileCache          * 1.14.0   2020-10-27 [1] Bioconductor  
-   BiocGenerics           * 0.36.0   2020-10-27 [1] Bioconductor  
- P BiocManager              1.30.10  2019-11-16 [?] CRAN (R 4.0.0)
- P BiocNeighbors            1.8.2    2020-12-07 [?] Bioconductor  
-   BiocParallel           * 1.24.1   2020-11-06 [1] Bioconductor  
- P BiocSingular             1.6.0    2020-10-27 [?] Bioconductor  
-   BiocStyle              * 2.18.1   2020-11-24 [1] Bioconductor  
-   BiocVersion              3.12.0   2020-04-27 [1] Bioconductor  
- P biomaRt                  2.46.3   2021-02-09 [?] Bioconductor  
- P Biostrings               2.58.0   2020-10-27 [?] Bioconductor  
- P bit                      4.0.4    2020-08-04 [?] CRAN (R 4.0.0)
- P bit64                    4.0.5    2020-08-30 [?] CRAN (R 4.0.0)
- P bitops                   1.0-6    2013-08-17 [?] CRAN (R 4.0.0)
- P blob                     1.2.1    2020-01-20 [?] CRAN (R 4.0.0)
- P bluster                  1.0.0    2020-10-27 [?] Bioconductor  
- P bslib                    0.2.4    2021-01-25 [?] CRAN (R 4.0.3)
- P cachem                   1.0.4    2021-02-13 [?] CRAN (R 4.0.3)
- P cli                      2.3.1    2021-02-23 [?] CRAN (R 4.0.3)
- P codetools                0.2-18   2020-11-04 [?] CRAN (R 4.0.3)
- P colorspace               2.0-0    2020-11-11 [?] CRAN (R 4.0.3)
- P cowplot                * 1.1.1    2020-12-30 [?] CRAN (R 4.0.3)
- P crayon                   1.4.1    2021-02-08 [?] CRAN (R 4.0.3)
- P curl                     4.3      2019-12-02 [?] CRAN (R 4.0.0)
- P DBI                      1.1.1    2021-01-15 [?] CRAN (R 4.0.3)
- P dbplyr                 * 2.1.0    2021-02-03 [?] CRAN (R 4.0.3)
- P DelayedArray             0.16.2   2021-02-26 [?] Bioconductor  
- P DelayedMatrixStats       1.12.3   2021-02-03 [?] Bioconductor  
- P DESeq2                   1.30.1   2021-02-19 [?] Bioconductor  
- P digest                   0.6.27   2020-10-24 [?] CRAN (R 4.0.2)
- P distill                  1.2      2021-01-13 [?] CRAN (R 4.0.3)
- P downlit                  0.2.1    2020-11-04 [?] CRAN (R 4.0.3)
- P dplyr                    1.0.4    2021-02-02 [?] CRAN (R 4.0.3)
- P dqrng                    0.2.1    2019-05-17 [?] CRAN (R 4.0.0)
- P edgeR                  * 3.32.1   2021-01-14 [?] Bioconductor  
- P ellipsis                 0.3.1    2020-05-15 [?] CRAN (R 4.0.0)
- P ensembldb              * 2.14.0   2020-10-27 [?] Bioconductor  
- P evaluate                 0.14     2019-05-28 [?] CRAN (R 4.0.0)
- P fansi                    0.4.2    2021-01-15 [?] CRAN (R 4.0.3)
- P farver                   2.1.0    2021-02-28 [?] CRAN (R 4.0.3)
- P fastmap                  1.1.0    2021-01-25 [?] CRAN (R 4.0.3)
- P genefilter               1.72.1   2021-01-21 [?] Bioconductor  
- P geneplotter              1.68.0   2020-10-27 [?] Bioconductor  
- P generics                 0.1.0    2020-10-31 [?] CRAN (R 4.0.3)
- P GenomeInfoDb           * 1.26.2   2020-12-08 [?] Bioconductor  
-   GenomeInfoDbData         1.2.4    2021-02-04 [1] Bioconductor  
- P GenomicAlignments        1.26.0   2020-10-27 [?] Bioconductor  
- P GenomicFeatures        * 1.42.1   2020-11-12 [?] Bioconductor  
- P GenomicRanges          * 1.42.0   2020-10-27 [?] Bioconductor  
- P ggbeeswarm               0.6.0    2017-08-07 [?] CRAN (R 4.0.0)
- P ggplot2                * 3.3.3    2020-12-30 [?] CRAN (R 4.0.3)
- P Glimma                 * 2.0.0    2020-10-27 [?] Bioconductor  
- P glue                     1.4.2    2020-08-27 [?] CRAN (R 4.0.0)
- P gridExtra                2.3      2017-09-09 [?] CRAN (R 4.0.0)
- P gtable                   0.3.0    2019-03-25 [?] CRAN (R 4.0.0)
- P here                   * 1.0.1    2020-12-13 [?] CRAN (R 4.0.3)
- P highr                    0.8      2019-03-20 [?] CRAN (R 4.0.0)
- P hms                      1.0.0    2021-01-13 [?] CRAN (R 4.0.3)
- P htmltools                0.5.1.1  2021-01-22 [?] CRAN (R 4.0.3)
- P htmlwidgets              1.5.3    2020-12-10 [?] CRAN (R 4.0.3)
- P httpuv                   1.5.5    2021-01-13 [?] CRAN (R 4.0.3)
- P httr                     1.4.2    2020-07-20 [?] CRAN (R 4.0.0)
- P igraph                   1.2.6    2020-10-06 [?] CRAN (R 4.0.2)
- P interactiveDisplayBase   1.28.0   2020-10-27 [?] Bioconductor  
- P IRanges                * 2.24.1   2020-12-12 [?] Bioconductor  
- P irlba                    2.3.3    2019-02-05 [?] CRAN (R 4.0.0)
- P janitor                * 2.1.0    2021-01-05 [?] CRAN (R 4.0.3)
- P jquerylib                0.1.3    2020-12-17 [?] CRAN (R 4.0.3)
- P jsonlite                 1.7.2    2020-12-09 [?] CRAN (R 4.0.3)
- P knitr                    1.31     2021-01-27 [?] CRAN (R 4.0.3)
- P labeling                 0.4.2    2020-10-20 [?] CRAN (R 4.0.0)
- P later                    1.1.0.1  2020-06-05 [?] CRAN (R 4.0.0)
- P lattice                  0.20-41  2020-04-02 [?] CRAN (R 4.0.0)
- P lazyeval                 0.2.2    2019-03-15 [?] CRAN (R 4.0.0)
- P lifecycle                1.0.0    2021-02-15 [?] CRAN (R 4.0.3)
-   limma                  * 3.46.0   2020-10-27 [1] Bioconductor  
- P locfit                   1.5-9.4  2020-03-25 [?] CRAN (R 4.0.0)
- P lubridate                1.7.10   2021-02-26 [?] CRAN (R 4.0.3)
- P magrittr                 2.0.1    2020-11-17 [?] CRAN (R 4.0.3)
- P Matrix                 * 1.3-2    2021-01-06 [?] CRAN (R 4.0.3)
-   MatrixGenerics         * 1.2.1    2021-01-30 [1] Bioconductor  
- P matrixStats            * 0.58.0   2021-01-29 [?] CRAN (R 4.0.3)
- P memoise                  2.0.0    2021-01-26 [?] CRAN (R 4.0.3)
- P mime                     0.10     2021-02-13 [?] CRAN (R 4.0.3)
- P msigdbr                * 7.2.1    2020-10-02 [?] CRAN (R 4.0.2)
- P munsell                  0.5.0    2018-06-12 [?] CRAN (R 4.0.0)
- P openssl                  1.4.3    2020-09-18 [?] CRAN (R 4.0.2)
- P patchwork              * 1.1.1    2020-12-17 [?] CRAN (R 4.0.3)
- P pillar                   1.5.0    2021-02-22 [?] CRAN (R 4.0.3)
- P pkgconfig                2.0.3    2019-09-22 [?] CRAN (R 4.0.0)
- P prettyunits              1.1.1    2020-01-24 [?] CRAN (R 4.0.0)
- P progress                 1.2.2    2019-05-16 [?] CRAN (R 4.0.0)
- P promises                 1.2.0.1  2021-02-11 [?] CRAN (R 4.0.3)
-   ProtGenerics             1.22.0   2020-10-27 [1] Bioconductor  
- P purrr                    0.3.4    2020-04-17 [?] CRAN (R 4.0.0)
- P R6                       2.5.0    2020-10-28 [?] CRAN (R 4.0.2)
- P rappdirs                 0.3.3    2021-01-31 [?] CRAN (R 4.0.3)
- P RColorBrewer             1.1-2    2014-12-07 [?] CRAN (R 4.0.0)
- P Rcpp                     1.0.6    2021-01-15 [?] CRAN (R 4.0.3)
- P RcppAnnoy                0.0.18   2020-12-15 [?] CRAN (R 4.0.3)
- P RCurl                    1.98-1.2 2020-04-18 [?] CRAN (R 4.0.0)
- P rlang                    0.4.10   2020-12-30 [?] CRAN (R 4.0.3)
- P rmarkdown              * 2.7      2021-02-19 [?] CRAN (R 4.0.3)
- P rprojroot                2.0.2    2020-11-15 [?] CRAN (R 4.0.3)
- P Rsamtools                2.6.0    2020-10-27 [?] Bioconductor  
- P RSpectra                 0.16-0   2019-12-01 [?] CRAN (R 4.0.0)
- P RSQLite                  2.2.3    2021-01-24 [?] CRAN (R 4.0.3)
- P rsvd                     1.0.3    2020-02-17 [?] CRAN (R 4.0.0)
- P rtracklayer              1.50.0   2020-10-27 [?] Bioconductor  
- P S4Vectors              * 0.28.1   2020-12-09 [?] Bioconductor  
- P sass                     0.3.1    2021-01-24 [?] CRAN (R 4.0.3)
- P scales                   1.1.1    2020-05-11 [?] CRAN (R 4.0.0)
- P scater                 * 1.18.6   2021-02-26 [?] Bioconductor  
- P scran                  * 1.18.5   2021-02-04 [?] Bioconductor  
- P scuttle                  1.0.4    2020-12-17 [?] Bioconductor  
- P sessioninfo              1.1.1    2018-11-05 [?] CRAN (R 4.0.0)
- P shiny                    1.6.0    2021-01-25 [?] CRAN (R 4.0.3)
- P SingleCellExperiment   * 1.12.0   2020-10-27 [?] Bioconductor  
- P snakecase                0.11.0   2019-05-25 [?] CRAN (R 4.0.0)
- P sparseMatrixStats        1.2.1    2021-02-02 [?] Bioconductor  
- P statmod                  1.4.35   2020-10-19 [?] CRAN (R 4.0.2)
- P stringi                  1.5.3    2020-09-09 [?] CRAN (R 4.0.0)
- P stringr                  1.4.0    2019-02-10 [?] CRAN (R 4.0.0)
- P SummarizedExperiment   * 1.20.0   2020-10-27 [?] Bioconductor  
- P survival                 3.2-7    2020-09-28 [?] CRAN (R 4.0.2)
- P tibble                   3.1.0    2021-02-25 [?] CRAN (R 4.0.3)
- P tidyselect               1.1.0    2020-05-11 [?] CRAN (R 4.0.0)
- P utf8                     1.1.4    2018-05-24 [?] CRAN (R 4.0.0)
- P uwot                   * 0.1.10   2020-12-15 [?] CRAN (R 4.0.3)
- P vctrs                    0.3.6    2020-12-17 [?] CRAN (R 4.0.3)
- P vipor                    0.4.5    2017-03-22 [?] CRAN (R 4.0.0)
- P viridis                  0.5.1    2018-03-29 [?] CRAN (R 4.0.0)
- P viridisLite              0.3.0    2018-02-01 [?] CRAN (R 4.0.0)
- P withr                    2.4.1    2021-01-26 [?] CRAN (R 4.0.3)
- P xfun                     0.21     2021-02-10 [?] CRAN (R 4.0.3)
- P XML                      3.99-0.5 2020-07-23 [?] CRAN (R 4.0.0)
- P xml2                     1.3.2    2020-04-23 [?] CRAN (R 4.0.0)
- P xtable                   1.8-4    2019-04-21 [?] CRAN (R 4.0.0)
- P XVector                  0.30.0   2020-10-27 [?] Bioconductor  
- P yaml                     2.2.1    2020-02-01 [?] CRAN (R 4.0.0)
- P zlibbioc                 1.36.0   2020-10-27 [?] Bioconductor  
+ ! package                           * version  date       lib
+ P annotate                            1.68.0   2020-10-27 [?]
+ P AnnotationDbi                     * 1.52.0   2020-10-27 [?]
+ P AnnotationFilter                  * 1.14.0   2020-10-27 [?]
+ P AnnotationHub                     * 2.22.0   2020-10-27 [?]
+ P askpass                             1.1      2019-01-13 [?]
+ P assertthat                          0.2.1    2019-03-21 [?]
+ P beachmat                            2.6.4    2020-12-20 [?]
+ P beeswarm                            0.2.3    2016-04-25 [?]
+ P Biobase                           * 2.50.0   2020-10-27 [?]
+   BiocFileCache                     * 1.14.0   2020-10-27 [1]
+   BiocGenerics                      * 0.36.0   2020-10-27 [1]
+ P BiocManager                         1.30.10  2019-11-16 [?]
+ P BiocNeighbors                       1.8.2    2020-12-07 [?]
+   BiocParallel                      * 1.24.1   2020-11-06 [1]
+ P BiocSingular                        1.6.0    2020-10-27 [?]
+   BiocStyle                         * 2.18.1   2020-11-24 [1]
+   BiocVersion                         3.12.0   2020-04-27 [1]
+ P biomaRt                             2.46.3   2021-02-09 [?]
+ P Biostrings                          2.58.0   2020-10-27 [?]
+ P bit                                 4.0.4    2020-08-04 [?]
+ P bit64                               4.0.5    2020-08-30 [?]
+ P bitops                              1.0-6    2013-08-17 [?]
+ P blob                                1.2.1    2020-01-20 [?]
+ P bluster                             1.0.0    2020-10-27 [?]
+ P bslib                               0.2.4    2021-01-25 [?]
+ P cachem                              1.0.4    2021-02-13 [?]
+ P cli                                 2.3.1    2021-02-23 [?]
+ P codetools                           0.2-18   2020-11-04 [?]
+ P colorspace                          2.0-0    2020-11-11 [?]
+ P cowplot                           * 1.1.1    2020-12-30 [?]
+ P crayon                              1.4.1    2021-02-08 [?]
+ P curl                                4.3      2019-12-02 [?]
+ P DBI                                 1.1.1    2021-01-15 [?]
+ P dbplyr                            * 2.1.0    2021-02-03 [?]
+ P DelayedArray                        0.16.2   2021-02-26 [?]
+ P DelayedMatrixStats                  1.12.3   2021-02-03 [?]
+ P DESeq2                              1.30.1   2021-02-19 [?]
+ P digest                              0.6.27   2020-10-24 [?]
+ P distill                             1.2      2021-01-13 [?]
+ P downlit                             0.2.1    2020-11-04 [?]
+ P dplyr                               1.0.4    2021-02-02 [?]
+ P dqrng                               0.2.1    2019-05-17 [?]
+ P edgeR                             * 3.32.1   2021-01-14 [?]
+ P ellipsis                            0.3.1    2020-05-15 [?]
+ P ensembldb                         * 2.14.0   2020-10-27 [?]
+ P evaluate                            0.14     2019-05-28 [?]
+ P fansi                               0.4.2    2021-01-15 [?]
+ P farver                              2.1.0    2021-02-28 [?]
+ P fastmap                             1.1.0    2021-01-25 [?]
+ P genefilter                          1.72.1   2021-01-21 [?]
+ P geneplotter                         1.68.0   2020-10-27 [?]
+ P generics                            0.1.0    2020-10-31 [?]
+ P GenomeInfoDb                      * 1.26.2   2020-12-08 [?]
+   GenomeInfoDbData                    1.2.4    2021-02-04 [1]
+ P GenomicAlignments                   1.26.0   2020-10-27 [?]
+ P GenomicFeatures                   * 1.42.1   2020-11-12 [?]
+ P GenomicRanges                     * 1.42.0   2020-10-27 [?]
+ P ggbeeswarm                          0.6.0    2017-08-07 [?]
+ P ggplot2                           * 3.3.3    2020-12-30 [?]
+ P Glimma                            * 2.0.0    2020-10-27 [?]
+ P glue                                1.4.2    2020-08-27 [?]
+ P GO.db                             * 3.12.1   2020-11-04 [?]
+ P graph                               1.68.0   2020-10-27 [?]
+ P gridExtra                           2.3      2017-09-09 [?]
+ P gtable                              0.3.0    2019-03-25 [?]
+ P here                              * 1.0.1    2020-12-13 [?]
+ P highr                               0.8      2019-03-20 [?]
+ P hms                                 1.0.0    2021-01-13 [?]
+ P Homo.sapiens                      * 1.3.1    2020-07-25 [?]
+ P htmltools                           0.5.1.1  2021-01-22 [?]
+ P htmlwidgets                         1.5.3    2020-12-10 [?]
+ P httpuv                              1.5.5    2021-01-13 [?]
+ P httr                                1.4.2    2020-07-20 [?]
+ P igraph                              1.2.6    2020-10-06 [?]
+ P interactiveDisplayBase              1.28.0   2020-10-27 [?]
+ P IRanges                           * 2.24.1   2020-12-12 [?]
+ P irlba                               2.3.3    2019-02-05 [?]
+ P janitor                           * 2.1.0    2021-01-05 [?]
+ P jquerylib                           0.1.3    2020-12-17 [?]
+ P jsonlite                            1.7.2    2020-12-09 [?]
+ P knitr                               1.31     2021-01-27 [?]
+ P labeling                            0.4.2    2020-10-20 [?]
+ P later                               1.1.0.1  2020-06-05 [?]
+ P lattice                             0.20-41  2020-04-02 [?]
+ P lazyeval                            0.2.2    2019-03-15 [?]
+ P lifecycle                           1.0.0    2021-02-15 [?]
+   limma                             * 3.46.0   2020-10-27 [1]
+ P locfit                              1.5-9.4  2020-03-25 [?]
+ P lubridate                           1.7.10   2021-02-26 [?]
+ P magrittr                            2.0.1    2020-11-17 [?]
+ P Matrix                            * 1.3-2    2021-01-06 [?]
+   MatrixGenerics                    * 1.2.1    2021-01-30 [1]
+ P matrixStats                       * 0.58.0   2021-01-29 [?]
+ P memoise                             2.0.0    2021-01-26 [?]
+ P mime                                0.10     2021-02-13 [?]
+ P msigdbr                           * 7.2.1    2020-10-02 [?]
+ P munsell                             0.5.0    2018-06-12 [?]
+ P openssl                             1.4.3    2020-09-18 [?]
+ P org.Hs.eg.db                      * 3.12.0   2020-10-20 [?]
+ P OrganismDbi                       * 1.32.0   2020-10-27 [?]
+ P patchwork                         * 1.1.1    2020-12-17 [?]
+ P pillar                              1.5.0    2021-02-22 [?]
+ P pkgconfig                           2.0.3    2019-09-22 [?]
+ P prettyunits                         1.1.1    2020-01-24 [?]
+ P progress                            1.2.2    2019-05-16 [?]
+ P promises                            1.2.0.1  2021-02-11 [?]
+   ProtGenerics                        1.22.0   2020-10-27 [1]
+ P purrr                               0.3.4    2020-04-17 [?]
+ P R6                                  2.5.0    2020-10-28 [?]
+ P rappdirs                            0.3.3    2021-01-31 [?]
+ P RBGL                                1.66.0   2020-10-27 [?]
+ P RColorBrewer                        1.1-2    2014-12-07 [?]
+ P Rcpp                                1.0.6    2021-01-15 [?]
+ P RcppAnnoy                           0.0.18   2020-12-15 [?]
+ P RCurl                               1.98-1.2 2020-04-18 [?]
+ P rlang                               0.4.10   2020-12-30 [?]
+ P rmarkdown                         * 2.7      2021-02-19 [?]
+ P rprojroot                           2.0.2    2020-11-15 [?]
+ P Rsamtools                           2.6.0    2020-10-27 [?]
+ P RSpectra                            0.16-0   2019-12-01 [?]
+ P RSQLite                             2.2.3    2021-01-24 [?]
+ P rsvd                                1.0.3    2020-02-17 [?]
+ P rtracklayer                         1.50.0   2020-10-27 [?]
+ P S4Vectors                         * 0.28.1   2020-12-09 [?]
+ P sass                                0.3.1    2021-01-24 [?]
+ P scales                              1.1.1    2020-05-11 [?]
+ P scater                            * 1.18.6   2021-02-26 [?]
+ P scran                             * 1.18.5   2021-02-04 [?]
+ P scuttle                             1.0.4    2020-12-17 [?]
+ P sessioninfo                         1.1.1    2018-11-05 [?]
+ P shiny                               1.6.0    2021-01-25 [?]
+ P SingleCellExperiment              * 1.12.0   2020-10-27 [?]
+ P snakecase                           0.11.0   2019-05-25 [?]
+ P sparseMatrixStats                   1.2.1    2021-02-02 [?]
+ P statmod                             1.4.35   2020-10-19 [?]
+ P stringi                             1.5.3    2020-09-09 [?]
+ P stringr                             1.4.0    2019-02-10 [?]
+ P SummarizedExperiment              * 1.20.0   2020-10-27 [?]
+ P survival                            3.2-7    2020-09-28 [?]
+ P tibble                              3.1.0    2021-02-25 [?]
+ P tidyselect                          1.1.0    2020-05-11 [?]
+ P TxDb.Hsapiens.UCSC.hg19.knownGene * 3.2.2    2020-07-25 [?]
+ P utf8                                1.1.4    2018-05-24 [?]
+ P uwot                              * 0.1.10   2020-12-15 [?]
+ P vctrs                               0.3.6    2020-12-17 [?]
+ P vipor                               0.4.5    2017-03-22 [?]
+ P viridis                             0.5.1    2018-03-29 [?]
+ P viridisLite                         0.3.0    2018-02-01 [?]
+ P withr                               2.4.1    2021-01-26 [?]
+ P xfun                                0.21     2021-02-10 [?]
+ P XML                                 3.99-0.5 2020-07-23 [?]
+ P xml2                                1.3.2    2020-04-23 [?]
+ P xtable                              1.8-4    2019-04-21 [?]
+ P XVector                             0.30.0   2020-10-27 [?]
+ P yaml                                2.2.1    2020-02-01 [?]
+ P zlibbioc                            1.36.0   2020-10-27 [?]
+ source        
+ Bioconductor  
+ Bioconductor  
+ Bioconductor  
+ Bioconductor  
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ Bioconductor  
+ CRAN (R 4.0.0)
+ Bioconductor  
+ Bioconductor  
+ Bioconductor  
+ CRAN (R 4.0.0)
+ Bioconductor  
+ Bioconductor  
+ Bioconductor  
+ Bioconductor  
+ Bioconductor  
+ Bioconductor  
+ Bioconductor  
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ Bioconductor  
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ Bioconductor  
+ Bioconductor  
+ Bioconductor  
+ CRAN (R 4.0.2)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ Bioconductor  
+ CRAN (R 4.0.0)
+ Bioconductor  
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ Bioconductor  
+ Bioconductor  
+ CRAN (R 4.0.3)
+ Bioconductor  
+ Bioconductor  
+ Bioconductor  
+ Bioconductor  
+ Bioconductor  
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ Bioconductor  
+ CRAN (R 4.0.0)
+ Bioconductor  
+ Bioconductor  
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ Bioconductor  
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.2)
+ Bioconductor  
+ Bioconductor  
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ Bioconductor  
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ Bioconductor  
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.2)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.2)
+ Bioconductor  
+ Bioconductor  
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ Bioconductor  
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.2)
+ CRAN (R 4.0.3)
+ Bioconductor  
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ Bioconductor  
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ Bioconductor  
+ Bioconductor  
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ Bioconductor  
+ Bioconductor  
+ Bioconductor  
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ Bioconductor  
+ CRAN (R 4.0.0)
+ Bioconductor  
+ CRAN (R 4.0.2)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ Bioconductor  
+ CRAN (R 4.0.2)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ Bioconductor  
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ Bioconductor  
+ CRAN (R 4.0.0)
+ Bioconductor  
 
 [1] /stornext/Projects/score/Analyses/C057_Cooney/renv/library/R-4.0/x86_64-pc-linux-gnu
 [2] /tmp/RtmpoUthMU/renv-system-library

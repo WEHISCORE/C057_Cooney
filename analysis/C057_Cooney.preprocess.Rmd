@@ -125,12 +125,55 @@ library(ensembldb)
 ah <- AnnotationHub()
 EnsDb.Hsapiens.v94 <- query(ah, c("EnsDb", "Homo Sapiens", 94))[[1]]
 location <- mapIds(
-  x = EnsDb.Hsapiens.v94, 
+  x = EnsDb.Hsapiens.v94,
   # NOTE: Need to remove gene version number prior to lookup.
   keys = rowData(sce)$ID,
   keytype = "GENEID",
   column = "SEQNAME")
 rowData(sce)$CHR <- location
+```
+
+```{r}
+# Additional gene metadata from ENSEMBL and NCBI
+# NOTE: These columns were customised for this project.
+ensdb_columns <- c(
+  "GENEBIOTYPE", "GENENAME", "GENESEQSTART", "GENESEQEND", "SEQNAME", "SYMBOL")
+names(ensdb_columns) <- paste0("ENSEMBL.", ensdb_columns)
+stopifnot(all(ensdb_columns %in% columns(EnsDb.Hsapiens.v94)))
+ensdb_df <- DataFrame(
+  lapply(ensdb_columns, function(column) {
+    mapIds(
+      x = EnsDb.Hsapiens.v94,
+      keys = rowData(sce)$ID,
+      keytype = "GENEID",
+      column = column,
+      multiVals = "CharacterList")
+  }),
+  row.names = rowData(sce)$ID)
+# NOTE: Can't look up GENEID column with GENEID key, so have to add manually.
+ensdb_df$ENSEMBL.GENEID <- rowData(sce)$ID
+# NOTE: Homo.sapiens combines org.Hs.eg.db and
+#       TxDb.Hsapiens.UCSC.hg19.knownGene (as well as others) and therefore
+#       uses entrez gene and RefSeq based data.
+library(Homo.sapiens)
+# NOTE: These columns were customised for this project.
+ncbi_columns <- c(
+  # From TxDB: None required
+  # From OrgDB
+  "ALIAS", "ENTREZID", "GENENAME", "REFSEQ", "SYMBOL")
+names(ncbi_columns) <- paste0("NCBI.", ncbi_columns)
+stopifnot(all(ncbi_columns %in% columns(Homo.sapiens)))
+ncbi_df <- DataFrame(
+  lapply(ncbi_columns, function(column) {
+    mapIds(
+      x = Homo.sapiens,
+      keys = rowData(sce)$ID,
+      keytype = "ENSEMBL",
+      column = column,
+      multiVals = "CharacterList")
+  }),
+  row.names = rowData(sce)$ID)
+rowData(sce) <- cbind(rowData(sce), ensdb_df, ncbi_df)
 ```
 
 ```{r}
