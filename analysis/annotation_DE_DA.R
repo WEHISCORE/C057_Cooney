@@ -973,3 +973,4 @@ plotUMAP(tmp, colour_by = "subcluster", text_by = "subcluster") +
 # - [ ] Are samples paired?
 # - [ ] Ambient RNA
 # - [ ] Heatmaps and CSVs of DEGs
+# - [ ] SingleR on subclusters
