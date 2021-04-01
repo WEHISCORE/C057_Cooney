@@ -735,6 +735,7 @@ Rather, we want to focus on genes that are highly variable within each batch.
 This is naturally achieved by performing trend fitting and variance decomposition separately for each batch.
 
 ```{r}
+set.seed(2861)
 var_fit <- modelGeneVarByPoisson(sce, block = sce$batch)
 ```
 
