@@ -2267,7 +2267,6 @@ cluster Infected Uninfected
 <span class='va'>rescaled</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/batchelor/man/rescaleBatches.html'>rescaleBatches</a></span><span class='op'>(</span><span class='va'>sce</span>, batch <span class='op'>=</span> <span class='va'>sce</span><span class='op'>$</span><span class='va'>Treatment</span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'>scran</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></span><span class='op'>(</span><span class='fl'>666</span><span class='op'>)</span>
-<span class='co'># TODO: Check denolisePCA works</span>
 <span class='va'>rescaled</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scran/man/denoisePCA.html'>denoisePCA</a></span><span class='op'>(</span>
   <span class='va'>rescaled</span>,
   <span class='va'>var_fit</span>,
@@ -2793,13 +2792,42 @@ Cluster uninfected_3
     <span class='fu'><a href='https://rdrr.io/pkg/scran/man/denoisePCA.html'>denoisePCA</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>var_fit</span>, subset.row <span class='op'>=</span> <span class='va'>hvg</span><span class='op'>)</span>
   <span class='op'>}</span>,
   clusterFUN <span class='op'>=</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span> <span class='op'>{</span>
-    <span class='co'># TODO: Experiment with k</span>
     <span class='va'>snn_gr</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scran/man/buildSNNGraph.html'>buildSNNGraph</a></span><span class='op'>(</span><span class='va'>x</span>, use.dimred <span class='op'>=</span> <span class='st'>"PCA"</span>, k <span class='op'>=</span> <span class='fl'>50</span><span class='op'>)</span>
     <span class='fu'><a href='https://rdrr.io/r/base/factor.html'>factor</a></span><span class='op'>(</span><span class='fu'>igraph</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/cluster_louvain.html'>cluster_louvain</a></span><span class='op'>(</span><span class='va'>snn_gr</span><span class='op'>)</span><span class='op'>$</span><span class='va'>membership</span><span class='op'>)</span>
   <span class='op'>}</span><span class='op'>)</span>
 <span class='co'># It's also useful to have per-sample UMAP representations.</span>
 <span class='fu'><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></span><span class='op'>(</span><span class='fl'>17127</span><span class='op'>)</span>
 <span class='va'>list_of_sce</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>list_of_sce</span>, <span class='va'>runUMAP</span>, dimred <span class='op'>=</span> <span class='st'>"PCA"</span><span class='op'>)</span>
+<span class='co'># It's also useful to have SingleR DICE with fine labels for subclusters</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/LTLA/SingleR'>SingleR</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/LTLA/celldex'>celldex</a></span><span class='op'>)</span>
+<span class='va'>ref</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/SingleR/man/datasets.html'>DatabaseImmuneCellExpressionData</a></span><span class='op'>(</span><span class='op'>)</span>
+<span class='va'>labels_fine</span> <span class='op'>&lt;-</span> <span class='va'>ref</span><span class='op'>$</span><span class='va'>label.fine</span>
+<span class='co'># NOTE: This code doesn't necessarily generalise beyond the DICE main labels.</span>
+<span class='va'>label_fine_collapsed_colours</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/setNames.html'>setNames</a></span><span class='op'>(</span>
+  <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span>
+    <span class='fu'>Polychrome</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/Polychrome/man/palettes.html'>glasbey.colors</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/nlevels.html'>nlevels</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/factor.html'>factor</a></span><span class='op'>(</span><span class='va'>labels_fine</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='fl'>1</span><span class='op'>)</span><span class='op'>[</span><span class='op'>-</span><span class='fl'>1</span><span class='op'>]</span>,
+    <span class='st'>"orange"</span><span class='op'>)</span>,
+  <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/levels.html'>levels</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/factor.html'>factor</a></span><span class='op'>(</span><span class='va'>labels_fine</span><span class='op'>)</span><span class='op'>)</span>, <span class='st'>"other"</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>list_of_sce</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>list_of_sce</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span> <span class='op'>{</span>
+  <span class='va'>pred_subcluster_fine</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/SingleR/man/SingleR.html'>SingleR</a></span><span class='op'>(</span>
+    test <span class='op'>=</span> <span class='va'>x</span>,
+    ref <span class='op'>=</span> <span class='va'>ref</span>,
+    labels <span class='op'>=</span> <span class='va'>labels_fine</span>,
+    clusters <span class='op'>=</span> <span class='va'>x</span><span class='op'>$</span><span class='va'>subcluster</span><span class='op'>)</span>
+  <span class='va'>x</span><span class='op'>$</span><span class='va'>label_subcluster_fine</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/factor.html'>factor</a></span><span class='op'>(</span>
+    <span class='va'>pred_subcluster_fine</span><span class='op'>[</span><span class='va'>x</span><span class='op'>$</span><span class='va'>subcluster</span>, <span class='st'>"pruned.labels"</span><span class='op'>]</span><span class='op'>)</span>
+  <span class='va'>x</span>
+<span class='op'>}</span><span class='op'>)</span>
+
+<span class='va'>list_of_sce</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>list_of_sce</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span> <span class='op'>{</span>
+  <span class='va'>pred_cell_fine</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/SingleR/man/SingleR.html'>SingleR</a></span><span class='op'>(</span>
+    test <span class='op'>=</span> <span class='va'>x</span>,
+    ref <span class='op'>=</span> <span class='va'>ref</span>,
+    labels <span class='op'>=</span> <span class='va'>labels_fine</span><span class='op'>)</span>
+  <span class='va'>x</span><span class='op'>$</span><span class='va'>label_cell_fine</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/factor.html'>factor</a></span><span class='op'>(</span><span class='va'>pred_cell_fine</span><span class='op'>$</span><span class='va'>pruned.labels</span><span class='op'>)</span>
+  <span class='va'>x</span>
+<span class='op'>}</span><span class='op'>)</span>
 
 <span class='fu'><a href='https://wilkelab.org/cowplot/reference/plot_grid.html'>plot_grid</a></span><span class='op'>(</span>
   plotlist <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>list_of_sce</span><span class='op'>)</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span> <span class='op'>{</span>
@@ -2811,6 +2839,32 @@ Cluster uninfected_3
 </div>
 </details>
 <img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-17.png" width="624" />
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://wilkelab.org/cowplot/reference/plot_grid.html'>plot_grid</a></span><span class='op'>(</span>
+  plotlist <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>list_of_sce</span><span class='op'>)</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span> <span class='op'>{</span>
+    <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>list_of_sce</span><span class='op'>[[</span><span class='va'>n</span><span class='op'>]</span><span class='op'>]</span>
+    <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotUMAP</a></span><span class='op'>(</span><span class='va'>x</span>, colour_by <span class='op'>=</span> <span class='st'>"label_subcluster_fine"</span>, text_by <span class='op'>=</span> <span class='st'>"subcluster"</span><span class='op'>)</span> <span class='op'>+</span>
+      <span class='fu'>ggtitle</span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span>
+  <span class='op'>}</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-18.png" width="624" />
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://wilkelab.org/cowplot/reference/plot_grid.html'>plot_grid</a></span><span class='op'>(</span>
+  plotlist <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>list_of_sce</span><span class='op'>)</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span> <span class='op'>{</span>
+    <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>list_of_sce</span><span class='op'>[[</span><span class='va'>n</span><span class='op'>]</span><span class='op'>]</span>
+    <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotUMAP</a></span><span class='op'>(</span><span class='va'>x</span>, colour_by <span class='op'>=</span> <span class='st'>"label_cell_fine"</span>, text_by <span class='op'>=</span> <span class='st'>"subcluster"</span><span class='op'>)</span> <span class='op'>+</span>
+      <span class='fu'>ggtitle</span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span>
+  <span class='op'>}</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-19.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -2843,7 +2897,7 @@ Cluster uninfected_3
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-18.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-20.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -2867,7 +2921,7 @@ Cluster uninfected_3
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-19.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-21.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -2888,7 +2942,7 @@ Cluster uninfected_3
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-20.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-22.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -2967,7 +3021,7 @@ CCND2  0.316764  0.449001</code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-21.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-23.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -2975,7 +3029,7 @@ CCND2  0.316764  0.449001</code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-22.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-24.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -2983,7 +3037,7 @@ CCND2  0.316764  0.449001</code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-23.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-25.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -3031,7 +3085,7 @@ CCND2  0.316764  0.449001</code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-24.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-26.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -3059,7 +3113,7 @@ CCND2  0.316764  0.449001</code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-25.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-27.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -3107,7 +3161,7 @@ AC240274.1        NA        NA        NA          NA          NA</code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-26.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-28.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -3116,7 +3170,7 @@ AC240274.1        NA        NA        NA          NA          NA</code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-27.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-29.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -3232,7 +3286,7 @@ AC240274.1           NA</code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-28.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-30.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -3280,7 +3334,7 @@ AC240274.1        NA        NA        NA          NA          NA</code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-29.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-31.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -3289,7 +3343,7 @@ AC240274.1        NA        NA        NA          NA          NA</code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-30.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-32.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -3407,7 +3461,7 @@ AC240274.1           NA</code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-31.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-33.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -3455,7 +3509,7 @@ AC240274.1        NA        NA        NA          NA         NA</code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-32.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-34.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -3464,7 +3518,7 @@ AC240274.1        NA        NA        NA          NA         NA</code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-33.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-35.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -3581,7 +3635,7 @@ AC240274.1           NA</code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-34.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-36.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -3629,7 +3683,7 @@ AC240274.1        NA        NA        NA          NA          NA</code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-35.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-37.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -3638,7 +3692,7 @@ AC240274.1        NA        NA        NA          NA          NA</code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-36.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-38.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -3799,7 +3853,7 @@ logical       1       9 </code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-37.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-39.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -3827,7 +3881,7 @@ logical       1       9 </code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-38.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-40.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -3868,7 +3922,7 @@ Up                       5</code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-39.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-41.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -3929,7 +3983,7 @@ logical       5 </code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-40.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-42.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -3957,7 +4011,7 @@ logical       5 </code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-41.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-43.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -3993,7 +4047,7 @@ Not cycling.3  1.017014 17.57522  1.711972 2.055674e-01 0.2055674223</code></pre
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-42.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-44.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -4050,7 +4104,7 @@ logical       3 </code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-43.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-45.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -4078,7 +4132,7 @@ logical       3 </code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-44.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-46.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -4112,7 +4166,7 @@ Cycling.3  0.07503416 18.53074 0.3300273 0.63267221 0.6326722</code></pre>
 </code></pre>
 </div>
 </details>
-<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-45.png" width="624" />
+<img src="annotation_DE_DA_files/figure-html5/unnamed-chunk-1-47.png" width="624" />
 <details>
 <summary>Show code</summary>
 <div class="sourceCode">
@@ -4122,7 +4176,6 @@ Cycling.3  0.07503416 18.53074 0.3300273 0.63267221 0.6326722</code></pre>
 <span class='co'># - [ ] Are samples paired?</span>
 <span class='co'># - [ ] Ambient RNA</span>
 <span class='co'># - [ ] Heatmaps and CSVs of DEGs</span>
-<span class='co'># - [ ] SingleR on subclusters</span>
 </code></pre>
 </div>
 </details>

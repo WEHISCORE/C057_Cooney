@@ -125,7 +125,6 @@ library(batchelor)
 rescaled <- rescaleBatches(sce, batch = sce$Treatment)
 library(scran)
 set.seed(666)
-# TODO: Check denolisePCA works
 rescaled <- denoisePCA(
   rescaled,
   var_fit,
@@ -456,18 +455,61 @@ list_of_sce <- quickSubCluster(
     denoisePCA(x, var_fit, subset.row = hvg)
   },
   clusterFUN = function(x) {
-    # TODO: Experiment with k
     snn_gr <- buildSNNGraph(x, use.dimred = "PCA", k = 50)
     factor(igraph::cluster_louvain(snn_gr)$membership)
   })
 # It's also useful to have per-sample UMAP representations.
 set.seed(17127)
 list_of_sce <- lapply(list_of_sce, runUMAP, dimred = "PCA")
+# It's also useful to have SingleR DICE with fine labels for subclusters
+library(SingleR)
+library(celldex)
+ref <- DatabaseImmuneCellExpressionData()
+labels_fine <- ref$label.fine
+# NOTE: This code doesn't necessarily generalise beyond the DICE main labels.
+label_fine_collapsed_colours <- setNames(
+  c(
+    Polychrome::glasbey.colors(nlevels(factor(labels_fine)) + 1)[-1],
+    "orange"),
+  c(levels(factor(labels_fine)), "other"))
+list_of_sce <- lapply(list_of_sce, function(x) {
+  pred_subcluster_fine <- SingleR(
+    test = x,
+    ref = ref,
+    labels = labels_fine,
+    clusters = x$subcluster)
+  x$label_subcluster_fine <- factor(
+    pred_subcluster_fine[x$subcluster, "pruned.labels"])
+  x
+})
+
+list_of_sce <- lapply(list_of_sce, function(x) {
+  pred_cell_fine <- SingleR(
+    test = x,
+    ref = ref,
+    labels = labels_fine)
+  x$label_cell_fine <- factor(pred_cell_fine$pruned.labels)
+  x
+})
 
 plot_grid(
   plotlist = lapply(names(list_of_sce), function(n) {
     x <- list_of_sce[[n]]
     plotUMAP(x, colour_by = "subcluster") +
+      ggtitle(n)
+  }))
+
+plot_grid(
+  plotlist = lapply(names(list_of_sce), function(n) {
+    x <- list_of_sce[[n]]
+    plotUMAP(x, colour_by = "label_subcluster_fine", text_by = "subcluster") +
+      ggtitle(n)
+  }))
+
+plot_grid(
+  plotlist = lapply(names(list_of_sce), function(n) {
+    x <- list_of_sce[[n]]
+    plotUMAP(x, colour_by = "label_cell_fine", text_by = "subcluster") +
       ggtitle(n)
   }))
 
@@ -973,4 +1015,3 @@ plotUMAP(tmp, colour_by = "subcluster", text_by = "subcluster") +
 # - [ ] Are samples paired?
 # - [ ] Ambient RNA
 # - [ ] Heatmaps and CSVs of DEGs
-# - [ ] SingleR on subclusters
