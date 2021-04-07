@@ -388,7 +388,7 @@ p3 <- ggplot(as.data.frame(colData(x)[, c("subcluster", "Sample")])) +
   coord_flip() +
   ylab("Frequency") +
   scale_fill_manual(values = sample_colours) +
-  theme_cowplot()
+  theme_cowplot(font_size = 8)
 p4 <- ggplot(as.data.frame(colData(x)[, c("subcluster", "Treatment")])) +
   geom_bar(
     aes(x = subcluster, fill = Treatment),
@@ -396,12 +396,12 @@ p4 <- ggplot(as.data.frame(colData(x)[, c("subcluster", "Treatment")])) +
   coord_flip() +
   ylab("Frequency") +
   scale_fill_manual(values = treatment_colours) +
-  theme_cowplot()
+  theme_cowplot(font_size = 8)
 p5 <- ggplot(as.data.frame(colData(x)[, "subcluster", drop = FALSE])) +
   geom_bar(aes(x = subcluster, fill = subcluster)) +
   coord_flip() +
   ylab("Number of cells") +
-  theme_cowplot() +
+  theme_cowplot(font_size = 8) +
   guides(fill = FALSE)
 p3 + p4 + p5 + plot_layout(ncol = 3)
 ```
@@ -574,7 +574,7 @@ p3 <- ggplot(as.data.frame(colData(x)[, c("subcluster", "Sample")])) +
   coord_flip() +
   ylab("Frequency") +
   scale_fill_manual(values = sample_colours) +
-  theme_cowplot()
+  theme_cowplot(font_size = 8)
 p4 <- ggplot(as.data.frame(colData(x)[, c("subcluster", "Treatment")])) +
   geom_bar(
     aes(x = subcluster, fill = Treatment),
@@ -582,12 +582,12 @@ p4 <- ggplot(as.data.frame(colData(x)[, c("subcluster", "Treatment")])) +
   coord_flip() +
   ylab("Frequency") +
   scale_fill_manual(values = treatment_colours) +
-  theme_cowplot()
+  theme_cowplot(font_size = 8)
 p5 <- ggplot(as.data.frame(colData(x)[, "subcluster", drop = FALSE])) +
   geom_bar(aes(x = subcluster, fill = subcluster)) +
   coord_flip() +
   ylab("Number of cells") +
-  theme_cowplot() +
+  theme_cowplot(font_size = 8) +
   guides(fill = FALSE)
 p3 + p4 + p5 + plot_layout(ncol = 3)
 ```
@@ -614,23 +614,7 @@ topTags(res)
 
 # Concluding remarks
 
-```{r}
-saveRDS(
-  sce,
-  here("data", "SCEs", "C057_Cooney.annotated.SCE.rds"),
-  compress = "xz")
-saveRDS(
-  cycling_sce,
-  here("data", "SCEs", "C057_Cooney.cycling.annotated.SCE.rds"),
-  compress = "xz")
-saveRDS(
-  not_cycling_sce,
-  here("data", "SCEs", "C057_Cooney.not_cycling.annotated.SCE.rds"),
-  compress = "xz")
-```
-
-The processed *SingleCellExperiment* objects are available (see [`data/SCEs/C057_Cooney.cells_selected.SCE.rds`](../data/SCEs/C057_Cooney.cells_selected.SCE.rds), [`data/SCEs/C057_Cooney.cycling.annotated.SCE.rds`](../data/SCEs/C057_Cooney.cycling.annotated.SCE.rds), and [`data/SCEs/C057_Cooney.not_cycling.annotated.SCE.rds`](../data/SCEs/C057_Cooney.not_cycling.annotated.SCE.rds)).
-These will be used in downstream analyses, e.g., differential expression analysis between conditions within each cluster and differential abundance analyses between conditions for each cluster.
+The [`output/DEGs/`](../output/DEGs/) directory contains CSV files summarising the differential expression results and PDFs showing the pseudobulk expression data for each DEG.
 
 # Additional information {.appendix}
 
