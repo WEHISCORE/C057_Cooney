@@ -292,8 +292,7 @@ de_results <- pseudoBulkDGE(
   design = ~Treatment,
   coef = "TreatmentInfected",
   condition = summed_filt$Treatment,
-  include.intermediates = TRUE,
-  row.data = rowData(summed_filt))
+  include.intermediates = TRUE)
 ```
 
 ```{r}
@@ -479,8 +478,7 @@ de_results <- pseudoBulkDGE(
   design = ~Treatment,
   coef = "TreatmentInfected",
   condition = summed_filt$Treatment,
-  include.intermediates = TRUE,
-  row.data = rowData(summed_filt))
+  include.intermediates = TRUE)
 ```
 
 ```{r}
