@@ -22,6 +22,7 @@ library(BiocStyle)
 library(ggplot2)
 library(cowplot)
 library(BiocParallel)
+library(patchwork)
 
 source(here("code", "helper_functions.R"))
 
@@ -77,16 +78,17 @@ All samples are human memory CD4+ T cells from 'humanised mice'.
 Humanised mice are an immunodeficient strain and injected with human stem cells as pups which then differentiate into human hematopoietic cells as the mice mature.
 Mice were infected or not infected with HTLV, with each condition done in biological triplicate (1 mouse / replicate).
 
-```{r experiment-by-sample, fig.asp = 1/4, fig.cap = "Breakdown of the samples"}
+```{r experiment-by-sample, fig.asp = 1 / 2, fig.cap = "Breakdown of the samples"}
 ggplot(data.frame(Sample = sce$Sample)) + 
   geom_bar(aes(x = Sample, fill = Sample)) +
   coord_flip() +
   ylab("Number of droplets") +
   scale_fill_manual(values = sample_colours) +
-  theme_cowplot(font_size = 6)
+  theme_cowplot(font_size = 10) +
+  guides(fill = FALSE)
 ```
 
-```{r experiment-by-treatment, fig.asp = 1/4, fig.cap = "Breakdown of the two treatments."}
+```{r experiment-by-treatment, fig.asp = 1 / 3, fig.cap = "Breakdown of the two treatments."}
 plot_grid(
   ggplot(as.data.frame(colData(sce)[, c("Treatment", "Sample")])) + 
     geom_bar(
@@ -95,13 +97,13 @@ plot_grid(
     coord_flip() +
     ylab("Frequency") +
     scale_fill_manual(values = sample_colours) +
-    theme_cowplot(font_size = 6),
+    theme_cowplot(font_size = 10),
   ggplot(as.data.frame(colData(sce)[, c("Treatment", "Sample")])) + 
     geom_bar(aes(x = Treatment, fill = Treatment)) +
     coord_flip() +
     ylab("Number of droplets") +
     scale_fill_manual(values = treatment_colours) +
-    theme_cowplot(font_size = 6),
+    theme_cowplot(font_size = 10),
   align = "h",
   ncol = 2)
 ```
@@ -123,12 +125,55 @@ library(ensembldb)
 ah <- AnnotationHub()
 EnsDb.Hsapiens.v94 <- query(ah, c("EnsDb", "Homo Sapiens", 94))[[1]]
 location <- mapIds(
-  x = EnsDb.Hsapiens.v94, 
+  x = EnsDb.Hsapiens.v94,
   # NOTE: Need to remove gene version number prior to lookup.
   keys = rowData(sce)$ID,
   keytype = "GENEID",
   column = "SEQNAME")
 rowData(sce)$CHR <- location
+```
+
+```{r}
+# Additional gene metadata from ENSEMBL and NCBI
+# NOTE: These columns were customised for this project.
+ensdb_columns <- c(
+  "GENEBIOTYPE", "GENENAME", "GENESEQSTART", "GENESEQEND", "SEQNAME", "SYMBOL")
+names(ensdb_columns) <- paste0("ENSEMBL.", ensdb_columns)
+stopifnot(all(ensdb_columns %in% columns(EnsDb.Hsapiens.v94)))
+ensdb_df <- DataFrame(
+  lapply(ensdb_columns, function(column) {
+    mapIds(
+      x = EnsDb.Hsapiens.v94,
+      keys = rowData(sce)$ID,
+      keytype = "GENEID",
+      column = column,
+      multiVals = "CharacterList")
+  }),
+  row.names = rowData(sce)$ID)
+# NOTE: Can't look up GENEID column with GENEID key, so have to add manually.
+ensdb_df$ENSEMBL.GENEID <- rowData(sce)$ID
+# NOTE: Homo.sapiens combines org.Hs.eg.db and
+#       TxDb.Hsapiens.UCSC.hg19.knownGene (as well as others) and therefore
+#       uses entrez gene and RefSeq based data.
+library(Homo.sapiens)
+# NOTE: These columns were customised for this project.
+ncbi_columns <- c(
+  # From TxDB: None required
+  # From OrgDB
+  "ALIAS", "ENTREZID", "GENENAME", "REFSEQ", "SYMBOL")
+names(ncbi_columns) <- paste0("NCBI.", ncbi_columns)
+stopifnot(all(ncbi_columns %in% columns(Homo.sapiens)))
+ncbi_df <- DataFrame(
+  lapply(ncbi_columns, function(column) {
+    mapIds(
+      x = Homo.sapiens,
+      keys = rowData(sce)$ID,
+      keytype = "ENSEMBL",
+      column = column,
+      multiVals = "CharacterList")
+  }),
+  row.names = rowData(sce)$ID)
+rowData(sce) <- cbind(rowData(sce), ensdb_df, ncbi_df)
 ```
 
 ```{r}
@@ -153,14 +198,19 @@ We use several quality control (QC) metrics to measure the quality of the cells:
 
 - `sum`: This measures the library size of the cells, which is the total sum of counts across both genes and spike-in transcripts. We want cells to have high library sizes as this means more RNA has been successfully captured during library preparation. 
 - `detected`: This is the number of expressed features^[The number of expressed features refers to the number of genes which have non-zero counts (i.e. they have been identified in the cell at least once)] in each cell. Cells with few expressed features are likely to be of poor quality, as the diverse transcript population has not been successful captured. 
-- `subsets_Mt_percent`: This measures the proportion of reads which are mapped to mitochondrial RNA. If there is a higher than expected proportion of mitochondrial RNA this is often symptomatic of a cell which is under stress and is therefore of low quality and will not be used for the analysis. 
+- `subsets_Mito_percent`: This measures the proportion of reads which are mapped to mitochondrial RNA. If there is a higher than expected proportion of mitochondrial RNA this is often symptomatic of a cell which is under stress and is therefore of low quality and will not be used for the analysis. 
+- `subsets_Ribo_percent`: This measures the proportion of reads which are mapped to ribosomal protein genes. If there is a higher than expected proportion of ribosomal protein gene expression this is often symptomatic of a cell which is of compromised quality and we may want to exclude it from the analysis. 
 
-In summary, we aim to identify cells with low library sizes, few expressed genes, and very high percentages of spike-in transcripts (when available) or mitochondrial DNA.
+In summary, we aim to identify cells with low library sizes, few expressed genes, and very high percentages of mitochondrial and ribosomal protein gene expression.
 
 ```{r, results = "hide"}
 is_mito <- rownames(sce) %in% mito_set
 summary(is_mito)
-sce <- addPerCellQC(sce, subsets = list(Mito = which(is_mito)))
+is_ribo <- rownames(sce) %in% ribo_set
+summary(is_ribo)
+sce <- addPerCellQC(
+  sce, 
+  subsets = list(Mito = which(is_mito), Ribo = which(is_ribo)))
 ```
 
 ## Visualizing the QC metrics
@@ -169,55 +219,61 @@ Figure \@ref(fig:qcplot-by-sample) shows that the vast majority of samples are g
 As we would expect, the `doublet` droplets have larger library sizes and more genes detected.
 The `ambiguous` droplets have notably smaller library sizes and fewer genes detected.
 
-```{r qcplot-by-sample, fig.cap = "Distributions of various QC metrics for all cells in the dataset. This includes the library sizes, number of genes detected, and percentage of reads mapped to mitochondrial genes.", fig.asp = 0.5}
-plot_grid(
-  ggplot(
-    data = as.data.frame(colData(sce)[, c("Sample", "Treatment", "sum")]),
-    aes(x = Sample, y = sum, colour = Treatment, fill = Treatment)) +
-    geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
-    ggbeeswarm::geom_quasirandom(size = 0.01) +
-    theme_cowplot(font_size = 4) +
-    scale_colour_manual(values = treatment_colours) + 
-    scale_fill_manual(values = treatment_colours) +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    scale_y_log10(limits = c(1, NA)) +
-    annotation_logticks(
-      sides = "l",
-      short = unit(0.03, "cm"),
-      mid = unit(0.06, "cm"),
-      long = unit(0.09, "cm")),
-  ggplot(
-    data = as.data.frame(
-      colData(sce)[, c("Sample", "Treatment", "subsets_Mito_percent")]),
-    aes(
-      x = Sample,
-      y = subsets_Mito_percent,
-      colour = Treatment,
-      fill = Treatment)) +
-    geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
-    ggbeeswarm::geom_quasirandom(size = 0.01) +
-    theme_cowplot(font_size = 4) +
-    scale_colour_manual(values = treatment_colours) + 
-    scale_fill_manual(values = treatment_colours) +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    ylim(0, 100),
-  ggplot(
-    data = as.data.frame(colData(sce)[, c("Sample", "Treatment", "detected")]),
-    aes(x = Sample, y = detected, colour = Treatment, fill = Treatment)) +
-    geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
-    ggbeeswarm::geom_quasirandom(size = 0.01) +
-    theme_cowplot(font_size = 4) +
-    scale_colour_manual(values = treatment_colours) + 
-    scale_fill_manual(values = treatment_colours) +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    scale_y_log10(limits = c(1, NA)) +
-    annotation_logticks(
-      sides = "l",
-      short = unit(0.03, "cm"),
-      mid = unit(0.06, "cm"),
-      long = unit(0.09, "cm")),
-  ncol = 2,
-  align = "v")
+```{r qcplot-by-sample, fig.cap = "Distributions of various QC metrics for all cells in the dataset. This includes the library sizes, number of genes detected, and percentage of reads mapped to mitochondrial genes.", fig.asp = 1}
+p1 <- ggplot(
+  data = as.data.frame(colData(sce)[, c("Sample", "Treatment", "sum")]),
+  aes(x = Sample, y = sum, colour = Treatment, fill = Treatment)) +
+  geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
+  ggbeeswarm::geom_quasirandom(size = 0.01) +
+  theme_cowplot(font_size = 8) +
+  scale_colour_manual(values = treatment_colours) + 
+  scale_fill_manual(values = treatment_colours) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_y_log10() +
+  annotation_logticks(
+    sides = "l",
+    short = unit(0.03, "cm"),
+    mid = unit(0.06, "cm"),
+    long = unit(0.09, "cm"))
+p2 <- ggplot(
+  data = as.data.frame(colData(sce)[, c("Sample", "Treatment", "detected")]),
+  aes(x = Sample, y = detected, colour = Treatment, fill = Treatment)) +
+  geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
+  ggbeeswarm::geom_quasirandom(size = 0.01) +
+  theme_cowplot(font_size = 8) +
+  scale_colour_manual(values = treatment_colours) + 
+  scale_fill_manual(values = treatment_colours) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p3 <- ggplot(
+  data = as.data.frame(
+    colData(sce)[, c("Sample", "Treatment", "subsets_Mito_percent")]),
+  aes(
+    x = Sample,
+    y = subsets_Mito_percent,
+    colour = Treatment,
+    fill = Treatment)) +
+  geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
+  ggbeeswarm::geom_quasirandom(size = 0.01) +
+  theme_cowplot(font_size = 8) +
+  scale_colour_manual(values = treatment_colours) + 
+  scale_fill_manual(values = treatment_colours) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p4 <- ggplot(
+  data = as.data.frame(
+    colData(sce)[, c("Sample", "Treatment", "subsets_Ribo_percent")]),
+  aes(
+    x = Sample,
+    y = subsets_Ribo_percent,
+    colour = Treatment,
+    fill = Treatment)) +
+  geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
+  ggbeeswarm::geom_quasirandom(size = 0.01) +
+  theme_cowplot(font_size = 8) +
+  scale_colour_manual(values = treatment_colours) + 
+  scale_fill_manual(values = treatment_colours) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+p1 + p2 + p3 + p4 + plot_layout(guides = "collect")
 ```
 
 It is also valuable to examine how the other QC metrics behave with respect to each other (Figure \@ref(fig:qcbiplot)). 
@@ -252,6 +308,10 @@ See [`docs/C057_Cooney.demultiplex.html`](../docs/C057_Cooney.demultiplex.html) 
 Filtering on the mitochondrial proportion provides the most additional benefit in this situation and so we seek to identify droplets with unusually large mitochondrial proportions (i.e. outliers).
 Outlier thresholds are defined based on the median absolute deviation (MADs) from the median value of the metric across all cells. 
 Here, we opt to use sample-specific thresholds to account for sample-specific differences^[It is important to note that we only using droplets assigned to a sample (i.e. we ignore `Unknown` samples) for the calculation of these thresholds.].
+
+<aside>
+We opt not to filter on ribosomal protein gene proportion at this stage as it's not as clear how to interpret this metric.
+</aside>
 
 ```{r}
 sce$batch <- sce$Sample
@@ -396,49 +456,47 @@ ggplot(
 
 Finally, Figure \@ref(fig:qcplot-highlighting-outliers) compares the QC metrics of the discarded and retained droplets.
 
-```{r qcplot-highlighting-outliers, fig.cap = "Distribution of QC metrics for each plate in the dataset. Each point represents a cell and is colored according to whether it was discarded during the QC process. Note that a cell will only be kept if it passes the relevant threshold for all four QC metrics.", fig.asp = 0.7}
-plot_grid(
-  ggplot(
-    data = as.data.frame(
-      colData(sce_pre_QC_outlier_removal)[, c("Sample", "sum", "keep")]),
-    aes(x = Sample, y = sum)) +
-    geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
-    ggbeeswarm::geom_quasirandom(size = 0.01, aes(colour = keep)) +
-    theme_cowplot(font_size = 4) +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    scale_y_log10(limits = c(1, NA)) +
-    annotation_logticks(
-      sides = "l",
-      short = unit(0.03, "cm"),
-      mid = unit(0.06, "cm"),
-      long = unit(0.09, "cm")),
-  ggplot(
-    data = as.data.frame(
-      colData(
-        sce_pre_QC_outlier_removal)[, c(
-          "Sample", "subsets_Mito_percent", "keep")]),
-    aes(x = Sample, y = subsets_Mito_percent)) +
-    geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
-    ggbeeswarm::geom_quasirandom(size = 0.01, aes(colour = keep)) +
-    theme_cowplot(font_size = 4) +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    ylim(0, 100),
-  ggplot(
-    data = as.data.frame(
-      colData(sce_pre_QC_outlier_removal)[, c("Sample", "detected", "keep")]),
-    aes(x = Sample, y = detected)) +
-    geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
-    ggbeeswarm::geom_quasirandom(size = 0.01, aes(colour = keep)) +
-    theme_cowplot(font_size = 4) +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    scale_y_log10(limits = c(1, NA)) +
-    annotation_logticks(
-      sides = "l",
-      short = unit(0.03, "cm"),
-      mid = unit(0.06, "cm"),
-      long = unit(0.09, "cm")),
-  ncol = 2,
-  align = "v")
+```{r qcplot-highlighting-outliers, fig.cap = "Distribution of QC metrics for each plate in the dataset. Each point represents a cell and is colored according to whether it was discarded during the QC process. Note that a cell will only be kept if it passes the relevant threshold for all four QC metrics.", fig.asp = 1}
+p1 <- ggplot(
+  data = as.data.frame(
+    colData(sce_pre_QC_outlier_removal)[, c("Sample", "sum", "keep")]),
+  aes(x = Sample, y = sum)) +
+  geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
+  ggbeeswarm::geom_quasirandom(size = 0.01, aes(colour = keep)) +
+  theme_cowplot(font_size = 8) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_y_log10() +
+  annotation_logticks(
+    sides = "l",
+    short = unit(0.03, "cm"),
+    mid = unit(0.06, "cm"),
+    long = unit(0.09, "cm"))
+p2 <- ggplot(
+  data = as.data.frame(
+    colData(sce_pre_QC_outlier_removal)[, c("Sample", "detected", "keep")]),
+  aes(x = Sample, y = detected)) +
+  geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
+  ggbeeswarm::geom_quasirandom(size = 0.01, aes(colour = keep)) +
+  theme_cowplot(font_size = 8) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p3 <- ggplot(
+  data = as.data.frame(
+    colData(sce_pre_QC_outlier_removal)[, c("Sample", "subsets_Mito_percent", "keep")]),
+  aes(x = Sample, y = subsets_Mito_percent)) +
+  geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
+  ggbeeswarm::geom_quasirandom(size = 0.01, aes(colour = keep)) +
+  theme_cowplot(font_size = 8) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p4 <- ggplot(
+  data = as.data.frame(
+    colData(sce_pre_QC_outlier_removal)[, c("Sample", "subsets_Ribo_percent", "keep")]),
+  aes(x = Sample, y = subsets_Ribo_percent)) +
+  geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
+  ggbeeswarm::geom_quasirandom(size = 0.01, aes(colour = keep)) +
+  theme_cowplot(font_size = 8) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+p1 + p2 + p3 + p4 + plot_layout(guides = "collect")
 ```
 
 ## Summary
@@ -454,55 +512,61 @@ See [`docs/C057_Cooney.annotate.html`](../docs/C057_Cooney.annotate.html) for re
 
 To conclude, Figure \@ref(fig:qcplot-post-outlier-removal) shows that following QC that most samples have similar QC metrics, as is to be expected, and Figure \@ref(fig:experiment-by-sample-postqc) summarises the experimental design following QC.
 
-```{r qcplot-post-outlier-removal, fig.cap = "Distributions of various QC metrics for all cells in the dataset passing QC. This includes the library sizes and proportion of reads mapped to mitochondrial genes.", fig.asp = 0.7}
-plot_grid(
-  ggplot(
-    data = as.data.frame(colData(sce)[, c("Sample", "Treatment", "sum")]),
-    aes(x = Sample, y = sum, colour = Treatment, fill = Treatment)) +
-    geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
-    ggbeeswarm::geom_quasirandom(size = 0.01) +
-    theme_cowplot(font_size = 4) +
-    scale_colour_manual(values = treatment_colours) + 
-    scale_fill_manual(values = treatment_colours) +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    scale_y_log10(limits = c(1, NA)) +
-    annotation_logticks(
-      sides = "l",
-      short = unit(0.03, "cm"),
-      mid = unit(0.06, "cm"),
-      long = unit(0.09, "cm")),
-  ggplot(
-    data = as.data.frame(
-      colData(sce)[, c("Sample", "Treatment", "subsets_Mito_percent")]),
-    aes(
-      x = Sample,
-      y = subsets_Mito_percent,
-      colour = Treatment,
-      fill = Treatment)) +
-    geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
-    ggbeeswarm::geom_quasirandom(size = 0.01) +
-    theme_cowplot(font_size = 4) +
-    scale_colour_manual(values = treatment_colours) + 
-    scale_fill_manual(values = treatment_colours) +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    ylim(0, 100),
-  ggplot(
-    data = as.data.frame(colData(sce)[, c("Sample", "Treatment", "detected")]),
-    aes(x = Sample, y = detected, colour = Treatment, fill = Treatment)) +
-    geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
-    ggbeeswarm::geom_quasirandom(size = 0.01) +
-    theme_cowplot(font_size = 4) +
-    scale_colour_manual(values = treatment_colours) + 
-    scale_fill_manual(values = treatment_colours) +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    scale_y_log10(limits = c(1, NA)) +
-    annotation_logticks(
-      sides = "l",
-      short = unit(0.03, "cm"),
-      mid = unit(0.06, "cm"),
-      long = unit(0.09, "cm")),
-  ncol = 2,
-  align = "v")
+```{r qcplot-post-outlier-removal, fig.cap = "Distributions of various QC metrics for all cells in the dataset passing QC. This includes the library sizes and proportion of reads mapped to mitochondrial genes.", fig.asp = 1}
+p1 <- ggplot(
+  data = as.data.frame(colData(sce)[, c("Sample", "Treatment", "sum")]),
+  aes(x = Sample, y = sum, colour = Treatment, fill = Treatment)) +
+  geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
+  ggbeeswarm::geom_quasirandom(size = 0.01) +
+  theme_cowplot(font_size = 8) +
+  scale_colour_manual(values = treatment_colours) + 
+  scale_fill_manual(values = treatment_colours) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_y_log10() +
+  annotation_logticks(
+    sides = "l",
+    short = unit(0.03, "cm"),
+    mid = unit(0.06, "cm"),
+    long = unit(0.09, "cm"))
+p2 <- ggplot(
+  data = as.data.frame(colData(sce)[, c("Sample", "Treatment", "detected")]),
+  aes(x = Sample, y = detected, colour = Treatment, fill = Treatment)) +
+  geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
+  ggbeeswarm::geom_quasirandom(size = 0.01) +
+  theme_cowplot(font_size = 8) +
+  scale_colour_manual(values = treatment_colours) + 
+  scale_fill_manual(values = treatment_colours) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p3 <- ggplot(
+  data = as.data.frame(
+    colData(sce)[, c("Sample", "Treatment", "subsets_Mito_percent")]),
+  aes(
+    x = Sample,
+    y = subsets_Mito_percent,
+    colour = Treatment,
+    fill = Treatment)) +
+  geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
+  ggbeeswarm::geom_quasirandom(size = 0.01) +
+  theme_cowplot(font_size = 8) +
+  scale_colour_manual(values = treatment_colours) + 
+  scale_fill_manual(values = treatment_colours) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p4 <- ggplot(
+  data = as.data.frame(
+    colData(sce)[, c("Sample", "Treatment", "subsets_Ribo_percent")]),
+  aes(
+    x = Sample,
+    y = subsets_Ribo_percent,
+    colour = Treatment,
+    fill = Treatment)) +
+  geom_violin(scale = "width", width = 0.8, alpha = 0.2) +
+  ggbeeswarm::geom_quasirandom(size = 0.01) +
+  theme_cowplot(font_size = 8) +
+  scale_colour_manual(values = treatment_colours) + 
+  scale_fill_manual(values = treatment_colours) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+p1 + p2 + p3 + p4 + plot_layout(guides = "collect")
 ```
 
 ```{r experiment-by-sample-postqc, fig.asp = 1 / 3, fig.cap = "Breakdown of the samples following QC."}
@@ -514,13 +578,13 @@ plot_grid(
     coord_flip() +
     ylab("Frequency") +
     scale_fill_manual(values = sample_colours) +
-    theme_cowplot(font_size = 6),
+    theme_cowplot(font_size = 10),
   ggplot(as.data.frame(colData(sce)[, c("Treatment", "Sample")])) + 
     geom_bar(aes(x = Treatment, fill = Treatment)) +
     coord_flip() +
     ylab("Number of droplets") +
     scale_fill_manual(values = treatment_colours) +
-    theme_cowplot(font_size = 6),
+    theme_cowplot(font_size = 10),
   align = "h",
   ncol = 2)
 ```
@@ -671,6 +735,7 @@ Rather, we want to focus on genes that are highly variable within each batch.
 This is naturally achieved by performing trend fitting and variance decomposition separately for each batch.
 
 ```{r}
+set.seed(2861)
 var_fit <- modelGeneVarByPoisson(sce, block = sce$batch)
 ```
 
@@ -763,11 +828,7 @@ This is done using the the variance modelling results from [Quantifying per-gene
 
 ```{r}
 set.seed(67726)
-sce <- denoisePCA(
-  sce, 
-  var_fit, 
-  subset.row = hvg,
-  BSPARAM = BiocSingular::IrlbaParam(deferred = TRUE))
+sce <- denoisePCA(sce, var_fit, subset.row = hvg)
 ```
 
 This retains `r ncol(reducedDim(sce, "PCA"))` dimensions, which represents the lower bound on the number of PCs required to retain all biological variation.

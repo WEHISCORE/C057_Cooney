@@ -45,15 +45,26 @@ sce$TRB <- split(DataFrame(trb), factor(trb$barcode, sce$Barcode))
 
 # Identify empty droplets ------------------------------------------------------
 
+# Using DropletUtils
 set.seed(666)
 empties <- emptyDrops(counts(sce), lower = 100)
-
 # Check if more permutations are needed; see
 # https://osca.bioconductor.org/quality-control.html#testing-for-empty-droplets
 more_permutations_needed <- table(
   Sig = empties$FDR <= 0.001,
   Limited = empties$Limited)[1, 2] > 0
 stopifnot(!more_permutations_needed)
+
+# Barcodes of non-empty droplets according to CellRanger
+sce_cr <- read10xCounts(
+  samples = here(
+    "extdata",
+    "jamesC_10X_040919",
+    "CellRanger_GEX_HTO",
+    "HTLV_GEX_HTO",
+    "outs",
+    "filtered_feature_bc_matrix"))
+sce$CellRangerNonEmptyDrop <- sce$Barcode %in% sce_cr$Barcode
 
 # Save outputs -----------------------------------------------------------------
 
