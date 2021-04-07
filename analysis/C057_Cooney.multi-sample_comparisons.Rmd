@@ -13,960 +13,626 @@ editor_options:
 bibliography: ref.bib
 ---
 
-```{r setup}
-library(here)
-library(janitor)
-library(BiocStyle)
-library(BiocParallel)
-library(pheatmap)
-
-source(here("code", "helper_functions.R"))
-
-# NOTE: Using multiple cores siezes up my laptop. Can use more on unix box.
-options("mc.cores" = ifelse(Sys.info()[["nodename"]] == "PC1331", 1L, 9L))
-register(MulticoreParam(workers = getOption("mc.cores")))
-knitr::opts_chunk$set(
-  fig.path = "C057_Cooney.multi-sample_comparisons_files/")
-```
-
-**TODO**: This needs a complete re-write to modernise it to current best practices and in light of changes to the preceding steps in the analysis workflow.
-
-```{r}
-knitr::knit_exit()
-```
-
-# Introduction
-
-Differential analyses of multi-condition scRNA-seq experiments can be broadly split into two categories: differential expression (DE) and differential abundance (DA) analyses.
-The former tests for changes in expression between conditions for cells of the same type that are present in both conditions, while the latter tests for changes in the composition of cell types (or states, etc.) between conditions.
-
-The aim of this study is to identify differentially expressed genes between infected and uninfected samples.
+# Setup
 
 ```{r}
 library(SingleCellExperiment)
-library(dplyr)
-library(scater)
+library(here)
+library(cowplot)
+library(patchwork)
 library(edgeR)
+library(scater)
+library(scran)
 
 sce <- readRDS(here("data", "SCEs", "C057_Cooney.annotated.SCE.rds"))
-```
-
-```{r}
-hto_to_sample_df <- as.data.frame(colData(sce)) %>%
-  dplyr::select(hto_cluster, HTO, Sample, Treatment, Replicate) %>%
-  dplyr::distinct()
+cycling_sce <- readRDS(
+  here("data", "SCEs", "C057_Cooney.cycling.annotated.SCE.rds"))
+not_cycling_sce <- readRDS(
+  here("data", "SCEs", "C057_Cooney.not_cycling.annotated.SCE.rds"))
 
 # Some useful colours
-hto_cluster_colours <- setNames(
-  colorblindr::palette_OkabeIto,
-  levels(sce$hto_cluster))
-hto_cluster_colours <- hto_cluster_colours[!is.na(names(hto_cluster_colours))]
-hto_colours <- hto_cluster_colours
-names(hto_colours) <- dplyr::inner_join(
-  data.frame(hto_cluster = names(hto_cluster_colours)),
-  hto_to_sample_df) %>%
-  dplyr::pull(HTO)
-sample_colours <- hto_cluster_colours
-names(sample_colours) <- dplyr::inner_join(
-  data.frame(hto_cluster = names(sample_colours)),
-  hto_to_sample_df) %>%
-  dplyr::pull(Sample)
-treatment_colours <- c(
-  "Infected" = "#e41a1c",
-  "Uninfected" = "#377eb8",
-  "Unknown" = "grey70")
-# NOTE: No replicate_colours because we won't ever colour by this.
+sample_colours <- setNames(
+  unique(sce$sample_colours),
+  unique(names(sce$sample_colours)))
+treatment_colours <- setNames(
+  unique(sce$treatment_colours),
+  unique(names(sce$treatment_colours)))
 cluster_colours <- setNames(
-  Polychrome::green.armytage.colors(nlevels(sce$cluster)),
-  levels(sce$cluster))
-```
+  unique(sce$cluster_colours),
+  unique(names(sce$cluster_colours)))
 
-We discard the 'Unknown' samples as these cannot be used for differential analyses.
-
-```{r}
-sce <- sce[, sce$Sample != "Unknown"]
-# NOTE: Update the factor columns.
-colData(sce) <- DataFrame(
-  lapply(colData(sce), function(x) {
-    if (is.factor(x)) {
-      factor(x)
-    } else {
-      x
-    }
-  }),
-  row.names = colnames(sce))
+# Re-level Treatment
 sce$Treatment <- relevel(sce$Treatment, "Uninfected")
+cycling_sce$Treatment <- relevel(cycling_sce$Treatment, "Uninfected")
+not_cycling_sce$Treatment <- relevel(not_cycling_sce$Treatment, "Uninfected")
+
+source(here("code", "helper_functions.R"))
 ```
 
-# Differential expression vs. differential abundance
+# Analysis based on `cycling_subset`
 
-While useful, the distinction between DA and DE analyses is inherently artificial for scRNA-seq data.
-This is because the labels used in the former are defined based on the genes to be tested in the latter.
-To illustrate, consider a scRNA-seq experiment involving two biological conditions with several shared cell types. We focus on a cell type $X$ that is present in both conditions but contains some DEGs between conditions. This leads to two possible outcomes:
+## DE
 
-1. The DE between conditions causes $X$ to form two separate clusters (say, $X_1$ and $X_2$) in expression space. This manifests as DA where $X_1$ is enriched in one condition and $X_2$ is enriched in the other condition.
-2. The DE between conditions is not sufficient to split $X$ into two separate clusters, e.g., because the data integration procedure identifies them as corresponding cell types and merges them together. This means that the differences between conditions manifest as DE within the single cluster corresponding to $X$.
+Please see [`output/DEGs/cycling_subset/`](../output/DEGs/cycling_subset/) for heatmaps and spreadsheets of these DEG lists, including results of GO and KEGG analyses using the `goana()` and `kegga()` functions from the `r BiocStyle::Biocpkg("limma")` package.
+This directory also contains interactive `r BiocStyle::Biocpkg("Glimma")` plots of the differential expression results.
+The `r BiocStyle::Biocpkg("Glimma")` plots show the pseudobulk data for that label.
 
-We have described the example above in terms of clustering, but the same arguments apply for any labelling strategy based on the expression profiles, e.g., automated cell type assignment.
-Moreover, the choice between outcomes 1 and 2 is made implicitly by the combined effect of the data merging, clustering and label assignment procedures.
-For example, differences between conditions are more likely to manifest as DE for coarser clusters and as DA for finer clusters, but this is difficult to predict reliably.
-
-The moral of the story is that DA and DE analyses are simply two different perspectives on the same phenomena.
-For any comprehensive characterization of differences between populations, it is usually necessary to consider both analyses.
-Indeed, they complement each other almost by definition, e.g., clustering parameters that reduce DE will increase DA and vice versa.
-
-# Differential expression between conditions
+<aside>
+Note that the DEG list spreadsheets contain all labels and genes whereas the Glimma plots only contain labels and genes actually tested for DE. The column names in the Glimma tables may be abbreviated. There are two types of heatmaps: (1) showing the 'pseudobulk' expression and (2) showing the average single-cell expression.
+</aside>
 
 ```{r}
-fdr <- 0.05
+# NOTE: Have to drop the complicated TRA and TRB DFrameList objects.
+x <- sce
+x$TRA <- NULL
+x$TRB <- NULL
+summed <- aggregateAcrossCells(
+  x,
+  id = colData(x)[, c("cycling_subset", "Sample")])
+sizeFactors(summed) <- NULL
+summed <- logNormCounts(summed)
+colLabels(summed) <- summed$cycling_subset
+colnames(summed) <- paste0(summed$cycling_subset, ".", summed$Sample)
 ```
 
-We perform the DE analysis separately for all cells with the same 'label'.
-The actual DE testing is performed on "pseudobulk" expression profiles [@tung2016batch], generated by summing counts together for all cells with the same combination of label and sample.
-
-This leverages the resolution offered by single-cell technologies to define the labels, and combines it with the statistical rigor of existing methods for DE analyses involving a small number of samples.
-
-Here we use the clusters as the cell labels, i.e. all cells from the same mouse assigned to the same cluster will have the same label.
-We also perform DE testing without regard for the cluster labels.
-
-The [`output/DEGs/`](../output/DEGs/) directory contains CSV files summarising the pseudobulk results and PDFs showing the single-cell expression data for each DEG.
-
-For the differential expression results reported I have used an FDR cutoff of `r fdr`.
-
-## Cluster labels
-
-```{r}
-sce$label <- factor(
-  paste0("cluster_", sce$cluster),
-  levels = paste0("cluster_", levels(sce$cluster)))
-```
-
-Certain cluster/sample combinations we have few cells, and so these comparisons may be underpowered.
-There are also clusters that are largely treatment-specific, as shown in Figure \@ref(fig:tsne) and the table below.
-
-```{r tsne, fig.cap = "t-SNE visualization colored by subpopulation ID (left) and group ID (right).", fig.asp = 0.3}
-cowplot::plot_grid(
-  plotTSNE(sce, colour_by = "cluster", point_alpha = 0) + 
-    geom_point(aes(colour = colour_by), size = 0.1, alpha = 0.5) +
-    scale_colour_manual(values = cluster_colours, name = "cluster"),
-  plotTSNE(sce, colour_by = "Treatment", point_alpha = 0) + 
-    geom_point(aes(colour = colour_by), size = 0.1, alpha = 0.5) +
-    scale_colour_manual(values = treatment_colours, name = "Treatment"),
-  ncol = 2,
-  align = "v")
-```
-
-```{r}
-as.data.frame(colData(sce)) %>%
-  group_by(label, Sample) %>%
-  dplyr::count() %>%
-  tidyr::spread(label, n, fill = 0L) %>%
-  knitr::kable(caption = "Number of cells per combination of cluster label and sample.")
-```
-
-```{r}
-list_of_summed <- lapply(levels(sce$label), function(label) {
-  sce <- sce[, sce$label == label]
-  label_sample <- paste0(label, ".", sce$Sample)
-  sumCountsAcrossCells(sce, label_sample)
-})
-names(list_of_summed) <- levels(sce$label)
-summed <- SingleCellExperiment(
-  assays = list(counts = do.call(cbind, list_of_summed)))
-colData(summed) <- DataFrame(
-  inner_join(
-    data.frame(
-      label = sapply(strsplit(colnames(summed), "\\."), "[[", 1),
-      Sample = sapply(strsplit(colnames(summed), "\\."), "[[", 2)),
-    as.data.frame(colData(sce)) %>%
-      select(Sample) %>%
-      distinct()) %>%
-    dplyr::mutate(Treatment = sub("\\_[0-9]", "", Sample)),
-  row.names = colnames(summed))
-summed$Treatment <- factor(
-  stringr::str_to_sentence(summed$Treatment),
-  levels = levels(sce$Treatment))
-summed$cluster <- factor(sub("cluster\\_", "", summed$label), levels(sce$cluster))
-summed$label <- factor(summed$label, levels = levels(sce$label))
-logcounts(summed) <- cpm(
-  counts(summed),
-  log = TRUE,
-  lib.size = sizeFactors(summed))
-```
-
-Following aggregation of counts, we can visualise the pseudobulk samples using an multidimensional scaling (MDS) plot (Figure \@ref(fig:mds-with-clusters)).
-This can be used to check that the pseudobulk samples still largely cluster by our cluster labels and see if there is some treatment-specific differences within the clusters.
-
-```{r mds-with-clusters, fig.cap = "Pseudobulk-level multidimensional scaling (MDS) plot. Each point represents one cluster-sample instance; points are colored by cluster and shaped by group ID."}
-scater::plotMDS(
+```{r, fig.asp = 1 / 2}
+summed <- runMDS(summed)
+p1 <- plotMDS(
   summed,
-  colour_by = "cluster",
-  shape_by = "Treatment",
-  point_alpha = 0) + 
-  geom_point(aes(colour = colour_by, shape = shape_by), alpha = 1, size = 3) +
-  scale_colour_manual(values = cluster_colours, name = "cluster")
+  colour_by = "Treatment",
+  shape_by = "cycling_subset",
+  point_size = 3,
+  point_alpha = 2) +
+  scale_colour_manual(values = treatment_colours, name = "Treatment")
+p2 <- plotMDS(
+  summed,
+  colour_by = "Sample",
+  shape_by = "cycling_subset",
+  point_size = 3,
+  point_alpha = 2) +
+  scale_colour_manual(values = sample_colours, name = "Treatment")
+p1 + p2 + plot_layout(guides = "collect")
 ```
-
-We then run a differential expression analysis separately for each cluster.
 
 ```{r}
-de_results <- list()
-for (i in levels(summed$label)) {
-  current <- summed[, summed$label == i]
-  y <- DGEList(counts(current), samples = colData(current))
-  discarded <- isOutlier(y$samples$lib.size, log = TRUE, type = "lower", nmads = 3)
-  y <- y[, !discarded]
-  keep <- filterByExpr(y, group = current$Treatment)
-  y <- y[keep, ]
-  y <- calcNormFactors(y)
-  design <- model.matrix(~Treatment, y$samples)
-  colnames(design) <- sub("Treatment", "", colnames(design))
-  if (qr(design)$rank == nrow(design) ||
-      qr(design)$rank < ncol(design)) {
-    # Skipping labels without contrasts or without 
-    # enough residual d.f. to estimate the dispersion.
-    message("Skipping ", i)
-    next
-  }
-  y <- estimateDisp(y, design)
-  fit <- glmQLFit(y, design, robust = TRUE)
-  de_results[[i]] <- fit
-}
+summed_filt <- summed[, summed$ncells >= 10]
+
+de_results <- pseudoBulkDGE(
+  summed_filt,
+  label = summed_filt$cycling_subset,
+  design = ~Treatment,
+  coef = "TreatmentInfected",
+  condition = summed_filt$Treatment,
+  include.intermediates = TRUE)
 ```
-
-### `infected_vs_uninfected`
-
-The number of DEGs per label is given below.
 
 ```{r}
-summaries_infected_vs_uninfected <- lapply(
-  de_results, 
-  function(x) {
-    summary(
-      decideTests(
-        glmQLFTest(
-          x,
-          coef = "Infected"),
-        p.value = fdr))[, "Infected"]
-  })
-sum.tab_infected_vs_uninfected <- do.call(
-  rbind,
-  summaries_infected_vs_uninfected)
-knitr::kable(sum.tab_infected_vs_uninfected)
+metadata(de_results)$failed
 ```
-
-```{r, results = "hide"}
-dir.create(here("output", "DEGs", "cluster_labels"), recursive = TRUE)
-
-degs_infected_vs_uninfected <- lapply(
-  names(de_results),
-  function(n) {
-    x <- de_results[[n]]
-    fit <- glmQLFTest(x, coef = "Infected")
-    gzout <- gzfile(
-      description = here(
-        "output",
-        "DEGs",
-        "cluster_labels",
-        paste0(n, ".DEGs.infected_vs_uninfected.csv.gz")),
-      open = "wb")
-    write.table(
-      x = topTags(
-        fit,
-        n = Inf,
-        p.value = 1) %>%
-        as.data.frame() %>%
-        tibble::rownames_to_column("gene_ID"),
-      file = gzout,
-      sep = ",",
-      quote = FALSE,
-      row.names = FALSE,
-      col.names = TRUE)
-    close(gzout)
-    rownames(topTags(fit, p.value = fdr, n = Inf))
-  })
-names(degs_infected_vs_uninfected) <- names(de_results)
-
-degs <- lapply(
-  de_results,
-  function(x) {
-    rownames(topTags(glmQLFTest(x, coef = "Infected"), p.value = fdr, n = Inf))
-    })
-common_degs <- sort(table(unlist(degs)), decreasing = TRUE)
-```
-
-A survey of the DEGs from all clusters identifies a number of genes that are differentially expressed across a number of clusters.
 
 ```{r}
-rmarkdown::paged_table(
-  as.data.frame(common_degs) %>% 
-    dplyr::rename(Gene = Var1, `# Clusters gene is DE` = Freq))
+is.de <- decideTestsPerLabel(de_results, threshold = 0.05)
+summarizeTestsPerLabel(is.de)
 ```
 
-Figure \@ref(fig:degs-heatmap-with-clusters) is a heatmap of the pseudobulk-level log-expression values of some differentially expressed genes with particularly large log fold changes between infected and uninfected cells.
-
-```{r degs-heatmap-with-clusters, fig.cap = "Heatmap of pseudobulk-level log-expression values normalized to the mean of uninfected samples; rows correspond to genes, columns to cluster-sample combinations. Included is the union of DEGs ($FDR < 0.05$, $|logFC| > 1$, using the 'TREAT' method) across all clusters. Data is split vertically by cluster (of cells); top and bottom 1% logFC quantiles were truncated for visualization.", fig.asp = 1.2}
-degs <- Reduce(
-  union,
-  lapply(de_results, function(x) {
-    rownames(
-      topTags(glmTreat(x, coef = "Infected", lfc = 1), p.value = fdr, n = Inf))
-  }))
-mat <- logcounts(summed)[degs, ]
-row_means <- rowMeans(mat[, summed$Treatment == "Uninfected"])
-mat <- apply(mat, 2, `-`, row_means)
-zlim <- quantile(as.vector(mat), c(0.01, 0.99))
-mat[mat < zlim[1]] <- zlim[1]
-mat[mat > zlim[2]] <- zlim[2]
-pheatmap(
-  mat[, order(summed$cluster, summed$Treatment, summed$Sample)],
-  color = colorspace::diverging_hsv(100),
-  scale = "none",
-  cluster_rows = TRUE,
-  cluster_cols = FALSE,
-  gaps_col = seq(6, ncol(summed), 6),
-  show_colnames = FALSE,
-  main = "DEGs",
-  annotation_col = as.data.frame(colData(summed))[, c("cluster", "Treatment")],
-  annotation_colors = list(
-    cluster = cluster_colours,
-    Treatment = treatment_colours),
-  fontsize = 8)
+```{r}
+outdir <- here("output", "DEGs", "cycling_subset")
+dir.create(outdir, recursive = TRUE)
+createDEGOutputs(
+  outdir = outdir, 
+  de_results = de_results, 
+  summed_filt = summed_filt,
+  sce = sce,
+  fdr = 0.05)
 ```
 
-The [`output/DEGs/cluster_labels/`](../output/DEGs/cluster_labels/) directory contains cluster-specific heatmaps of differentially expressed genes ($FDR < 0.05$; up to 100 genes shown).
-
-```{r, results = "hide"}
-pdf(
-  here(
-    "output",
-    "DEGs",
-    "cluster_labels",
-    "cluster_labels.infected_vs_uninfected.heatmap.pdf"),
-  width = 7, 
-  height = 10)
-for (label in names(degs_infected_vs_uninfected)) {
-  degs <- degs_infected_vs_uninfected[[label]]
-  # NOTE: Truncate at 100 genes
-  degs <- degs[seq_len(min(length(degs), 100))]
-
-  # NOTE: Need at least 2 genes to cluster.
-  if (length(degs)) {
-    .plotHeatmap(
-      summed[, summed$label == label],
-      color = colorspace::diverging_hsv(100),
-      features = degs, 
-      colour_columns_by = c("Treatment"),
+```{r, message = FALSE, results = "hide"}
+lapply(names(de_results), function(n) {
+  se <- summed_filt[, summed_filt$label == n]
+  x <- de_results[[n]]
+  features <- rownames(x[which(x$FDR < 0.05), ])
+  if (length(features) > 2) {
+    plotHeatmap(
+      se,
+      features = head(features, 50),
+      center = TRUE,
+      zlim = c(-3, 3),
+      symmetric = TRUE,
+      color = hcl.colors(101, "Blue-Red 3"),
+      order_columns_by = c("Treatment", "Sample"),
+      column_annotation_colors = list(
+        Treatment = treatment_colours,
+        Sample = sample_colours),
+      cluster_rows = TRUE,
+      fontsize = 8,
+      main = n,
+      filename = file.path(outdir, paste0(n, ".pseudobulk_heatmap.pdf")))
+    
+    plotGroupedHeatmap(
+      sce,
+      features = head(features, 50),
+      group = "Sample",
+      columns = sce$cycling_subset == n,
       center = TRUE,
       symmetric = TRUE,
-      zlim = quantile(
-        as.vector(
-          scale(
-            t(logcounts(summed[, summed$label == label])[degs, , drop = FALSE]),
-            scale = FALSE)),
-        c(0.01, 0.99)),
-      show_colnames = FALSE,
-      main = label,
-      annotation_colors = list(Treatment = treatment_colours),
+      color = hcl.colors(101, "Blue-Red 3"),
+      cluster_rows = TRUE,
       fontsize = 8,
+      main = n,
       cluster_cols = FALSE,
-      cluster_rows = length(degs) >= 2)
+      filename = file.path(
+        outdir,
+        paste0(n, ".average_expression_heatmap.pdf")))
   }
-}
-dev.off()
-```
-
-The [`output/DEGs/cluster_labels/`](../output/DEGs/cluster_labels/) directory also contains plots of expression values for all cells in a given cluster for the cluster-specific differentially expressed genes ($FDR < 0.05$; up to 100 genes shown).
-
-```{r}
-for (label in names(degs_infected_vs_uninfected)) {
-  degs <- degs_infected_vs_uninfected[[label]]
-  if (length(degs) == 0) {
-    next
-  }
-  # NOTE: Truncate at 100 genes
-  degs <- degs[seq_len(min(length(degs), 100))]
-  pdf(
-    here(
-      "output",
-      "DEGs",
-      "cluster_labels",
-      paste0(label, ".infected_vs_uninfected.expression_plots.pdf")))
-  for (g in degs) {
-    p <- plotExpression(
-      sce[, sce$label == label], 
-      g,
-      x = "Sample",
-        colour_by = "Treatment") + 
-        scale_fill_manual(values = treatment_colours, name = "Treatment") + 
-        stat_summary(
-          fun.data = "mean_cl_boot",
-          geom = "crossbar",
-          colour = "red",
-          width = 0.3) + 
-        cowplot::theme_cowplot() +
-        theme(
-          axis.text.x = element_text(angle = 45, hjust = 1),
-          strip.background = element_blank(),
-          strip.text.x = element_blank()) + 
-        ggtitle(
-          paste0(
-            g,
-            " (FDR = ", 
-          signif(
-            topTags(
-              glmQLFTest(
-                de_results[[label]],
-                coef = "Infected"),
-              n = Inf)[g, "FDR"][[1]], 1),
-          ")"),
-        subtitle = label)
-    print(p)
-  }
-}
-dev.off()
-```
-
-### Gene set analysis
-
-We now consider the problem of interpreting the differential expression results in terms of higher order biological processes or molecular pathways.
-Two of the most common used resources are the gene ontology (GO) databases and the Kyoto Encyclopedia of Genes and Genomes (KEGG) database.
-The GO databases annotate genes according to a dictionary of annotation terms whereas the KEGG database, which is much smaller than GO, is a curated database of molecular pathways and disease signatures.
-The GO and KEGG analyses are relatively simple analyses that rely on a list of DE genes; we simply count the number of DE genes that are annotated with each possible GO or KEGG term.
-GO and KEGG terms that occur frequently in the list of DE genes are said to be over-represented or enriched.
-
-#### GO analysis
-
-We perform gene ontology (GO) enrichment analyses of these cluster-specific DEG lists using the `goana()` function from `r BiocStyle::Biocpkg("limma")`.
-The tables of results can be found in [`output/DEGs/cluster_labels/`](../output/DEGs/cluster_labels/).
-The key columns in these tables are as follows:
-
-- `Term`: GO term
-- `Ont`: ontology that the GO term belongs to. Possible values are "BP" (biological pathway), "CC" (cellular component), and "MF" (molecular function).
-- `N`: number of genes in the GO term.
-- `DE`: number of genes in the DE set.
-- `P.Up`: p-value for over-representation of GO term in up-regulated genes.
-- `P.Down`: p-value for over-representation of GO term in down-regulated genes.
-
-To focus the GO analysis, it may be useful to filter the results to GO terms with the 'biological pathway' ontology term and containing up to, say, 200 genes.
-
-```{r}
-library(org.Hs.eg.db)
-library(GO.db)
-
-for (label in names(degs_infected_vs_uninfected)) {
-  fit <- de_results[[label]]
-  go <- goana(
-      glmQLFTest(fit, coef = "Infected"),
-      geneid = mapIds(
-        org.Hs.eg.db,
-        keys = rownames(fit),
-        column = "ENTREZID",
-        keytype = "SYMBOL"))
-  if (nrow(go) == 0) {
-    next
-  }
-  # NOTE: Was having all sorts of issue with write.csv()/read.csv(), so 
-  #       switched data.table.
-  data.table::fwrite(
-    x = go,
-    file = here(
-      "output", 
-      "DEGs", 
-      "cluster_labels",
-      paste0(label, ".infected_vs_uninfected.GO.csv.gz")))
-}
-```
-
-```{r}
-chosen <- 7
-```
-
-An example is given in the below table, highlighting the top-20 GO terms for genes that are up-regulated in cluster `r chosen`, after filtering.
-
-```{r}
-tmp <- data.table::fread(
-  here(
-    "output", 
-    "DEGs", 
-    "cluster_labels",
-    paste0("cluster_", chosen, ".infected_vs_uninfected.GO.csv.gz")))
-tmp_useful <- tmp[tmp$Ont == "BP" & tmp$N <= 200, ]
-tmp_up <- tmp_useful[order(tmp_useful$P.Up), ]
-rmarkdown::paged_table(head(tmp_up, n = 20))
-```
-
-#### KEGG analaysis
-
-We perform KEGG enrichment analyses of these cluster-specific DEG lists using the `kegga()` function from `r BiocStyle::Biocpkg("limma")`.
-The tables of results can be found in [`output/DEGs/cluster_labels/`](../output/DEGs/cluster_labels/).
-The key columns in these tables are as follows:
-
-- `Pathway`: KEGG pathway
-- `N`: number of genes in the KEGG pathway.
-- `DE`: number of genes in the DE set.
-- `P.Up`: p-value for over-representation of KEGG pathway in up-regulated genes.
-- `P.Down`: p-value for over-representation of KEGG pathway in down-regulated genes.
-
-```{r}
-for (label in names(degs_infected_vs_uninfected)) {
-  
-  fit <- de_results[[label]]
-  kegg <- kegga(
-      glmQLFTest(fit, coef = "Infected"),
-      geneid = mapIds(
-        org.Hs.eg.db,
-        keys = rownames(fit),
-        column = "ENTREZID",
-        keytype = "SYMBOL"))
-  if (nrow(kegg) == 0) {
-    next
-  }
-  # NOTE: Was having all sorts of issue with write.csv()/read.csv(), so 
-  #       switched data.table.
-  data.table::fwrite(
-    x = kegg,
-    file = here(
-      "output", 
-      "DEGs", 
-      "cluster_labels",
-      paste0(label, ".infected_vs_uninfected.KEGG.csv.gz")))
-}
-```
-
-An example is given in the below table, highlighting the top-20 KEGG pathways for genes that are up-regulated in cluster `r chosen`, after filtering.
-
-
-```{r}
-tmp <- data.table::fread(
-  here(
-    "output", 
-    "DEGs", 
-    "cluster_labels",
-    paste0("cluster_", chosen, ".infected_vs_uninfected.KEGG.csv.gz")))
-tmp_up <- tmp[order(tmp$P.Up), ]
-rmarkdown::paged_table(head(tmp_up, n = 20))
-```
-
-## Ignoring cluster labels
-
-```{r}
-sce$label <- factor("ignoring_cluster_labels")
-```
-
-In this analysis we ignore the cluster labels and perform a DE analysis.
-Care must be taken when interpreting these results as a 'differentially expressed gene' may really be due to compositional differences between the treatments.
-
-```{r}
-as.data.frame(colData(sce)) %>%
-  group_by(label, Sample) %>%
-  dplyr::count() %>%
-  tidyr::spread(label, n, fill = 0L) %>%
-  knitr::kable(caption = "Number of cells per combination of cluster label and sample.")
-```
-
-```{r}
-list_of_summed <- lapply(levels(sce$label), function(label) {
-  sce <- sce[, sce$label == label]
-  label_sample <- paste0(label, ".", sce$Sample)
-  sumCountsAcrossCells(sce, label_sample)
 })
-names(list_of_summed) <- levels(sce$label)
-summed <- SingleCellExperiment(
-  assays = list(counts = do.call(cbind, list_of_summed)))
-colData(summed) <- DataFrame(
-  inner_join(
-    data.frame(
-      label = sapply(strsplit(colnames(summed), "\\."), "[[", 1),
-      Sample = sapply(strsplit(colnames(summed), "\\."), "[[", 2)),
-    as.data.frame(colData(sce)) %>%
-      dplyr::select(Sample) %>%
-      distinct()) %>%
-    dplyr::mutate(Treatment = sub("\\_[0-9]", "", Sample)),
-  row.names = colnames(summed))
-summed$Treatment <- factor(
-  stringr::str_to_sentence(summed$Treatment),
-  levels = levels(sce$Treatment))
-summed$label <- factor(summed$label, levels = levels(sce$label))
-logcounts(summed) <- cpm(
-  counts(summed),
-  log = TRUE,
-  lib.size = sizeFactors(summed))
 ```
 
-Following aggregation of counts, we can visualise the pseudobulk samples using an multidimensional scaling (MDS) plot (Figure \@ref(fig:mds-ignoring-clusters)).
-This can be used to see if see if there is some treatment-specific differences using the pseudobulk samples.
+## DA
 
-```{r mds-ignoring-clusters, fig.cap = "Pseudobulk-level multidimensional scaling (MDS) plot. Each point represents one cluster-sample instance; points are colored by cluster and shaped by group ID."}
-scater::plotMDS(
-  summed,
-  shape_by = "Treatment",
+- Can't use quasi-likelihood framework with only two labels.
+
+```{r}
+abundances <- table(sce$cycling_subset, sce$Sample)
+abundances <- unclass(abundances)
+abundances
+```
+
+
+```{r, fig.asp = 1 / 2}
+p1 <- plotUMAP(
+  sce, 
+  colour_by = "cycling_subset", 
+  text_by = "cycling_subset",
+  point_size = 0.5,
+  point_alpha = 1)
+p2 <- plotUMAP(
+  sce, 
   colour_by = "Treatment",
-  point_alpha = 0) + 
-  geom_point(aes(shape = shape_by, colour = colour_by), alpha = 1, size = 3) +
-  scale_colour_manual(values = treatment_colours)
+  point_size = 0.5,
+  point_alpha = 1) +
+  scale_colour_manual(values = treatment_colours, name = "Treatment")
+p1 + p2
 ```
 
-We then run a differential expression analysis.
-
-```{r}
-de_results <- list()
-for (i in levels(summed$label)) {
-  current <- summed[, summed$label == i]
-  y <- DGEList(counts(current), samples = colData(current))
-  discarded <- isOutlier(y$samples$lib.size, log = TRUE, type = "lower", nmads = 3)
-  y <- y[, !discarded]
-  keep <- filterByExpr(y, group = current$Treatment)
-  y <- y[keep, ]
-  y <- calcNormFactors(y)
-  design <- model.matrix(~Treatment, y$samples)
-  colnames(design) <- sub("Treatment", "", colnames(design))
-  if (qr(design)$rank == nrow(design) ||
-      qr(design)$rank < ncol(design)) {
-    # Skipping labels without contrasts or without 
-    # enough residual d.f. to estimate the dispersion.
-    message("Skipping ", i)
-    next
-  }
-  y <- estimateDisp(y, design)
-  fit <- glmQLFit(y, design, robust = TRUE)
-  de_results[[i]] <- fit
-}
+```{r, fig.asp = 1 / 3}
+p3 <- ggplot(as.data.frame(colData(sce)[, c("cycling_subset", "Sample")])) +
+    geom_bar(
+      aes(x = cycling_subset, fill = Sample),
+      position = position_fill(reverse = TRUE)) +
+    coord_flip() +
+    ylab("Frequency") +
+    scale_fill_manual(values = sample_colours) +
+    theme_cowplot(font_size = 8)
+p4 <- ggplot(as.data.frame(colData(sce)[, c("cycling_subset", "Treatment")])) +
+    geom_bar(
+      aes(x = cycling_subset, fill = Treatment),
+      position = position_fill(reverse = TRUE)) +
+    coord_flip() +
+    ylab("Frequency") +
+    scale_fill_manual(values = treatment_colours) +
+    theme_cowplot(font_size = 8)
+p5 <- ggplot(as.data.frame(colData(sce)[, "cycling_subset", drop = FALSE])) +
+    geom_bar(aes(x = cycling_subset, fill = cycling_subset)) +
+    coord_flip() +
+    ylab("Number of cells") +
+    theme_cowplot(font_size = 8) +
+    guides(fill = FALSE)
+p3 + p4 + p5 + plot_layout(ncol = 3)
 ```
-
-### `infected_vs_uninfected`
-
-The number of DEGs per label is given below.
-
-```{r}
-summaries_infected_vs_uninfected <- lapply(
-  de_results, 
-  function(x) {
-    summary(
-      decideTests(
-        glmQLFTest(
-          x,
-          coef = "Infected"),
-        p.value = fdr))[, "Infected"]
-  })
-sum.tab_infected_vs_uninfected <- do.call(
-  rbind,
-  summaries_infected_vs_uninfected)
-knitr::kable(sum.tab_infected_vs_uninfected)
-```
-
-```{r, results = "hide"}
-dir.create(here("output", "DEGs", "ignoring_cluster_labels"), recursive = TRUE)
-
-degs_infected_vs_uninfected <- lapply(
-  names(de_results),
-  function(n) {
-    x <- de_results[[n]]
-    fit <- glmQLFTest(x, coef = "Infected")
-    gzout <- gzfile(
-      description = here(
-        "output", 
-        "DEGs", 
-        "ignoring_cluster_labels",
-        paste0(n, ".DEGs.infected_vs_uninfected.csv.gz")),
-      open = "wb")
-    write.table(
-      x = topTags(
-        fit, 
-        n = Inf,
-        p.value = 1) %>%
-        as.data.frame() %>%
-        tibble::rownames_to_column("gene_ID"), 
-      file = gzout, 
-      sep = ",", 
-      quote = FALSE, 
-      row.names = FALSE,
-      col.names = TRUE)
-    close(gzout)
-    rownames(topTags(fit, p.value = fdr, n = Inf))
-  })
-names(degs_infected_vs_uninfected) <- names(de_results)
-```
-
-Figure \@ref(fig:degs-heatmap-ignoring-clustesrs) is a heatmap of the pseudobulk-level log-expression values of some differentially expressed genes with particularly large log fold changes between infected and uninfected cells.
-
-```{r degs-heatmap-ignoring-clustesrs, fig.cap = "Heatmap of pseudobulk-level log-expression values normalized to the mean of uninfected samples; rows correspond to genes, columns to samples. Genes are DEGs ($FDR < 0.05$, $|logFC| > 1$, using the 'TREAT' method). Top and bottom 1% logFC quantiles were truncated for visualization.", fig.asp = 1.2}
-degs <- Reduce(
-  union,
-  lapply(de_results, function(x) {
-    rownames(
-      topTags(glmTreat(x, coef = "Infected", lfc = 1), p.value = fdr, n = Inf))
-  }))
-mat <- logcounts(summed)[degs, ]
-row_means <- rowMeans(mat[, summed$Treatment == "Uninfected"])
-mat <- apply(mat, 2, `-`, row_means)
-zlim <- quantile(as.vector(mat), c(0.01, 0.99))
-mat[mat < zlim[1]] <- zlim[1]
-mat[mat > zlim[2]] <- zlim[2]
-pheatmap(
-  mat[, order(summed$Treatment, summed$Sample)],
-  color = colorspace::diverging_hsv(100),
-  scale = "none",
-  cluster_rows = TRUE,
-  cluster_cols = FALSE,
-  show_colnames = FALSE,
-  main = "DEGs",
-  annotation_col = as.data.frame(colData(summed))[, c("Treatment"), drop = FALSE],
-  annotation_colors = list(Treatment = treatment_colours),
-  fontsize = 8)
-```
-
-The [`output/DEGs/ignoring_cluster_labels/`](../output/DEGs/ignoring_cluster_labels/) directory also contains plots of expression values for all cells differentially expressed genes ($FDR < 0.05$; up to 100 genes shown).
-
-```{r, results = "hide"}
-for (label in names(degs_infected_vs_uninfected)) {
-  degs <- degs_infected_vs_uninfected[[label]]
-  if (length(degs) == 0) {
-    next
-  }
-  # NOTE: Truncate at 100 genes
-  degs <- degs[seq_len(min(length(degs), 100))]
-  pdf(
-    here(
-      "output",
-      "DEGs",
-      "cluster_labels",
-      paste0(label, ".infected_vs_uninfected.expression_plots.pdf")))
-  for (g in degs) {
-    p <- plotExpression(
-      sce[, sce$label == label], 
-      g,
-      x = "Sample",
-        colour_by = "Treatment") + 
-        scale_fill_manual(values = treatment_colours, name = "Treatment") + 
-        stat_summary(
-          fun.data = "mean_cl_boot",
-          geom = "crossbar",
-          colour = "red",
-          width = 0.3) + 
-        cowplot::theme_cowplot() +
-        theme(
-          axis.text.x = element_text(angle = 45, hjust = 1),
-          strip.background = element_blank(),
-          strip.text.x = element_blank()) + 
-        ggtitle(
-          paste0(
-            g,
-            " (FDR = ", 
-          signif(
-            topTags(
-              glmQLFTest(
-                de_results[[label]],
-                coef = "Infected"),
-              n = Inf)[g, "FDR"][[1]], 1),
-          ")"),
-        subtitle = label)
-    print(p)
-  }
-}
-dev.off()
-```
-
-### Gene set analysis
-
-We now consider the problem of interpreting the differential expression results in terms of higher order biological processes or molecular pathways.
-Two of the most common used resources are the gene ontology (GO) databases and the Kyoto Encyclopedia of Genes and Genomes (KEGG) database.
-The GO databases annotate genes according to a dictionary of annotation terms whereas the KEGG database, which is much smaller than GO, is a curated database of molecular pathways and disease signatures.
-The GO and KEGG analyses are relatively simple analyses that rely on a list of DE genes; we simply count the number of DE genes that are annotated with each possible GO or KEGG term.
-GO and KEGG terms that occur frequently in the list of DE genes are said to be over-represented or enriched.
-
-#### GO analysis
-
-We perform gene ontology (GO) enrichment analyses of these cluster-specific DEG lists using the `goana()` function from `r BiocStyle::Biocpkg("limma")`.
-The tables of results can be found in [`output/DEGs/ignoring_cluster_labels/`](../output/DEGs/ignoring_cluster_labels/).
-The key columns in these tables are as follows:
-
-- `Term`: GO term
-- `Ont`: ontology that the GO term belongs to. Possible values are "BP" (biological pathway), "CC" (cellular component), and "MF" (molecular function).
-- `N`: number of genes in the GO term.
-- `DE`: number of genes in the DE set.
-- `P.Up`: p-value for over-representation of GO term in up-regulated genes.
-- `P.Down`: p-value for over-representation of GO term in down-regulated genes.
-
-To focus the GO analysis, it may be useful to filter the results to GO terms with the 'biological pathway' ontology term and containing up to, say, 200 genes.
-
-```{r}
-library(org.Hs.eg.db)
-
-for (label in names(degs_infected_vs_uninfected)) {
-  fit <- de_results[[label]]
-  go <- goana(
-      glmQLFTest(fit, coef = "Infected"),
-      geneid = mapIds(
-        org.Hs.eg.db,
-        keys = rownames(fit),
-        column = "ENTREZID",
-        keytype = "SYMBOL"))
-  if (nrow(go) == 0) {
-    next
-  }
-  # NOTE: Was having all sorts of issue with write.csv()/read.csv(), so 
-  #       switched data.table.
-  data.table::fwrite(
-    x = go,
-    file = here(
-      "output", 
-      "DEGs", 
-      "ignoring_cluster_labels",
-      paste0(label, ".infected_vs_uninfected.GO.csv.gz")))
-}
-```
-
-An example is given in the below table, highlighting the top-20 GO terms for genes that are up-regulated, after filtering.
-
-
-```{r}
-tmp <- data.table::fread(
-  here(
-    "output", 
-    "DEGs", 
-    "ignoring_cluster_labels",
-    "ignoring_cluster_labels.infected_vs_uninfected.GO.csv.gz"))
-tmp_useful <- tmp[tmp$Ont == "BP" & tmp$N <= 200, ]
-tmp_up <- tmp_useful[order(tmp_useful$P.Up), ]
-rmarkdown::paged_table(head(tmp_up, n = 20))
-```
-
-#### KEGG analaysis
-
-We perform KEGG enrichment analyses of these cluster-specific DEG lists using the `kegga()` function from `r BiocStyle::Biocpkg("limma")`.
-The tables of results can be found in [`output/DEGs/ignoring_cluster_labels/`](../output/DEGs/ignoring_cluster_labels/).
-The key columns in these tables are as follows:
-
-- `Pathway`: KEGG pathway
-- `N`: number of genes in the KEGG pathway.
-- `DE`: number of genes in the DE set.
-- `P.Up`: p-value for over-representation of KEGG pathway in up-regulated genes.
-- `P.Down`: p-value for over-representation of KEGG pathway in down-regulated genes.
-
-```{r}
-for (label in names(degs_infected_vs_uninfected)) {
-  
-  fit <- de_results[[label]]
-  kegg <- kegga(
-      glmQLFTest(fit, coef = "Infected"),
-      geneid = mapIds(
-        org.Hs.eg.db,
-        keys = rownames(fit),
-        column = "ENTREZID",
-        keytype = "SYMBOL"))
-  if (nrow(kegg) == 0) {
-    next
-  }
-  # NOTE: Was having all sorts of issue with write.csv()/read.csv(), so 
-  #       switched data.table.
-  data.table::fwrite(
-    x = kegg,
-    file = here(
-      "output", 
-      "DEGs", 
-      "ignoring_cluster_labels",
-      paste0(label, ".infected_vs_uninfected.KEGG.csv.gz")))
-}
-```
-
-An example is given in the below table, highlighting the top-20 KEGG pathways for genes that are up-regulated in cluster `r chosen`, after filtering.
-
-
-```{r}
-tmp <- data.table::fread(
-  here(
-    "output", 
-    "DEGs", 
-    "ignoring_cluster_labels",
-    "ignoring_cluster_labels.infected_vs_uninfected.KEGG.csv.gz"))
-tmp_up <- tmp[order(tmp$P.Up), ]
-rmarkdown::paged_table(head(tmp_up, n = 20))
-```
-
-# Differential abundance between conditions
-
-In a differential abundance analysis, we test for significant changes in per-label cell abundance across conditions.
-This will reveal which cell types are depleted or enriched due to genotype differences, which is arguably just as interesting as changes in expression within each cell type.
-We effectively treat scRNA-seq as a "super-FACS" technology for defining relevant subpopulations using the entire transcriptome.
-
-```{r}
-fdr <- 0.05
-```
-
-**For the differential abundance results reported I have used an FDR cutoff of `r fdr`.**
-
-We prepare for the DA analysis by quantifying the number of cells assigned to each cluster. In this case, we are aiming to identify clusters that change in abundance among the infected cells compared to the uninfected cells.
-
-```{r}
-sce$label <- factor(
-  paste0("cluster_", sce$cluster),
-  levels = paste0("cluster_", levels(sce$cluster)))
-```
-
-```{r}
-as.data.frame(colData(sce)) %>%
-  group_by(Sample, label) %>%
-  dplyr::count() %>%
-  tidyr::spread(Sample, n, fill = 0L) %>%
-  knitr::kable(caption = "Number of cells per combination of cluster label and sample.")
-```
-
-```{r}
-abundances <- table(sce$label, sce$Sample)
-abundances <- unclass(abundances) 
-```
-
-Our DA analysis will again be performed with the `r BiocStyle::Biocpkg("edgeR")` package.
-This allows us to take advantage of the negative binomial generalized linear model methods to model overdispersed count data in the presence of limited replication - except that the counts are not of reads per gene, but of cells per label [@lun2017testing].
-The aim is to share information across labels to improve our estimates of the biological variability in cell abundance between replicates.
 
 ```{r}
 extra.info <- colData(sce)[match(colnames(abundances), sce$Sample), ]
-y <- DGEList(abundances, samples = extra.info)
-```
+y.ab <- DGEList(abundances, samples = extra.info)
 
-We filter out low-abundance labels as previously described.
-This avoids cluttering the result table with very rare subpopulations that contain only a handful of cells.
-For a DA analysis of cluster abundances, filtering is generally not required as most clusters will not be of low-abundance (otherwise there would not have been enough evidence to define the cluster in the first place).
+keep <- filterByExpr(y.ab, group = y.ab$samples$Treatment)
+summary(keep)
+y.ab <- y.ab[keep,]
+
+design <- model.matrix(~Treatment, y.ab$samples)
+
+y.ab <- estimateDisp(y.ab, design, trend = "none")
+fit.ab <- glmFit(y.ab)
+res <- glmLRT(fit.ab, coef = "TreatmentInfected")
+summary(decideTests(res))
+```
 
 ```{r}
-keep <- filterByExpr(y, group = y$samples$Treatment)
-y <- y[keep, ]
-design <- model.matrix(~Treatment, y$samples)
-colnames(design) <- sub("Treatment", "", colnames(design))
-y <- estimateDisp(y, design, trend = "none")
-fit <- glmQLFit(y, design, robust = TRUE, abundance.trend = FALSE)
+topTags(res)
 ```
 
-The number of differentially abundance clusters is given below.
-The log-fold change in our model refers to the change in cell abundance after infection, rather than the change in gene expression.
-A positive `logFC` means an enrichment of that cluster in the `infected` vs. the `uninfected`.
+# Analysis based on subcluster labels in `Not cycling` subset
+
+## DE
+
+Please see [`output/DEGs/not_cycling_subset_subclusters/`](../output/DEGs/not_cycling_subset_subclusters/) for heatmaps and spreadsheets of these DEG lists, including results of GO and KEGG analyses using the `goana()` and `kegga()` functions from the `r BiocStyle::Biocpkg("limma")` package.
+This directory also contains interactive `r BiocStyle::Biocpkg("Glimma")` plots of the differential expression results.
+The `r BiocStyle::Biocpkg("Glimma")` plots show the pseudobulk data for that label.
+
+<aside>
+Note that the DEG list spreadsheets contain all labels and genes whereas the Glimma plots only contain labels and genes actually tested for DE. The column names in the Glimma tables may be abbreviated. There are two types of heatmaps: (1) showing the 'pseudobulk' expression and (2) showing the average single-cell expression.
+</aside>
 
 ```{r}
-res <- glmQLFTest(fit, coef = "Infected")
-knitr::kable(
-  summary(decideTests(res, p.value = fdr)),
-  caption = "The number of clusters that are differentially abundant.")
+# NOTE: Have to drop the complicated TRA and TRB DFrameList objects.
+x <- not_cycling_sce
+x$TRA <- NULL
+x$TRB <- NULL
+summed <- aggregateAcrossCells(
+  x,
+  id = colData(x)[, c("subcluster", "Sample")])
+sizeFactors(summed) <- NULL
+summed <- logNormCounts(summed)
+colLabels(summed) <- summed$subcluster
+colnames(summed) <- paste0(summed$subcluster, ".", summed$Sample)
 ```
 
-The full results are given below.
+```{r, fig.asp = 1 / 2}
+summed <- runMDS(summed)
+p1 <- plotMDS(
+  summed,
+  colour_by = "subcluster",
+  shape_by = "Treatment",
+  point_size = 3,
+  point_alpha = 2)
+p2 <- plotMDS(
+  summed,
+  colour_by = "subcluster",
+  shape_by = "Sample",
+  point_size = 3,
+  point_alpha = 2)
+p1 + p2 + plot_layout(guides = "collect")
+```
 
 ```{r}
-knitr::kable(as.data.frame(topTags(res, n = Inf)))
+summed_filt <- summed[, summed$ncells >= 10]
+
+de_results <- pseudoBulkDGE(
+  summed_filt,
+  label = summed_filt$subcluster,
+  design = ~Treatment,
+  coef = "TreatmentInfected",
+  condition = summed_filt$Treatment,
+  include.intermediates = TRUE,
+  row.data = rowData(summed_filt))
 ```
 
-### Handling composition effects
+```{r}
+metadata(de_results)$failed
+```
 
-Our default approach for normalization in a differential abundance analysis is to only normalize based on the total number of cells in each sample, which means that we are effectively testing for differential proportions between conditions.
+```{r}
+is.de <- decideTestsPerLabel(de_results, threshold = 0.05)
+summarizeTestsPerLabel(is.de)
+```
 
-Unfortunately, the use of the total number of cells leaves us susceptible to composition effects.
-For example, a large increase in abundance for one cell subpopulation will introduce decreases in proportion for all other subpopulations - which is technically correct, but may be misleading if one concludes that those other subpopulations are decreasing in abundance of their own volition.
-If composition biases are proving problematic for interpretation of DA results, we have several avenues for removing them or mitigating their impact by leveraging a priori biological knowledge.
+```{r}
+outdir <- here("output", "DEGs", "not_cycling_subset_subcluster")
+dir.create(outdir, recursive = TRUE)
+createDEGOutputs(
+  outdir = outdir, 
+  de_results = de_results, 
+  summed_filt = summed_filt,
+  sce = x,
+  fdr = 0.05)
+```
+
+```{r, message = FALSE, results = "hide"}
+lapply(names(de_results), function(n) {
+  se <- summed_filt[, summed_filt$label == n]
+  x <- de_results[[n]]
+  features <- rownames(x[which(x$FDR < 0.05), ])
+  if (length(features) > 2) {
+    plotHeatmap(
+      se,
+      features = head(features, 50),
+      center = TRUE,
+      zlim = c(-3, 3),
+      symmetric = TRUE,
+      color = hcl.colors(101, "Blue-Red 3"),
+      order_columns_by = c("Treatment", "Sample"),
+      column_annotation_colors = list(
+        Treatment = treatment_colours,
+        Sample = sample_colours),
+      cluster_rows = TRUE,
+      fontsize = 8,
+      main = n,
+      filename = file.path(outdir, paste0(n, ".pseudobulk_heatmap.pdf")))
+    
+    plotGroupedHeatmap(
+      not_cycling_sce,
+      features = head(features, 50),
+      group = "Sample",
+      columns = not_cycling_sce$subcluster == n,
+      center = TRUE,
+      symmetric = TRUE,
+      color = hcl.colors(101, "Blue-Red 3"),
+      cluster_rows = TRUE,
+      fontsize = 8,
+      main = n,
+      cluster_cols = FALSE,
+      filename = file.path(
+        outdir,
+        paste0(n, ".average_expression_heatmap.pdf")))
+  }
+})
+```
+
+## DA
+
+```{r}
+abundances <- table(x$subcluster, x$Sample)
+abundances <- unclass(abundances)
+abundances
+```
+
+```{r, fig.asp = 1 / 2}
+p1 <- plotUMAP(
+  x,
+  colour_by = "subcluster",
+  text_by = "subcluster",
+  point_size = 0.5,
+  point_alpha = 1)
+p2 <- plotUMAP(
+  x,
+  colour_by = "Treatment",
+  point_size = 0.5,
+  point_alpha = 1) +
+  scale_colour_manual(values = treatment_colours)
+p1 + p2
+```
+
+```{r, fig.asp = 1 / 3}
+p3 <- ggplot(as.data.frame(colData(x)[, c("subcluster", "Sample")])) +
+  geom_bar(
+    aes(x = subcluster, fill = Sample),
+    position = position_fill(reverse = TRUE)) +
+  coord_flip() +
+  ylab("Frequency") +
+  scale_fill_manual(values = sample_colours) +
+  theme_cowplot()
+p4 <- ggplot(as.data.frame(colData(x)[, c("subcluster", "Treatment")])) +
+  geom_bar(
+    aes(x = subcluster, fill = Treatment),
+    position = position_fill(reverse = TRUE)) +
+  coord_flip() +
+  ylab("Frequency") +
+  scale_fill_manual(values = treatment_colours) +
+  theme_cowplot()
+p5 <- ggplot(as.data.frame(colData(x)[, "subcluster", drop = FALSE])) +
+  geom_bar(aes(x = subcluster, fill = subcluster)) +
+  coord_flip() +
+  ylab("Number of cells") +
+  theme_cowplot() +
+  guides(fill = FALSE)
+p3 + p4 + p5 + plot_layout(ncol = 3)
+```
+
+```{r}
+extra.info <- colData(sce)[match(colnames(abundances), sce$Sample), ]
+y.ab <- DGEList(abundances, samples = extra.info)
+
+keep <- filterByExpr(y.ab, group = y.ab$samples$Treatment)
+summary(keep)
+y.ab <- y.ab[keep,]
+
+design <- model.matrix(~Treatment, y.ab$samples)
+
+y.ab <- estimateDisp(y.ab, design, trend = "none")
+fit.ab <- glmFit(y.ab)
+res <- glmLRT(fit.ab, coef = "TreatmentInfected")
+summary(decideTests(res))
+```
+
+```{r}
+topTags(res)
+```
+
+# Analysis based on subcluster labels in `Cycling` subset
+
+## DE
+
+Please see [`output/DEGs/cycling_subset_subclusters/`](../output/DEGs/cycling_subset_subclusters/) for heatmaps and spreadsheets of these DEG lists, including results of GO and KEGG analyses using the `goana()` and `kegga()` functions from the `r BiocStyle::Biocpkg("limma")` package.
+This directory also contains interactive `r BiocStyle::Biocpkg("Glimma")` plots of the differential expression results.
+The `r BiocStyle::Biocpkg("Glimma")` plots show the pseudobulk data for that label.
+
+<aside>
+Note that the DEG list spreadsheets contain all labels and genes whereas the Glimma plots only contain labels and genes actually tested for DE. The column names in the Glimma tables may be abbreviated. There are two types of heatmaps: (1) showing the 'pseudobulk' expression and (2) showing the average single-cell expression.
+</aside>
+
+```{r}
+# NOTE: Have to drop the complicated TRA and TRB DFrameList objects.
+x <- cycling_sce
+x$TRA <- NULL
+x$TRB <- NULL
+summed <- aggregateAcrossCells(
+  x,
+  id = colData(x)[, c("subcluster", "Sample")])
+sizeFactors(summed) <- NULL
+summed <- logNormCounts(summed)
+colLabels(summed) <- summed$subcluster
+colnames(summed) <- paste0(summed$subcluster, ".", summed$Sample)
+```
+
+```{r, fig.asp = 1 / 2}
+summed <- runMDS(summed)
+p1 <- plotMDS(
+  summed,
+  colour_by = "subcluster",
+  shape_by = "Treatment",
+  point_size = 3,
+  point_alpha = 2)
+p2 <- plotMDS(
+  summed,
+  colour_by = "subcluster",
+  shape_by = "Sample",
+  point_size = 3,
+  point_alpha = 2)
+p1 + p2 + plot_layout(guides = "collect")
+```
+
+```{r}
+summed_filt <- summed[, summed$ncells >= 10]
+
+de_results <- pseudoBulkDGE(
+  summed_filt,
+  label = summed_filt$subcluster,
+  design = ~Treatment,
+  coef = "TreatmentInfected",
+  condition = summed_filt$Treatment,
+  include.intermediates = TRUE,
+  row.data = rowData(summed_filt))
+```
+
+```{r}
+metadata(de_results)$failed
+```
+
+```{r}
+is.de <- decideTestsPerLabel(de_results, threshold = 0.05)
+summarizeTestsPerLabel(is.de)
+```
+
+```{r}
+outdir <- here("output", "DEGs", "cycling_subset_subcluster")
+dir.create(outdir, recursive = TRUE)
+createDEGOutputs(
+  outdir = outdir, 
+  de_results = de_results, 
+  summed_filt = summed_filt,
+  sce = x,
+  fdr = 0.05)
+```
+
+```{r, message = FALSE, results = "hide"}
+lapply(names(de_results), function(n) {
+  se <- summed_filt[, summed_filt$label == n]
+  x <- de_results[[n]]
+  features <- rownames(x[which(x$FDR < 0.05), ])
+  if (length(features) > 2) {
+    plotHeatmap(
+      se,
+      features = head(features, 50),
+      center = TRUE,
+      zlim = c(-3, 3),
+      symmetric = TRUE,
+      color = hcl.colors(101, "Blue-Red 3"),
+      order_columns_by = c("Treatment", "Sample"),
+      column_annotation_colors = list(
+        Treatment = treatment_colours,
+        Sample = sample_colours),
+      cluster_rows = TRUE,
+      fontsize = 8,
+      main = n,
+      filename = file.path(outdir, paste0(n, ".pseudobulk_heatmap.pdf")))
+    
+    plotGroupedHeatmap(
+      cycling_sce,
+      features = head(features, 50),
+      group = "Sample",
+      columns = cycling_sce$subcluster == n,
+      center = TRUE,
+      symmetric = TRUE,
+      color = hcl.colors(101, "Blue-Red 3"),
+      cluster_rows = TRUE,
+      fontsize = 8,
+      main = n,
+      cluster_cols = FALSE,
+      filename = file.path(
+        outdir,
+        paste0(n, ".average_expression_heatmap.pdf")))
+  }
+})
+```
+
+## DA
+
+```{r}
+abundances <- table(x$subcluster, x$Sample)
+abundances <- unclass(abundances)
+abundances
+```
+
+```{r, fig.asp = 1 / 2}
+p1 <- plotUMAP(
+  x,
+  colour_by = "subcluster",
+  text_by = "subcluster",
+  point_size = 0.5,
+  point_alpha = 1)
+p2 <- plotUMAP(
+  x,
+  colour_by = "Treatment",
+  point_size = 0.5,
+  point_alpha = 1) +
+  scale_colour_manual(values = treatment_colours)
+p1 + p2
+```
+
+```{r, fig.asp = 1 / 3}
+p3 <- ggplot(as.data.frame(colData(x)[, c("subcluster", "Sample")])) +
+  geom_bar(
+    aes(x = subcluster, fill = Sample),
+    position = position_fill(reverse = TRUE)) +
+  coord_flip() +
+  ylab("Frequency") +
+  scale_fill_manual(values = sample_colours) +
+  theme_cowplot()
+p4 <- ggplot(as.data.frame(colData(x)[, c("subcluster", "Treatment")])) +
+  geom_bar(
+    aes(x = subcluster, fill = Treatment),
+    position = position_fill(reverse = TRUE)) +
+  coord_flip() +
+  ylab("Frequency") +
+  scale_fill_manual(values = treatment_colours) +
+  theme_cowplot()
+p5 <- ggplot(as.data.frame(colData(x)[, "subcluster", drop = FALSE])) +
+  geom_bar(aes(x = subcluster, fill = subcluster)) +
+  coord_flip() +
+  ylab("Number of cells") +
+  theme_cowplot() +
+  guides(fill = FALSE)
+p3 + p4 + p5 + plot_layout(ncol = 3)
+```
+
+```{r}
+extra.info <- colData(sce)[match(colnames(abundances), sce$Sample), ]
+y.ab <- DGEList(abundances, samples = extra.info)
+
+keep <- filterByExpr(y.ab, group = y.ab$samples$Treatment)
+summary(keep)
+y.ab <- y.ab[keep,]
+
+design <- model.matrix(~Treatment, y.ab$samples)
+
+y.ab <- estimateDisp(y.ab, design, trend = "none")
+fit.ab <- glmFit(y.ab)
+res <- glmLRT(fit.ab, coef = "TreatmentInfected")
+summary(decideTests(res))
+```
+
+```{r}
+topTags(res)
+```
 
 # Concluding remarks
 
-The [`output/DEGs/`](../output/DEGs/) directory contains CSV files summarising the differential expressoin results and PDFs showing the single-cell expression data for each DEG.
+```{r}
+saveRDS(
+  sce,
+  here("data", "SCEs", "C057_Cooney.annotated.SCE.rds"),
+  compress = "xz")
+saveRDS(
+  cycling_sce,
+  here("data", "SCEs", "C057_Cooney.cycling.annotated.SCE.rds"),
+  compress = "xz")
+saveRDS(
+  not_cycling_sce,
+  here("data", "SCEs", "C057_Cooney.not_cycling.annotated.SCE.rds"),
+  compress = "xz")
+```
+
+The processed *SingleCellExperiment* objects are available (see [`data/SCEs/C057_Cooney.cells_selected.SCE.rds`](../data/SCEs/C057_Cooney.cells_selected.SCE.rds), [`data/SCEs/C057_Cooney.cycling.annotated.SCE.rds`](../data/SCEs/C057_Cooney.cycling.annotated.SCE.rds), and [`data/SCEs/C057_Cooney.not_cycling.annotated.SCE.rds`](../data/SCEs/C057_Cooney.not_cycling.annotated.SCE.rds)).
+These will be used in downstream analyses, e.g., differential expression analysis between conditions within each cluster and differential abundance analyses between conditions for each cluster.
 
 # Additional information {.appendix}
 
@@ -977,8 +643,11 @@ The following are available on request:
 
 # Session info {.appendix}
 
-The analysis and this document were prepared using the following software:
+<summary>The analysis and this document were prepared using the following software (click triangle to expand)</summary>
+<details>
 
 ```{r}
-sessionInfo()
+sessioninfo::session_info()
 ```
+
+</details>

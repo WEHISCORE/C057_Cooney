@@ -292,3 +292,185 @@ SingleRDEGsAsTibble <- function(de_genes) {
     dplyr::ungroup() %>%
     dplyr::select(group1, group2, rank, gene)
 }
+
+# Take a DataFrame with AtomicList columns and return a DataFrame where these
+# columns have been flattened by paste-ing together the elements separated by
+# `sep`.
+flattenDF <- function(x, sep = "; ") {
+  DataFrame(
+    endoapply(x, function(xx) {
+      if (!is(xx, "AtomicList")) {
+        return(xx)
+      }
+      unstrsplit(as(xx, "CharacterList"), sep = sep)
+    }),
+    row.names = rownames(x))
+}
+
+library(magrittr)
+# NOTE: This function is customised for the C081_Arandjelovic_Pellegrin project.
+createDEGOutputs <- function(outdir, de_results, summed_filt, sce, fdr) {
+
+  message("Creating CSVs of DEGs")
+  for (label in names(de_results)) {
+    message("\t", label)
+    gzout <- gzfile(
+      description = file.path(outdir, paste0(label, ".DEGs.csv.gz")),
+      open = "wb")
+    write.csv(
+      cbind(flattenDF(rowData(summed_filt)), de_results[[label]]),
+      gzout,
+      # NOTE: quote = TRUE needed because some fields contain commas.
+      quote = TRUE,
+      row.names = FALSE)
+    close(gzout)
+  }
+
+  message("Creating Glimma plots")
+  for (label in names(de_results)) {
+    message("\t", label)
+    x <- de_results[[label]]
+    i <- rownames(x)[!is.na(x$logFC)]
+    if (length(i)) {
+      x <- x[i, ]
+      j <- colnames(summed_filt)[colLabels(summed_filt) == label]
+      group <- summed_filt[, j][["Treatment"]]
+      anno <- cbind(
+        DataFrame(GeneID = i),
+        flattenDF(rowData(summed_filt)[i, ]))
+      Glimma::glMDPlot(
+        x = x,
+        xval = "logCPM",
+        yval = "logFC",
+        counts = logcounts(summed_filt)[i, j],
+        anno = anno,
+        display.columns = c("GeneID", "ID", "Symbol", "CHR", "FDR"),
+        groups = group,
+        samples = j,
+        status = ifelse(
+          x[, "FDR"] < fdr,
+          ifelse(x[i, "logFC"] > 0, 1, -1),
+          0),
+        transform = FALSE,
+        main = "Pseudobulk",
+        sample.cols = treatment_colours[summed_filt[, j]$Treatment],
+        path = outdir,
+        html = paste0(label, ".md-plot"),
+        launch = FALSE)
+    }
+  }
+
+  message("Creating CSVs of GO and KEGG analyses")
+  for (label in names(de_results)) {
+    x <- de_results[[label]]
+    fit <- metadata(x)$fit
+    res <- glmLRT(fit, coef = "TreatmentInfected")
+    geneid <- sapply(rowData(sce)[rownames(res), "NCBI.ENTREZID"], "[[", 1)
+
+    # GO
+    go <- goana(
+      res,
+      coef = "TreatmentInfected",
+      species = "Hs",
+      geneid = geneid)
+    # Get gene symbols associated with each GO term.
+    library(org.Hs.eg.db)
+    go_symbol_df <- select(
+      org.Hs.eg.db,
+      keys = rownames(go),
+      columns = "SYMBOL",
+      # NOTE: `keytype = "GO"` returns 'incomplete' results whereas
+      #       `keytype = "GOALL"` returns the 'complete' results.
+      #       I think this is the same issue described in the goseq vignette
+      #       (section 6.7):
+      #       "It is important to use the org.*.egGO2ALLEGS and NOT the org.*.egGO
+      #       object to create the mapping between GO categories and gene
+      #        identifiers, as the latter does not include the links to genes
+      #        arising from 'child' GO categories."
+      keytype = "GOALL")
+    go_symbol_df <- dplyr::left_join(
+      go_symbol_df,
+      as.data.frame(x[, c("logFC", "FDR")]) %>%
+        tibble::rownames_to_column(),
+      by = c("SYMBOL" = "rowname"))
+    # Extract gene symbols in each GO term that are up- or down-regulated.
+    go <- dplyr::left_join(
+      go %>%
+        tibble::rownames_to_column("GO"),
+      go_symbol_df %>%
+        dplyr::group_by(GOALL) %>%
+        dplyr::summarise(
+          upGeneSymbols =
+            paste(
+              unique(SYMBOL[which(logFC > 0 & FDR < fdr)]),
+              collapse = ", "),
+          downGeneSymbols =
+            paste(
+              unique(SYMBOL[which(logFC < 0 & FDR < fdr)]),
+              collapse = ", ")),
+      by = c("GO" = "GOALL"))
+    go <- tibble::column_to_rownames(go, "GO")
+    gzout <- gzfile(
+      description = file.path(outdir, paste0(label, ".GO.csv.gz")),
+      open = "wb")
+    write.csv(
+      go,
+      gzout,
+      # NOTE: quote = TRUE needed because some fields contain commas.
+      quote = TRUE,
+      row.names = TRUE)
+    close(gzout)
+
+    # KEGG
+    kegg <- kegga(
+      res,
+      coef = "TreatmentInfected",
+      species = "Hs",
+      geneid = geneid)
+    # Get gene symbols associated with each KEGG pathway.
+    library(org.Hs.eg.db)
+    kegg_symbol_df <- select(
+      org.Hs.eg.db,
+      # NOTE: The org.Hs.eg.db does not use the 'path:hsa'-prefix.
+      keys = sub("path:hsa", "", rownames(kegg)),
+      columns = "SYMBOL",
+      keytype = "PATH")
+    kegg_symbol_df <- dplyr::left_join(
+      kegg_symbol_df,
+      as.data.frame(x)[, c("logFC", "FDR")] %>%
+        tibble::rownames_to_column(),
+      by = c("SYMBOL" = "rowname"))
+    # Extract gene symbols in each KEGG pathway that are up- or down-regulated.
+    kegg <- dplyr::left_join(
+      kegg %>%
+        tibble::rownames_to_column("PATH") %>%
+        dplyr::mutate(PATH = sub("path:hsa", "", PATH)),
+      kegg_symbol_df %>%
+        dplyr::group_by(PATH) %>%
+        dplyr::summarise(
+          upGeneSymbols =
+            paste(
+              unique(SYMBOL[which(logFC > 0 & FDR < fdr)]),
+              collapse = ", "),
+          downGeneSymbols =
+            paste(
+              unique(SYMBOL[which(logFC < 0 & FDR < fdr)]),
+              collapse = ", ")),
+      by = c("PATH" = "PATH"))
+    kegg <- kegg %>%
+      dplyr::mutate(PATH = paste0("path:hsa", PATH)) %>%
+      tibble::column_to_rownames("PATH")
+    gzout <- gzfile(
+      description = file.path(
+        outdir,
+        paste0(label, ".KEGG.csv.gz")),
+      open = "wb")
+    write.csv(
+      kegg,
+      gzout,
+      # NOTE: quote = TRUE needed because some fields contain commas.
+      quote = TRUE,
+      row.names = TRUE)
+    close(gzout)
+  }
+}
