@@ -1043,7 +1043,9 @@ plotHeatmap(
   annotation_row = data.frame(
     markers = c(rep("dice.Mono_vs_CD4", 10), rep("dice.CD4_vs_Mono", 10)),
     row.names = markers),
-  color = hcl.colors(101, "Blue-Red 3"))
+  color = hcl.colors(101, "Blue-Red 3"),
+  column_annotation_colors = list(
+    label.main = label_main_collapsed_colours[unique(tmp$label.main)]))
 ```
 
 Figure \@ref(fig:test-dice-mono-and-cd4-markers) shows that both the `dice.Mono_vs_CD4` and `dice.CD4_vs_Mono` marker genes marker genes are indeed very specific to their respective clusters in our dataset.
@@ -1075,7 +1077,11 @@ plotHeatmap(
   annotation_row = data.frame(
     markers = c(rep("dice.Mono_vs_CD4", 10), rep("dice.CD4_vs_Mono", 10)),
     row.names = markers),
-  color = hcl.colors(101, "Blue-Red 3"),)
+  color = hcl.colors(101, "Blue-Red 3"),
+  column_annotation_colors = list(
+    cluster = cluster_colours,
+    label_cluster_main = label_main_collapsed_colours[
+      levels(sce$label_cluster_main)]))
 ```
 
 #### Expression of T cell receptor genes
@@ -1425,7 +1431,7 @@ Here, we specifically select (some of) the most strongly upregulated genes when 
 
 Figure \@ref(fig:ref-dice-cd8-and-cd4-markers) confirms that both the `dice.CD8_vs_CD4` and `dice.CD4_vs_CD8` marker genes distinguish these two cell types from one another in the `DICE` reference dataset.
 
-```{r ref-dice-cd8-and-cd4-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in the `DICE` reference dataset for selected marker genes between the `Monocytes` and `T cells, CD4+` labels. Each column is a sample, each row a gene", fig.asp = 1.1}
+```{r ref-dice-cd8-and-cd4-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in the `DICE` reference dataset for selected marker genes between the `T cells, CD8+` and `T cells, CD4+` labels. Each column is a sample, each row a gene", fig.asp = 1.1}
 # NOTE: Have to remove column names from DICE to avoid an error.
 tmp <- dice
 colnames(tmp) <- seq_len(ncol(tmp))
@@ -1442,10 +1448,13 @@ plotHeatmap(
   annotation_row = data.frame(
     markers = c(rep("dice.CD8_vs_CD4", 20), rep("dice.CD4_vs_CD8", 20)),
     row.names = markers),
-  color = hcl.colors(101, "Blue-Red 3"))
+  color = hcl.colors(101, "Blue-Red 3"),
+  column_annotation_colors = list(
+    label.main = label_main_collapsed_colours[unique(tmp$label.main)],
+    label.fine = label_fine_collapsed_colours[unique(tmp$label.fine)]))
 ```
 
-Figure \@ref(fig:test-dice-cd8-and-cd4-markers) shows that very few of the `dice.CD8_vs_CD4` marker genes are expressed at in any cells in our dataset.
+Figure \@ref(fig:test-dice-cd8-and-cd4-markers) shows that very few of the `dice.CD8_vs_CD4` marker genes are expressed in any cells in our dataset.
 In contrast, many of the cells express several of the `dice.CD4_vs_CD8` marker genes.
 
 ```{r test-dice-cd8-and-cd4-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in our dataset at the cell-level for selected marker genes between the `T cells, CD8+` and `T cells, CD4+` labels. Each column is a sample, each row a gene.", fig.asp = 1.1}
@@ -1462,14 +1471,21 @@ plotHeatmap(
     markers = c(rep("dice.CD8_vs_CD4", 20), rep("dice.CD4_vs_CD8", 20)),
     row.names = markers),
   color = hcl.colors(101, "Blue-Red 3"),
-  fontsize = 7)
+  fontsize = 7,
+  column_annotation_colors = list(
+    label_cell_main = label_main_collapsed_colours[levels(sce$label_cell_main)],
+    label.fine = label_fine_collapsed_colours[levels(sce$label_cell_fine)],
+    cluster = cluster_colours))
 ```
 
 Figure \@ref(fig:subset-test-dice-cd8-and-cd4-markers) shows that even amongst those cells not labelled as `T cells, CD4+`, very few of the `dice.CD8_vs_CD4` marker genes are expressed in our dataset.
 
 ```{r subset-test-dice-cd8-and-cd4-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in our dataset at the cell-level for selected marker genes between the `T cells, CD8+` and `T cells, CD4+` labels. Each column is a sample, each row a gene. Only cells not labelled as `T cells, CD4+` are shown.", fig.asp = 1.1}
+tmp <- sce[, which(sce$label_cell_main != "T cells, CD4+")]
+colData(tmp)[, !colnames(colData(tmp)) %in% c("TRA", "TRB")] <- 
+  droplevels(colData(tmp)[, !colnames(colData(tmp)) %in% c("TRA", "TRB")])
 plotHeatmap(
-  sce[, which(sce$label_cell_main != "T cells, CD4+")],
+  tmp,
   features = markers,
   colour_columns_by = c("label_cell_main", "label_cell_fine", "cluster"),
   center = TRUE,
@@ -1481,7 +1497,11 @@ plotHeatmap(
     markers = c(rep("dice.CD8_vs_CD4", 20), rep("dice.CD4_vs_CD8", 20)),
     row.names = markers),
   color = hcl.colors(101, "Blue-Red 3"),
-  fontsize = 7)
+  fontsize = 7,
+  column_annotation_colors = list(
+    label_cell_main = label_main_collapsed_colours[levels(tmp$label_cell_main)],
+    label.fine = label_fine_collapsed_colours[levels(tmp$label_cell_fine)],
+    cluster = cluster_colours[levels(tmp$cluster)]))
 ```
     
 ##### Summary
@@ -1520,10 +1540,14 @@ plotHeatmap(
   symmetric = TRUE,
   cluster_rows = TRUE,
   cluster_cols = TRUE,
-  color = hcl.colors(101, "Blue-Red 3"))
+  color = hcl.colors(101, "Blue-Red 3"),
+  column_annotation_colors = list(
+    label.main = label_main_collapsed_colours[unique(tmp$label.main)],
+    label.fine = label_fine_collapsed_colours[unique(tmp$label.fine)]))
 ```
 
 Consistent with this, Figure \@ref(fig:test-james-cd8-markers) shows high expression of these genes in cells labelled as various subtypes of CD4+ T-cells.
+Furthermore, Figure \@ref(fig:test-james-cd8-markers) shows high expression of these genes for those cells labelled as `NK cells` and low expression of those same genes in the few cells labelled as `T cells, CD8`.
 
 ```{r test-james-cd8-markers, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values in our dataset at the cell-level for 'CD8+ T-cell' marker genes provided by James. Each column is a sample, each row a gene.", fig.asp = 1.1}
 plotHeatmap(
@@ -1535,10 +1559,12 @@ plotHeatmap(
   order_columns_by = c("label_cell_main", "label_cell_fine", "cluster"),
   cluster_rows = TRUE,
   cluster_cols = TRUE,
-  color = hcl.colors(101, "Blue-Red 3"))
+  color = hcl.colors(101, "Blue-Red 3"),
+  column_annotation_colors = list(
+    label_cell_main = label_main_collapsed_colours[levels(sce$label_cell_main)],
+    label.fine = label_fine_collapsed_colours[levels(sce$label_cell_fine)],
+    cluster = cluster_colours))
 ```
-
-Furthermore, Figure \@ref(fig:test-james-cd8-markers) shows high expression of these genes for those cells labelled as `NK cells` and low expression of those same genes in the few cells labelled as `T cells, CD8`.
 
 ##### Summary
 
