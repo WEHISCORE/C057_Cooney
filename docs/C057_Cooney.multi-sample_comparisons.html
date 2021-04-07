@@ -1,0 +1,3244 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1"/>
+  <meta name="generator" content="distill" />
+
+  <style type="text/css">
+  /* Hide doc at startup (prevent jankiness while JS renders/transforms) */
+  body {
+    visibility: hidden;
+  }
+  </style>
+
+ <!--radix_placeholder_import_source-->
+ <!--/radix_placeholder_import_source-->
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ad0000; } /* Alert */
+code span.an { color: #5e5e5e; } /* Annotation */
+code span.at { color: #20794d; } /* Attribute */
+code span.bn { color: #ad0000; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007ba5; } /* ControlFlow */
+code span.ch { color: #20794d; } /* Char */
+code span.cn { color: #8f5902; } /* Constant */
+code span.co { color: #5e5e5e; } /* Comment */
+code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
+code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
+code span.dt { color: #ad0000; } /* DataType */
+code span.dv { color: #ad0000; } /* DecVal */
+code span.er { color: #ad0000; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #ad0000; } /* Float */
+code span.fu { color: #4758ab; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #5e5e5e; } /* Information */
+code span.kw { color: #007ba5; } /* Keyword */
+code span.op { color: #5e5e5e; } /* Operator */
+code span.ot { color: #007ba5; } /* Other */
+code span.pp { color: #ad0000; } /* Preprocessor */
+code span.sc { color: #20794d; } /* SpecialChar */
+code span.ss { color: #20794d; } /* SpecialString */
+code span.st { color: #20794d; } /* String */
+code span.va { color: #111111; } /* Variable */
+code span.vs { color: #20794d; } /* VerbatimString */
+code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
+</style>
+
+  <!--radix_placeholder_meta_tags-->
+  <title>C057: Multi-sample comparisons with the Cooney (C057) memory CD4+ T-cell data set</title>
+  
+  
+  
+  <!--  https://schema.org/Article -->
+  <meta property="article:published" itemprop="datePublished" content="2021-04-08"/>
+  <meta property="article:created" itemprop="dateCreated" content="2021-04-08"/>
+  <meta name="article:author" content="Peter Hickey"/>
+  
+  <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
+  <meta property="og:title" content="C057: Multi-sample comparisons with the Cooney (C057) memory CD4+ T-cell data set"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:locale" content="en_US"/>
+  <meta property="og:site_name" content="C057"/>
+  
+  <!--  https://dev.twitter.com/cards/types/summary -->
+  <meta property="twitter:card" content="summary"/>
+  <meta property="twitter:title" content="C057: Multi-sample comparisons with the Cooney (C057) memory CD4+ T-cell data set"/>
+  
+  <!--/radix_placeholder_meta_tags-->
+  
+  <!--radix_placeholder_rmarkdown_metadata-->
+  
+  <script type="text/json" id="radix-rmarkdown-metadata">
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","editor_options","bibliography"]}},"value":[{"type":"character","attributes":{},"value":["Multi-sample comparisons with the Cooney (C057) memory CD4+ T-cell data set"]},{"type":"NULL"},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Peter Hickey"]},{"type":"character","attributes":{},"value":["https://peterhickey.org"]},{"type":"character","attributes":{},"value":["WEHI SCORE"]},{"type":"character","attributes":{},"value":["https://www.wehi.edu.au/people/shalin-naik/3310/score"]}]}]},{"type":"character","attributes":{},"value":["2021-04-08"]},{"type":"character","attributes":{},"value":["distill::distill_article"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]},{"type":"character","attributes":{},"value":["ref.bib"]}]}
+  </script>
+  <!--/radix_placeholder_rmarkdown_metadata-->
+  <!--radix_placeholder_navigation_in_header-->
+  <meta name="distill:offset" content=""/>
+  
+  <script type="application/javascript">
+  
+    window.headroom_prevent_pin = false;
+  
+    window.document.addEventListener("DOMContentLoaded", function (event) {
+  
+      // initialize headroom for banner
+      var header = $('header').get(0);
+      var headerHeight = header.offsetHeight;
+      var headroom = new Headroom(header, {
+        tolerance: 5,
+        onPin : function() {
+          if (window.headroom_prevent_pin) {
+            window.headroom_prevent_pin = false;
+            headroom.unpin();
+          }
+        }
+      });
+      headroom.init();
+      if(window.location.hash)
+        headroom.unpin();
+      $(header).addClass('headroom--transition');
+  
+      // offset scroll location for banner on hash change
+      // (see: https://github.com/WickyNilliams/headroom.js/issues/38)
+      window.addEventListener("hashchange", function(event) {
+        window.scrollTo(0, window.pageYOffset - (headerHeight + 25));
+      });
+  
+      // responsive menu
+      $('.distill-site-header').each(function(i, val) {
+        var topnav = $(this);
+        var toggle = topnav.find('.nav-toggle');
+        toggle.on('click', function() {
+          topnav.toggleClass('responsive');
+        });
+      });
+  
+      // nav dropdowns
+      $('.nav-dropbtn').click(function(e) {
+        $(this).next('.nav-dropdown-content').toggleClass('nav-dropdown-active');
+        $(this).parent().siblings('.nav-dropdown')
+           .children('.nav-dropdown-content').removeClass('nav-dropdown-active');
+      });
+      $("body").click(function(e){
+        $('.nav-dropdown-content').removeClass('nav-dropdown-active');
+      });
+      $(".nav-dropdown").click(function(e){
+        e.stopPropagation();
+      });
+    });
+  </script>
+  
+  <style type="text/css">
+  
+  /* Theme (user-documented overrideables for nav appearance) */
+  
+  .distill-site-nav {
+    color: rgba(255, 255, 255, 0.8);
+    background-color: #0F2E3D;
+    font-size: 15px;
+    font-weight: 300;
+  }
+  
+  .distill-site-nav a {
+    color: inherit;
+    text-decoration: none;
+  }
+  
+  .distill-site-nav a:hover {
+    color: white;
+  }
+  
+  @media print {
+    .distill-site-nav {
+      display: none;
+    }
+  }
+  
+  .distill-site-header {
+  
+  }
+  
+  .distill-site-footer {
+  
+  }
+  
+  
+  /* Site Header */
+  
+  .distill-site-header {
+    width: 100%;
+    box-sizing: border-box;
+    z-index: 3;
+  }
+  
+  .distill-site-header .nav-left {
+    display: inline-block;
+    margin-left: 8px;
+  }
+  
+  @media screen and (max-width: 768px) {
+    .distill-site-header .nav-left {
+      margin-left: 0;
+    }
+  }
+  
+  
+  .distill-site-header .nav-right {
+    float: right;
+    margin-right: 8px;
+  }
+  
+  .distill-site-header a,
+  .distill-site-header .title {
+    display: inline-block;
+    text-align: center;
+    padding: 14px 10px 14px 10px;
+  }
+  
+  .distill-site-header .title {
+    font-size: 18px;
+    min-width: 150px;
+  }
+  
+  .distill-site-header .logo {
+    padding: 0;
+  }
+  
+  .distill-site-header .logo img {
+    display: none;
+    max-height: 20px;
+    width: auto;
+    margin-bottom: -4px;
+  }
+  
+  .distill-site-header .nav-image img {
+    max-height: 18px;
+    width: auto;
+    display: inline-block;
+    margin-bottom: -3px;
+  }
+  
+  
+  
+  @media screen and (min-width: 1000px) {
+    .distill-site-header .logo img {
+      display: inline-block;
+    }
+    .distill-site-header .nav-left {
+      margin-left: 20px;
+    }
+    .distill-site-header .nav-right {
+      margin-right: 20px;
+    }
+    .distill-site-header .title {
+      padding-left: 12px;
+    }
+  }
+  
+  
+  .distill-site-header .nav-toggle {
+    display: none;
+  }
+  
+  .nav-dropdown {
+    display: inline-block;
+    position: relative;
+  }
+  
+  .nav-dropdown .nav-dropbtn {
+    border: none;
+    outline: none;
+    color: rgba(255, 255, 255, 0.8);
+    padding: 16px 10px;
+    background-color: transparent;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    margin: 0;
+    margin-top: 1px;
+    z-index: 2;
+  }
+  
+  .nav-dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    min-width: 200px;
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 4px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
+    z-index: 1;
+    margin-top: 2px;
+    white-space: nowrap;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+  
+  .nav-dropdown-content hr {
+    margin-top: 4px;
+    margin-bottom: 4px;
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  .nav-dropdown-active {
+    display: block;
+  }
+  
+  .nav-dropdown-content a, .nav-dropdown-content .nav-dropdown-header {
+    color: black;
+    padding: 6px 24px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+  }
+  
+  .nav-dropdown-content .nav-dropdown-header {
+    display: block;
+    padding: 5px 24px;
+    padding-bottom: 0;
+    text-transform: uppercase;
+    font-size: 14px;
+    color: #999999;
+    white-space: nowrap;
+  }
+  
+  .nav-dropdown:hover .nav-dropbtn {
+    color: white;
+  }
+  
+  .nav-dropdown-content a:hover {
+    background-color: #ddd;
+    color: black;
+  }
+  
+  .nav-right .nav-dropdown-content {
+    margin-left: -45%;
+    right: 0;
+  }
+  
+  @media screen and (max-width: 768px) {
+    .distill-site-header a, .distill-site-header .nav-dropdown  {display: none;}
+    .distill-site-header a.nav-toggle {
+      float: right;
+      display: block;
+    }
+    .distill-site-header .title {
+      margin-left: 0;
+    }
+    .distill-site-header .nav-right {
+      margin-right: 0;
+    }
+    .distill-site-header {
+      overflow: hidden;
+    }
+    .nav-right .nav-dropdown-content {
+      margin-left: 0;
+    }
+  }
+  
+  
+  @media screen and (max-width: 768px) {
+    .distill-site-header.responsive {position: relative; min-height: 500px; }
+    .distill-site-header.responsive a.nav-toggle {
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    .distill-site-header.responsive a,
+    .distill-site-header.responsive .nav-dropdown {
+      display: block;
+      text-align: left;
+    }
+    .distill-site-header.responsive .nav-left,
+    .distill-site-header.responsive .nav-right {
+      width: 100%;
+    }
+    .distill-site-header.responsive .nav-dropdown {float: none;}
+    .distill-site-header.responsive .nav-dropdown-content {position: relative;}
+    .distill-site-header.responsive .nav-dropdown .nav-dropbtn {
+      display: block;
+      width: 100%;
+      text-align: left;
+    }
+  }
+  
+  /* Site Footer */
+  
+  .distill-site-footer {
+    width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+    z-index: 3;
+    margin-top: 30px;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    text-align: center;
+  }
+  
+  /* Headroom */
+  
+  d-title {
+    padding-top: 6rem;
+  }
+  
+  @media print {
+    d-title {
+      padding-top: 4rem;
+    }
+  }
+  
+  .headroom {
+    z-index: 1000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+  
+  .headroom--transition {
+    transition: all .4s ease-in-out;
+  }
+  
+  .headroom--unpinned {
+    top: -100px;
+  }
+  
+  .headroom--pinned {
+    top: 0;
+  }
+  
+  /* adjust viewport for navbar height */
+  /* helps vertically center bootstrap (non-distill) content */
+  .min-vh-100 {
+    min-height: calc(100vh - 100px) !important;
+  }
+  
+  </style>
+  
+  <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+  <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet"/>
+  <link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet"/>
+  <script src="site_libs/headroom-0.9.4/headroom.min.js"></script>
+  <script src="site_libs/autocomplete-0.37.1/autocomplete.min.js"></script>
+  <script src="site_libs/fuse-6.4.1/fuse.min.js"></script>
+  
+  <script type="application/javascript">
+  
+  function getMeta(metaName) {
+    var metas = document.getElementsByTagName('meta');
+    for (let i = 0; i < metas.length; i++) {
+      if (metas[i].getAttribute('name') === metaName) {
+        return metas[i].getAttribute('content');
+      }
+    }
+    return '';
+  }
+  
+  function offsetURL(url) {
+    var offset = getMeta('distill:offset');
+    return offset ? offset + '/' + url : url;
+  }
+  
+  function createFuseIndex() {
+  
+    // create fuse index
+    var options = {
+      keys: [
+        { name: 'title', weight: 20 },
+        { name: 'categories', weight: 15 },
+        { name: 'description', weight: 10 },
+        { name: 'contents', weight: 5 },
+      ],
+      ignoreLocation: true,
+      threshold: 0
+    };
+    var fuse = new window.Fuse([], options);
+  
+    // fetch the main search.json
+    return fetch(offsetURL('search.json'))
+      .then(function(response) {
+        if (response.status == 200) {
+          return response.json().then(function(json) {
+            // index main articles
+            json.articles.forEach(function(article) {
+              fuse.add(article);
+            });
+            // download collections and index their articles
+            return Promise.all(json.collections.map(function(collection) {
+              return fetch(offsetURL(collection)).then(function(response) {
+                if (response.status === 200) {
+                  return response.json().then(function(articles) {
+                    articles.forEach(function(article) {
+                      fuse.add(article);
+                    });
+                  })
+                } else {
+                  return Promise.reject(
+                    new Error('Unexpected status from search index request: ' +
+                              response.status)
+                  );
+                }
+              });
+            })).then(function() {
+              return fuse;
+            });
+          });
+  
+        } else {
+          return Promise.reject(
+            new Error('Unexpected status from search index request: ' +
+                        response.status)
+          );
+        }
+      });
+  }
+  
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+  
+    // get search element (bail if we don't have one)
+    var searchEl = window.document.getElementById('distill-search');
+    if (!searchEl)
+      return;
+  
+    createFuseIndex()
+      .then(function(fuse) {
+  
+        // make search box visible
+        searchEl.classList.remove('hidden');
+  
+        // initialize autocomplete
+        var options = {
+          autoselect: true,
+          hint: false,
+          minLength: 2,
+        };
+        window.autocomplete(searchEl, options, [{
+          source: function(query, callback) {
+            const searchOptions = {
+              isCaseSensitive: false,
+              shouldSort: true,
+              minMatchCharLength: 2,
+              limit: 10,
+            };
+            var results = fuse.search(query, searchOptions);
+            callback(results
+              .map(function(result) { return result.item; })
+            );
+          },
+          templates: {
+            suggestion: function(suggestion) {
+              var img = suggestion.preview && Object.keys(suggestion.preview).length > 0
+                ? `<img src="${offsetURL(suggestion.preview)}"</img>`
+                : '';
+              var html = `
+                <div class="search-item">
+                  <h3>${suggestion.title}</h3>
+                  <div class="search-item-description">
+                    ${suggestion.description || ''}
+                  </div>
+                  <div class="search-item-preview">
+                    ${img}
+                  </div>
+                </div>
+              `;
+              return html;
+            }
+          }
+        }]).on('autocomplete:selected', function(event, suggestion) {
+          window.location.href = offsetURL(suggestion.path);
+        });
+        // remove inline display style on autocompleter (we want to
+        // manage responsive display via css)
+        $('.algolia-autocomplete').css("display", "");
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
+  
+  });
+  
+  </script>
+  
+  <style type="text/css">
+  
+  .nav-search {
+    font-size: x-small;
+  }
+  
+  /* Algolioa Autocomplete */
+  
+  .algolia-autocomplete {
+    display: inline-block;
+    margin-left: 10px;
+    vertical-align: sub;
+    background-color: white;
+    color: black;
+    padding: 6px;
+    padding-top: 8px;
+    padding-bottom: 0;
+    border-radius: 6px;
+    border: 1px #0F2E3D solid;
+    width: 180px;
+  }
+  
+  
+  @media screen and (max-width: 768px) {
+    .distill-site-nav .algolia-autocomplete {
+      display: none;
+      visibility: hidden;
+    }
+    .distill-site-nav.responsive .algolia-autocomplete {
+      display: inline-block;
+      visibility: visible;
+    }
+    .distill-site-nav.responsive .algolia-autocomplete .aa-dropdown-menu {
+      margin-left: 0;
+      width: 400px;
+      max-height: 400px;
+    }
+  }
+  
+  .algolia-autocomplete .aa-input, .algolia-autocomplete .aa-hint {
+    width: 90%;
+    outline: none;
+    border: none;
+  }
+  
+  .algolia-autocomplete .aa-hint {
+    color: #999;
+  }
+  .algolia-autocomplete .aa-dropdown-menu {
+    width: 550px;
+    max-height: 70vh;
+    overflow-x: visible;
+    overflow-y: scroll;
+    padding: 5px;
+    margin-top: 3px;
+    margin-left: -150px;
+    background-color: #fff;
+    border-radius: 5px;
+    border: 1px solid #999;
+    border-top: none;
+  }
+  
+  .algolia-autocomplete .aa-dropdown-menu .aa-suggestion {
+    cursor: pointer;
+    padding: 5px 4px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .algolia-autocomplete .aa-dropdown-menu .aa-suggestion:last-of-type {
+    border-bottom: none;
+    margin-bottom: 2px;
+  }
+  
+  .algolia-autocomplete .aa-dropdown-menu .aa-suggestion .search-item {
+    overflow: hidden;
+    font-size: 0.8em;
+    line-height: 1.4em;
+  }
+  
+  .algolia-autocomplete .aa-dropdown-menu .aa-suggestion .search-item h3 {
+    font-size: 1rem;
+    margin-block-start: 0;
+    margin-block-end: 5px;
+  }
+  
+  .algolia-autocomplete .aa-dropdown-menu .aa-suggestion .search-item-description {
+    display: inline-block;
+    overflow: hidden;
+    height: 2.8em;
+    width: 80%;
+    margin-right: 4%;
+  }
+  
+  .algolia-autocomplete .aa-dropdown-menu .aa-suggestion .search-item-preview {
+    display: inline-block;
+    width: 15%;
+  }
+  
+  .algolia-autocomplete .aa-dropdown-menu .aa-suggestion .search-item-preview img {
+    height: 3em;
+    width: auto;
+    display: none;
+  }
+  
+  .algolia-autocomplete .aa-dropdown-menu .aa-suggestion .search-item-preview img[src] {
+    display: initial;
+  }
+  
+  .algolia-autocomplete .aa-dropdown-menu .aa-suggestion.aa-cursor {
+    background-color: #eee;
+  }
+  .algolia-autocomplete .aa-dropdown-menu .aa-suggestion em {
+    font-weight: bold;
+    font-style: normal;
+  }
+  
+  </style>
+  
+  
+  <!--/radix_placeholder_navigation_in_header-->
+  <!--radix_placeholder_distill-->
+  
+  <style type="text/css">
+  
+  body {
+    background-color: white;
+  }
+  
+  .pandoc-table {
+    width: 100%;
+  }
+  
+  .pandoc-table>caption {
+    margin-bottom: 10px;
+  }
+  
+  .pandoc-table th:not([align]) {
+    text-align: left;
+  }
+  
+  .pagedtable-footer {
+    font-size: 15px;
+  }
+  
+  d-byline .byline {
+    grid-template-columns: 2fr 2fr;
+  }
+  
+  d-byline .byline h3 {
+    margin-block-start: 1.5em;
+  }
+  
+  d-byline .byline .authors-affiliations h3 {
+    margin-block-start: 0.5em;
+  }
+  
+  .authors-affiliations .orcid-id {
+    width: 16px;
+    height:16px;
+    margin-left: 4px;
+    margin-right: 4px;
+    vertical-align: middle;
+    padding-bottom: 2px;
+  }
+  
+  d-title .dt-tags {
+    margin-top: 1em;
+    grid-column: text;
+  }
+  
+  .dt-tags .dt-tag {
+    text-decoration: none;
+    display: inline-block;
+    color: rgba(0,0,0,0.6);
+    padding: 0em 0.4em;
+    margin-right: 0.5em;
+    margin-bottom: 0.4em;
+    font-size: 70%;
+    border: 1px solid rgba(0,0,0,0.2);
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  
+  d-article table.gt_table td,
+  d-article table.gt_table th {
+    border-bottom: none;
+  }
+  
+  .html-widget {
+    margin-bottom: 2.0em;
+  }
+  
+  .l-screen-inset {
+    padding-right: 16px;
+  }
+  
+  .l-screen .caption {
+    margin-left: 10px;
+  }
+  
+  .shaded {
+    background: rgb(247, 247, 247);
+    padding-top: 20px;
+    padding-bottom: 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  .shaded .html-widget {
+    margin-bottom: 0;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  .shaded .shaded-content {
+    background: white;
+  }
+  
+  .text-output {
+    margin-top: 0;
+    line-height: 1.5em;
+  }
+  
+  .hidden {
+    display: none !important;
+  }
+  
+  d-article {
+    padding-top: 2.5rem;
+    padding-bottom: 30px;
+  }
+  
+  d-appendix {
+    padding-top: 30px;
+  }
+  
+  d-article>p>img {
+    width: 100%;
+  }
+  
+  d-article h2 {
+    margin: 1rem 0 1.5rem 0;
+  }
+  
+  d-article h3 {
+    margin-top: 1.5rem;
+  }
+  
+  d-article iframe {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 2.0em;
+    width: 100%;
+  }
+  
+  /* Tweak code blocks */
+  
+  d-article div.sourceCode code,
+  d-article pre code {
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+  }
+  
+  d-article pre,
+  d-article div.sourceCode,
+  d-article div.sourceCode pre {
+    overflow: auto;
+  }
+  
+  d-article div.sourceCode {
+    background-color: white;
+  }
+  
+  d-article div.sourceCode pre {
+    padding-left: 10px;
+    font-size: 12px;
+    border-left: 2px solid rgba(0,0,0,0.1);
+  }
+  
+  d-article pre {
+    font-size: 12px;
+    color: black;
+    background: none;
+    margin-top: 0;
+    text-align: left;
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    word-wrap: normal;
+    line-height: 1.5;
+  
+    -moz-tab-size: 4;
+    -o-tab-size: 4;
+    tab-size: 4;
+  
+    -webkit-hyphens: none;
+    -moz-hyphens: none;
+    -ms-hyphens: none;
+    hyphens: none;
+  }
+  
+  d-article pre a {
+    border-bottom: none;
+  }
+  
+  d-article pre a:hover {
+    border-bottom: none;
+    text-decoration: underline;
+  }
+  
+  d-article details {
+    grid-column: text;
+    margin-bottom: 0.8em;
+  }
+  
+  @media(min-width: 768px) {
+  
+  d-article pre,
+  d-article div.sourceCode,
+  d-article div.sourceCode pre {
+    overflow: visible !important;
+  }
+  
+  d-article div.sourceCode pre {
+    padding-left: 18px;
+    font-size: 14px;
+  }
+  
+  d-article pre {
+    font-size: 14px;
+  }
+  
+  }
+  
+  figure img.external {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+    padding: 18px;
+    box-sizing: border-box;
+  }
+  
+  /* CSS for d-contents */
+  
+  .d-contents {
+    grid-column: text;
+    color: rgba(0,0,0,0.8);
+    font-size: 0.9em;
+    padding-bottom: 1em;
+    margin-bottom: 1em;
+    padding-bottom: 0.5em;
+    margin-bottom: 1em;
+    padding-left: 0.25em;
+    justify-self: start;
+  }
+  
+  @media(min-width: 1000px) {
+    .d-contents.d-contents-float {
+      height: 0;
+      grid-column-start: 1;
+      grid-column-end: 4;
+      justify-self: center;
+      padding-right: 3em;
+      padding-left: 2em;
+    }
+  }
+  
+  .d-contents nav h3 {
+    font-size: 18px;
+    margin-top: 0;
+    margin-bottom: 1em;
+  }
+  
+  .d-contents li {
+    list-style-type: none
+  }
+  
+  .d-contents nav > ul {
+    padding-left: 0;
+  }
+  
+  .d-contents ul {
+    padding-left: 1em
+  }
+  
+  .d-contents nav ul li {
+    margin-top: 0.6em;
+    margin-bottom: 0.2em;
+  }
+  
+  .d-contents nav a {
+    font-size: 13px;
+    border-bottom: none;
+    text-decoration: none
+    color: rgba(0, 0, 0, 0.8);
+  }
+  
+  .d-contents nav a:hover {
+    text-decoration: underline solid rgba(0, 0, 0, 0.6)
+  }
+  
+  .d-contents nav > ul > li > a {
+    font-weight: 600;
+  }
+  
+  .d-contents nav > ul > li > ul {
+    font-weight: inherit;
+  }
+  
+  .d-contents nav > ul > li > ul > li {
+    margin-top: 0.2em;
+  }
+  
+  
+  .d-contents nav ul {
+    margin-top: 0;
+    margin-bottom: 0.25em;
+  }
+  
+  .d-article-with-toc h2:nth-child(2) {
+    margin-top: 0;
+  }
+  
+  
+  /* Figure */
+  
+  .figure {
+    position: relative;
+    margin-bottom: 2.5em;
+    margin-top: 1.5em;
+  }
+  
+  .figure img {
+    width: 100%;
+  }
+  
+  .figure .caption {
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 12px;
+    line-height: 1.5em;
+  }
+  
+  .figure img.external {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+    padding: 18px;
+    box-sizing: border-box;
+  }
+  
+  .figure .caption a {
+    color: rgba(0, 0, 0, 0.6);
+  }
+  
+  .figure .caption b,
+  .figure .caption strong, {
+    font-weight: 600;
+    color: rgba(0, 0, 0, 1.0);
+  }
+  
+  /* Citations */
+  
+  d-article .citation {
+    color: inherit;
+    cursor: inherit;
+  }
+  
+  div.hanging-indent{
+    margin-left: 1em; text-indent: -1em;
+  }
+  
+  /* Citation hover box */
+  
+  .tippy-box[data-theme~=light-border] {
+    background-color: rgba(250, 250, 250, 0.95);
+  }
+  
+  .tippy-content > p {
+    margin-bottom: 0;
+    padding: 2px;
+  }
+  
+  
+  /* Tweak 1000px media break to show more text */
+  
+  @media(min-width: 1000px) {
+    .base-grid,
+    distill-header,
+    d-title,
+    d-abstract,
+    d-article,
+    d-appendix,
+    distill-appendix,
+    d-byline,
+    d-footnote-list,
+    d-citation-list,
+    distill-footer {
+      grid-template-columns: [screen-start] 1fr [page-start kicker-start] 80px [middle-start] 50px [text-start kicker-end] 65px 65px 65px 65px 65px 65px 65px 65px [text-end gutter-start] 65px [middle-end] 65px [page-end gutter-end] 1fr [screen-end];
+      grid-column-gap: 16px;
+    }
+  
+    .grid {
+      grid-column-gap: 16px;
+    }
+  
+    d-article {
+      font-size: 1.06rem;
+      line-height: 1.7em;
+    }
+    figure .caption, .figure .caption, figure figcaption {
+      font-size: 13px;
+    }
+  }
+  
+  @media(min-width: 1180px) {
+    .base-grid,
+    distill-header,
+    d-title,
+    d-abstract,
+    d-article,
+    d-appendix,
+    distill-appendix,
+    d-byline,
+    d-footnote-list,
+    d-citation-list,
+    distill-footer {
+      grid-template-columns: [screen-start] 1fr [page-start kicker-start] 60px [middle-start] 60px [text-start kicker-end] 60px 60px 60px 60px 60px 60px 60px 60px [text-end gutter-start] 60px [middle-end] 60px [page-end gutter-end] 1fr [screen-end];
+      grid-column-gap: 32px;
+    }
+  
+    .grid {
+      grid-column-gap: 32px;
+    }
+  }
+  
+  
+  /* Get the citation styles for the appendix (not auto-injected on render since
+     we do our own rendering of the citation appendix) */
+  
+  d-appendix .citation-appendix,
+  .d-appendix .citation-appendix {
+    font-size: 11px;
+    line-height: 15px;
+    border-left: 1px solid rgba(0, 0, 0, 0.1);
+    padding-left: 18px;
+    border: 1px solid rgba(0,0,0,0.1);
+    background: rgba(0, 0, 0, 0.02);
+    padding: 10px 18px;
+    border-radius: 3px;
+    color: rgba(150, 150, 150, 1);
+    overflow: hidden;
+    margin-top: -12px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  
+  /* Include appendix styles here so they can be overridden */
+  
+  d-appendix {
+    contain: layout style;
+    font-size: 0.8em;
+    line-height: 1.7em;
+    margin-top: 60px;
+    margin-bottom: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    color: rgba(0,0,0,0.5);
+    padding-top: 60px;
+    padding-bottom: 48px;
+  }
+  
+  d-appendix h3 {
+    grid-column: page-start / text-start;
+    font-size: 15px;
+    font-weight: 500;
+    margin-top: 1em;
+    margin-bottom: 0;
+    color: rgba(0,0,0,0.65);
+  }
+  
+  d-appendix h3 + * {
+    margin-top: 1em;
+  }
+  
+  d-appendix ol {
+    padding: 0 0 0 15px;
+  }
+  
+  @media (min-width: 768px) {
+    d-appendix ol {
+      padding: 0 0 0 30px;
+      margin-left: -30px;
+    }
+  }
+  
+  d-appendix li {
+    margin-bottom: 1em;
+  }
+  
+  d-appendix a {
+    color: rgba(0, 0, 0, 0.6);
+  }
+  
+  d-appendix > * {
+    grid-column: text;
+  }
+  
+  d-appendix > d-footnote-list,
+  d-appendix > d-citation-list,
+  d-appendix > distill-appendix {
+    grid-column: screen;
+  }
+  
+  /* Include footnote styles here so they can be overridden */
+  
+  d-footnote-list {
+    contain: layout style;
+  }
+  
+  d-footnote-list > * {
+    grid-column: text;
+  }
+  
+  d-footnote-list a.footnote-backlink {
+    color: rgba(0,0,0,0.3);
+    padding-left: 0.5em;
+  }
+  
+  
+  
+  /* Anchor.js */
+  
+  .anchorjs-link {
+    /*transition: all .25s linear; */
+    text-decoration: none;
+    border-bottom: none;
+  }
+  *:hover > .anchorjs-link {
+    margin-left: -1.125em !important;
+    text-decoration: none;
+    border-bottom: none;
+  }
+  
+  /* Social footer */
+  
+  .social_footer {
+    margin-top: 30px;
+    margin-bottom: 0;
+    color: rgba(0,0,0,0.67);
+  }
+  
+  .disqus-comments {
+    margin-right: 30px;
+  }
+  
+  .disqus-comment-count {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+  }
+  
+  #disqus_thread {
+    margin-top: 30px;
+  }
+  
+  .article-sharing a {
+    border-bottom: none;
+    margin-right: 8px;
+  }
+  
+  .article-sharing a:hover {
+    border-bottom: none;
+  }
+  
+  .sidebar-section.subscribe {
+    font-size: 12px;
+    line-height: 1.6em;
+  }
+  
+  .subscribe p {
+    margin-bottom: 0.5em;
+  }
+  
+  
+  .article-footer .subscribe {
+    font-size: 15px;
+    margin-top: 45px;
+  }
+  
+  
+  .sidebar-section.custom {
+    font-size: 12px;
+    line-height: 1.6em;
+  }
+  
+  .custom p {
+    margin-bottom: 0.5em;
+  }
+  
+  /* Styles for listing layout (hide title) */
+  .layout-listing d-title, .layout-listing .d-title {
+    display: none;
+  }
+  
+  /* Styles for posts lists (not auto-injected) */
+  
+  
+  .posts-with-sidebar {
+    padding-left: 45px;
+    padding-right: 45px;
+  }
+  
+  .posts-list .description h2,
+  .posts-list .description p {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif;
+  }
+  
+  .posts-list .description h2 {
+    font-weight: 700;
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  
+  .posts-list h2.post-tag {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    padding-bottom: 12px;
+  }
+  .posts-list {
+    margin-top: 60px;
+    margin-bottom: 24px;
+  }
+  
+  .posts-list .post-preview {
+    text-decoration: none;
+    overflow: hidden;
+    display: block;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 24px 0;
+  }
+  
+  .post-preview-last {
+    border-bottom: none !important;
+  }
+  
+  .posts-list .posts-list-caption {
+    grid-column: screen;
+    font-weight: 400;
+  }
+  
+  .posts-list .post-preview h2 {
+    margin: 0 0 6px 0;
+    line-height: 1.2em;
+    font-style: normal;
+    font-size: 24px;
+  }
+  
+  .posts-list .post-preview p {
+    margin: 0 0 12px 0;
+    line-height: 1.4em;
+    font-size: 16px;
+  }
+  
+  .posts-list .post-preview .thumbnail {
+    box-sizing: border-box;
+    margin-bottom: 24px;
+    position: relative;
+    max-width: 500px;
+  }
+  .posts-list .post-preview img {
+    width: 100%;
+    display: block;
+  }
+  
+  .posts-list .metadata {
+    font-size: 12px;
+    line-height: 1.4em;
+    margin-bottom: 18px;
+  }
+  
+  .posts-list .metadata > * {
+    display: inline-block;
+  }
+  
+  .posts-list .metadata .publishedDate {
+    margin-right: 2em;
+  }
+  
+  .posts-list .metadata .dt-authors {
+    display: block;
+    margin-top: 0.3em;
+    margin-right: 2em;
+  }
+  
+  .posts-list .dt-tags {
+    display: block;
+    line-height: 1em;
+  }
+  
+  .posts-list .dt-tags .dt-tag {
+    display: inline-block;
+    color: rgba(0,0,0,0.6);
+    padding: 0.3em 0.4em;
+    margin-right: 0.2em;
+    margin-bottom: 0.4em;
+    font-size: 60%;
+    border: 1px solid rgba(0,0,0,0.2);
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  
+  .posts-list img {
+    opacity: 1;
+  }
+  
+  .posts-list img[data-src] {
+    opacity: 0;
+  }
+  
+  .posts-more {
+    clear: both;
+  }
+  
+  
+  .posts-sidebar {
+    font-size: 16px;
+  }
+  
+  .posts-sidebar h3 {
+    font-size: 16px;
+    margin-top: 0;
+    margin-bottom: 0.5em;
+    font-weight: 400;
+    text-transform: uppercase;
+  }
+  
+  .sidebar-section {
+    margin-bottom: 30px;
+  }
+  
+  .categories ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .categories li {
+    color: rgba(0, 0, 0, 0.8);
+    margin-bottom: 0;
+  }
+  
+  .categories li>a {
+    border-bottom: none;
+  }
+  
+  .categories li>a:hover {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+  }
+  
+  .categories .active {
+    font-weight: 600;
+  }
+  
+  .categories .category-count {
+    color: rgba(0, 0, 0, 0.4);
+  }
+  
+  
+  @media(min-width: 768px) {
+    .posts-list .post-preview h2 {
+      font-size: 26px;
+    }
+    .posts-list .post-preview .thumbnail {
+      float: right;
+      width: 30%;
+      margin-bottom: 0;
+    }
+    .posts-list .post-preview .description {
+      float: left;
+      width: 45%;
+    }
+    .posts-list .post-preview .metadata {
+      float: left;
+      width: 20%;
+      margin-top: 8px;
+    }
+    .posts-list .post-preview p {
+      margin: 0 0 12px 0;
+      line-height: 1.5em;
+      font-size: 16px;
+    }
+    .posts-with-sidebar .posts-list {
+      float: left;
+      width: 75%;
+    }
+    .posts-with-sidebar .posts-sidebar {
+      float: right;
+      width: 20%;
+      margin-top: 60px;
+      padding-top: 24px;
+      padding-bottom: 24px;
+    }
+  }
+  
+  
+  /* Improve display for browsers without grid (IE/Edge <= 15) */
+  
+  .downlevel {
+    line-height: 1.6em;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+  }
+  
+  .downlevel .d-title {
+    padding-top: 6rem;
+    padding-bottom: 1.5rem;
+  }
+  
+  .downlevel .d-title h1 {
+    font-size: 50px;
+    font-weight: 700;
+    line-height: 1.1em;
+    margin: 0 0 0.5rem;
+  }
+  
+  .downlevel .d-title p {
+    font-weight: 300;
+    font-size: 1.2rem;
+    line-height: 1.55em;
+    margin-top: 0;
+  }
+  
+  .downlevel .d-byline {
+    padding-top: 0.8em;
+    padding-bottom: 0.8em;
+    font-size: 0.8rem;
+    line-height: 1.8em;
+  }
+  
+  .downlevel .section-separator {
+    border: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  .downlevel .d-article {
+    font-size: 1.06rem;
+    line-height: 1.7em;
+    padding-top: 1rem;
+    padding-bottom: 2rem;
+  }
+  
+  
+  .downlevel .d-appendix {
+    padding-left: 0;
+    padding-right: 0;
+    max-width: none;
+    font-size: 0.8em;
+    line-height: 1.7em;
+    margin-bottom: 0;
+    color: rgba(0,0,0,0.5);
+    padding-top: 40px;
+    padding-bottom: 48px;
+  }
+  
+  .downlevel .footnotes ol {
+    padding-left: 13px;
+  }
+  
+  .downlevel .base-grid,
+  .downlevel .distill-header,
+  .downlevel .d-title,
+  .downlevel .d-abstract,
+  .downlevel .d-article,
+  .downlevel .d-appendix,
+  .downlevel .distill-appendix,
+  .downlevel .d-byline,
+  .downlevel .d-footnote-list,
+  .downlevel .d-citation-list,
+  .downlevel .distill-footer,
+  .downlevel .appendix-bottom,
+  .downlevel .posts-container {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+  
+  @media(min-width: 768px) {
+    .downlevel .base-grid,
+    .downlevel .distill-header,
+    .downlevel .d-title,
+    .downlevel .d-abstract,
+    .downlevel .d-article,
+    .downlevel .d-appendix,
+    .downlevel .distill-appendix,
+    .downlevel .d-byline,
+    .downlevel .d-footnote-list,
+    .downlevel .d-citation-list,
+    .downlevel .distill-footer,
+    .downlevel .appendix-bottom,
+    .downlevel .posts-container {
+    padding-left: 150px;
+    padding-right: 150px;
+    max-width: 900px;
+  }
+  }
+  
+  .downlevel pre code {
+    display: block;
+    border-left: 2px solid rgba(0, 0, 0, .1);
+    padding: 0 0 0 20px;
+    font-size: 14px;
+  }
+  
+  .downlevel code, .downlevel pre {
+    color: black;
+    background: none;
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    text-align: left;
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    word-wrap: normal;
+    line-height: 1.5;
+  
+    -moz-tab-size: 4;
+    -o-tab-size: 4;
+    tab-size: 4;
+  
+    -webkit-hyphens: none;
+    -moz-hyphens: none;
+    -ms-hyphens: none;
+    hyphens: none;
+  }
+  
+  .downlevel .posts-list .post-preview {
+    color: inherit;
+  }
+  
+  
+  
+  </style>
+  
+  <script type="application/javascript">
+  
+  function is_downlevel_browser() {
+    if (bowser.isUnsupportedBrowser({ msie: "12", msedge: "16"},
+                                   window.navigator.userAgent)) {
+      return true;
+    } else {
+      return window.load_distill_framework === undefined;
+    }
+  }
+  
+  // show body when load is complete
+  function on_load_complete() {
+  
+    // add anchors
+    if (window.anchors) {
+      window.anchors.options.placement = 'left';
+      window.anchors.add('d-article > h2, d-article > h3, d-article > h4, d-article > h5');
+    }
+  
+  
+    // set body to visible
+    document.body.style.visibility = 'visible';
+  
+    // force redraw for leaflet widgets
+    if (window.HTMLWidgets) {
+      var maps = window.HTMLWidgets.findAll(".leaflet");
+      $.each(maps, function(i, el) {
+        var map = this.getMap();
+        map.invalidateSize();
+        map.eachLayer(function(layer) {
+          if (layer instanceof L.TileLayer)
+            layer.redraw();
+        });
+      });
+    }
+  
+    // trigger 'shown' so htmlwidgets resize
+    $('d-article').trigger('shown');
+  }
+  
+  function init_distill() {
+  
+    init_common();
+  
+    // create front matter
+    var front_matter = $('<d-front-matter></d-front-matter>');
+    $('#distill-front-matter').wrap(front_matter);
+  
+    // create d-title
+    $('.d-title').changeElementType('d-title');
+  
+    // create d-byline
+    var byline = $('<d-byline></d-byline>');
+    $('.d-byline').replaceWith(byline);
+  
+    // create d-article
+    var article = $('<d-article></d-article>');
+    $('.d-article').wrap(article).children().unwrap();
+  
+    // move posts container into article
+    $('.posts-container').appendTo($('d-article'));
+  
+    // create d-appendix
+    $('.d-appendix').changeElementType('d-appendix');
+  
+    // flag indicating that we have appendix items
+    var appendix = $('.appendix-bottom').children('h3').length > 0;
+  
+    // replace footnotes with <d-footnote>
+    $('.footnote-ref').each(function(i, val) {
+      appendix = true;
+      var href = $(this).attr('href');
+      var id = href.replace('#', '');
+      var fn = $('#' + id);
+      var fn_p = $('#' + id + '>p');
+      fn_p.find('.footnote-back').remove();
+      var text = fn_p.html();
+      var dtfn = $('<d-footnote></d-footnote>');
+      dtfn.html(text);
+      $(this).replaceWith(dtfn);
+    });
+    // remove footnotes
+    $('.footnotes').remove();
+  
+    // move refs into #references-listing
+    $('#references-listing').replaceWith($('#refs'));
+  
+    $('h1.appendix, h2.appendix').each(function(i, val) {
+      $(this).changeElementType('h3');
+    });
+    $('h3.appendix').each(function(i, val) {
+      var id = $(this).attr('id');
+      $('.d-contents a[href="#' + id + '"]').parent().remove();
+      appendix = true;
+      $(this).nextUntil($('h1, h2, h3')).addBack().appendTo($('d-appendix'));
+    });
+  
+    // show d-appendix if we have appendix content
+    $("d-appendix").css('display', appendix ? 'grid' : 'none');
+  
+    // localize layout chunks to just output
+    $('.layout-chunk').each(function(i, val) {
+  
+      // capture layout
+      var layout = $(this).attr('data-layout');
+  
+      // apply layout to markdown level block elements
+      var elements = $(this).children().not('details, div.sourceCode, pre, script');
+      elements.each(function(i, el) {
+        var layout_div = $('<div class="' + layout + '"></div>');
+        if (layout_div.hasClass('shaded')) {
+          var shaded_content = $('<div class="shaded-content"></div>');
+          $(this).wrap(shaded_content);
+          $(this).parent().wrap(layout_div);
+        } else {
+          $(this).wrap(layout_div);
+        }
+      });
+  
+  
+      // unwrap the layout-chunk div
+      $(this).children().unwrap();
+    });
+  
+    // remove code block used to force  highlighting css
+    $('.distill-force-highlighting-css').parent().remove();
+  
+    // remove empty line numbers inserted by pandoc when using a
+    // custom syntax highlighting theme
+    $('code.sourceCode a:empty').remove();
+  
+    // load distill framework
+    load_distill_framework();
+  
+    // wait for window.distillRunlevel == 4 to do post processing
+    function distill_post_process() {
+  
+      if (!window.distillRunlevel || window.distillRunlevel < 4)
+        return;
+  
+      // hide author/affiliations entirely if we have no authors
+      var front_matter = JSON.parse($("#distill-front-matter").html());
+      var have_authors = front_matter.authors && front_matter.authors.length > 0;
+      if (!have_authors)
+        $('d-byline').addClass('hidden');
+  
+      // article with toc class
+      $('.d-contents').parent().addClass('d-article-with-toc');
+  
+      // strip links that point to #
+      $('.authors-affiliations').find('a[href="#"]').removeAttr('href');
+  
+      // add orcid ids
+      $('.authors-affiliations').find('.author').each(function(i, el) {
+        var orcid_id = front_matter.authors[i].orcidID;
+        if (orcid_id) {
+          var a = $('<a></a>');
+          a.attr('href', 'https://orcid.org/' + orcid_id);
+          var img = $('<img></img>');
+          img.addClass('orcid-id');
+          img.attr('alt', 'ORCID ID');
+          img.attr('src','data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg==');
+          a.append(img);
+          $(this).append(a);
+        }
+      });
+  
+      // hide elements of author/affiliations grid that have no value
+      function hide_byline_column(caption) {
+        $('d-byline').find('h3:contains("' + caption + '")').parent().css('visibility', 'hidden');
+      }
+  
+      // affiliations
+      var have_affiliations = false;
+      for (var i = 0; i<front_matter.authors.length; ++i) {
+        var author = front_matter.authors[i];
+        if (author.affiliation !== "&nbsp;") {
+          have_affiliations = true;
+          break;
+        }
+      }
+      if (!have_affiliations)
+        $('d-byline').find('h3:contains("Affiliations")').css('visibility', 'hidden');
+  
+      // published date
+      if (!front_matter.publishedDate)
+        hide_byline_column("Published");
+  
+      // document object identifier
+      var doi = $('d-byline').find('h3:contains("DOI")');
+      var doi_p = doi.next().empty();
+      if (!front_matter.doi) {
+        // if we have a citation and valid citationText then link to that
+        if ($('#citation').length > 0 && front_matter.citationText) {
+          doi.html('Citation');
+          $('<a href="#citation"></a>')
+            .text(front_matter.citationText)
+            .appendTo(doi_p);
+        } else {
+          hide_byline_column("DOI");
+        }
+      } else {
+        $('<a></a>')
+           .attr('href', "https://doi.org/" + front_matter.doi)
+           .html(front_matter.doi)
+           .appendTo(doi_p);
+      }
+  
+       // change plural form of authors/affiliations
+      if (front_matter.authors.length === 1) {
+        var grid = $('.authors-affiliations');
+        grid.children('h3:contains("Authors")').text('Author');
+        grid.children('h3:contains("Affiliations")').text('Affiliation');
+      }
+  
+      // remove d-appendix and d-footnote-list local styles
+      $('d-appendix > style:first-child').remove();
+      $('d-footnote-list > style:first-child').remove();
+  
+      // move appendix-bottom entries to the bottom
+      $('.appendix-bottom').appendTo('d-appendix').children().unwrap();
+      $('.appendix-bottom').remove();
+  
+      // hoverable references
+      $('span.citation[data-cites]').each(function() {
+        var refHtml = $('#ref-' + $(this).attr('data-cites')).html();
+        window.tippy(this, {
+          allowHTML: true,
+          content: refHtml,
+          maxWidth: 500,
+          interactive: true,
+          interactiveBorder: 10,
+          theme: 'light-border',
+          placement: 'bottom-start'
+        });
+      });
+  
+      // clear polling timer
+      clearInterval(tid);
+  
+      // show body now that everything is ready
+      on_load_complete();
+    }
+  
+    var tid = setInterval(distill_post_process, 50);
+    distill_post_process();
+  
+  }
+  
+  function init_downlevel() {
+  
+    init_common();
+  
+     // insert hr after d-title
+    $('.d-title').after($('<hr class="section-separator"/>'));
+  
+    // check if we have authors
+    var front_matter = JSON.parse($("#distill-front-matter").html());
+    var have_authors = front_matter.authors && front_matter.authors.length > 0;
+  
+    // manage byline/border
+    if (!have_authors)
+      $('.d-byline').remove();
+    $('.d-byline').after($('<hr class="section-separator"/>'));
+    $('.d-byline a').remove();
+  
+    // remove toc
+    $('.d-contents').remove();
+  
+    // move appendix elements
+    $('h1.appendix, h2.appendix').each(function(i, val) {
+      $(this).changeElementType('h3');
+    });
+    $('h3.appendix').each(function(i, val) {
+      $(this).nextUntil($('h1, h2, h3')).addBack().appendTo($('.d-appendix'));
+    });
+  
+  
+    // inject headers into references and footnotes
+    var refs_header = $('<h3></h3>');
+    refs_header.text('References');
+    $('#refs').prepend(refs_header);
+  
+    var footnotes_header = $('<h3></h3');
+    footnotes_header.text('Footnotes');
+    $('.footnotes').children('hr').first().replaceWith(footnotes_header);
+  
+    // move appendix-bottom entries to the bottom
+    $('.appendix-bottom').appendTo('.d-appendix').children().unwrap();
+    $('.appendix-bottom').remove();
+  
+    // remove appendix if it's empty
+    if ($('.d-appendix').children().length === 0)
+      $('.d-appendix').remove();
+  
+    // prepend separator above appendix
+    $('.d-appendix').before($('<hr class="section-separator" style="clear: both"/>'));
+  
+    // trim code
+    $('pre>code').each(function(i, val) {
+      $(this).html($.trim($(this).html()));
+    });
+  
+    // move posts-container right before article
+    $('.posts-container').insertBefore($('.d-article'));
+  
+    $('body').addClass('downlevel');
+  
+    on_load_complete();
+  }
+  
+  
+  function init_common() {
+  
+    // jquery plugin to change element types
+    (function($) {
+      $.fn.changeElementType = function(newType) {
+        var attrs = {};
+  
+        $.each(this[0].attributes, function(idx, attr) {
+          attrs[attr.nodeName] = attr.nodeValue;
+        });
+  
+        this.replaceWith(function() {
+          return $("<" + newType + "/>", attrs).append($(this).contents());
+        });
+      };
+    })(jQuery);
+  
+    // prevent underline for linked images
+    $('a > img').parent().css({'border-bottom' : 'none'});
+  
+    // mark non-body figures created by knitr chunks as 100% width
+    $('.layout-chunk').each(function(i, val) {
+      var figures = $(this).find('img, .html-widget');
+      if ($(this).attr('data-layout') !== "l-body") {
+        figures.css('width', '100%');
+      } else {
+        figures.css('max-width', '100%');
+        figures.filter("[width]").each(function(i, val) {
+          var fig = $(this);
+          fig.css('width', fig.attr('width') + 'px');
+        });
+  
+      }
+    });
+  
+    // auto-append index.html to post-preview links in file: protocol
+    // and in rstudio ide preview
+    $('.post-preview').each(function(i, val) {
+      if (window.location.protocol === "file:")
+        $(this).attr('href', $(this).attr('href') + "index.html");
+    });
+  
+    // get rid of index.html references in header
+    if (window.location.protocol !== "file:") {
+      $('.distill-site-header a[href]').each(function(i,val) {
+        $(this).attr('href', $(this).attr('href').replace("index.html", "./"));
+      });
+    }
+  
+    // add class to pandoc style tables
+    $('tr.header').parent('thead').parent('table').addClass('pandoc-table');
+    $('.kable-table').children('table').addClass('pandoc-table');
+  
+    // add figcaption style to table captions
+    $('caption').parent('table').addClass("figcaption");
+  
+    // initialize posts list
+    if (window.init_posts_list)
+      window.init_posts_list();
+  
+    // implmement disqus comment link
+    $('.disqus-comment-count').click(function() {
+      window.headroom_prevent_pin = true;
+      $('#disqus_thread').toggleClass('hidden');
+      if (!$('#disqus_thread').hasClass('hidden')) {
+        var offset = $(this).offset();
+        $(window).resize();
+        $('html, body').animate({
+          scrollTop: offset.top - 35
+        });
+      }
+    });
+  }
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    if (is_downlevel_browser())
+      init_downlevel();
+    else
+      window.addEventListener('WebComponentsReady', init_distill);
+  });
+  
+  </script>
+  
+  <!--/radix_placeholder_distill-->
+  <script src="site_libs/popper-2.6.0/popper.min.js"></script>
+  <link href="site_libs/tippy-6.2.7/tippy.css" rel="stylesheet" />
+  <link href="site_libs/tippy-6.2.7/tippy-light-border.css" rel="stylesheet" />
+  <script src="site_libs/tippy-6.2.7/tippy.umd.min.js"></script>
+  <script src="site_libs/anchor-4.2.2/anchor.min.js"></script>
+  <script src="site_libs/bowser-1.9.3/bowser.min.js"></script>
+  <script src="site_libs/webcomponents-2.0.0/webcomponents.js"></script>
+  <script src="site_libs/distill-2.2.21/template.v2.js"></script>
+  <!--radix_placeholder_site_in_header-->
+  <!--/radix_placeholder_site_in_header-->
+
+
+</head>
+
+<body>
+
+<!--radix_placeholder_front_matter-->
+
+<script id="distill-front-matter" type="text/json">
+{"title":"Multi-sample comparisons with the Cooney (C057) memory CD4+ T-cell data set","authors":[{"author":"Peter Hickey","authorURL":"https://peterhickey.org","affiliation":"WEHI SCORE","affiliationURL":"https://www.wehi.edu.au/people/shalin-naik/3310/score","orcidID":""}],"publishedDate":"2021-04-08T00:00:00.000+10:00","citationText":"Hickey, 2021"}
+</script>
+
+<!--/radix_placeholder_front_matter-->
+<!--radix_placeholder_navigation_before_body-->
+<header class="header header--fixed" role="banner">
+<nav class="distill-site-nav distill-site-header">
+<div class="nav-left">
+<a href="index.html" class="title">C057</a>
+<a href="index.html">Introduction</a>
+<a href="C057_Cooney.demultiplex.html">Demultiplexing</a>
+<a href="C057_Cooney.preprocess.html">Preprocessing</a>
+<a href="C057_Cooney.cell_selection.html">Selecting biologically relevant cells</a>
+<a href="C057_Cooney.annotate.html">Annotating cells</a>
+<a href="C057_Cooney.multi-sample_comparisons.html">Differential analyses</a>
+<a href="C057_Cooney.repertoire-seq.html">Immune repertoire analysis</a>
+<div class="nav-dropdown">
+<button class="nav-dropbtn">
+Supplementary files
+ 
+<span class="down-arrow">&#x25BE;</span>
+</button>
+<div class="nav-dropdown-content">
+<a href="../output/CellRanger/">CellRanger reports</a>
+<a href="../output/marker_genes/">Marker gene tables</a>
+<a href="../output/DEGs/">Differentially expressed genes</a>
+<a href="../output/glimma-plots/">Glimma plots</a>
+</div>
+</div>
+</div>
+<div class="nav-right">
+<a href="https://github.com/WEHISCORE/C057_Cooney">
+<i class="fa fa-github" aria-hidden="true"></i>
+</a>
+<a href="javascript:void(0);" class="nav-toggle">&#9776;</a>
+</div>
+</nav>
+</header>
+<!--/radix_placeholder_navigation_before_body-->
+<!--radix_placeholder_site_before_body-->
+<!--/radix_placeholder_site_before_body-->
+
+<div class="d-title">
+<h1>Multi-sample comparisons with the Cooney (C057) memory CD4+ T-cell data set</h1>
+<!--radix_placeholder_categories-->
+<!--/radix_placeholder_categories-->
+
+</div>
+
+<div class="d-byline">
+  Peter Hickey <a href="https://peterhickey.org" class="uri">https://peterhickey.org</a> (WEHI SCORE)<a href="https://www.wehi.edu.au/people/shalin-naik/3310/score" class="uri">https://www.wehi.edu.au/people/shalin-naik/3310/score</a>
+  
+<br/>2021-04-08
+</div>
+
+<div class="d-article">
+<div class="d-contents d-contents-float">
+<nav class="l-text toc figcaption" id="TOC">
+<h3>Contents</h3>
+<ul>
+<li><a href="#setup">Setup</a></li>
+<li><a href="#analysis-based-on-cycling_subset">Analysis based on <code>cycling_subset</code></a><ul>
+<li><a href="#de">DE</a></li>
+<li><a href="#da">DA</a></li>
+</ul></li>
+<li><a href="#analysis-based-on-subcluster-labels-in-not-cycling-subset">Analysis based on subcluster labels in <code>Not cycling</code> subset</a><ul>
+<li><a href="#de-1">DE</a></li>
+<li><a href="#da-1">DA</a></li>
+</ul></li>
+<li><a href="#analysis-based-on-subcluster-labels-in-cycling-subset">Analysis based on subcluster labels in <code>Cycling</code> subset</a><ul>
+<li><a href="#de-2">DE</a></li>
+<li><a href="#da-2">DA</a></li>
+</ul></li>
+<li><a href="#concluding-remarks">Concluding remarks</a></li>
+<li><a href="#additional-information">Additional information</a></li>
+<li><a href="#session-info">Session info</a></li>
+</ul>
+</nav>
+</div>
+<h1 id="setup">Setup</h1>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'>SingleCellExperiment</span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://here.r-lib.org/'>here</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://wilkelab.org/cowplot/'>cowplot</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://patchwork.data-imaginist.com'>patchwork</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='http://bioinf.wehi.edu.au/edgeR'>edgeR</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='http://bioconductor.org/packages/scater/'>scater</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'>scran</span><span class='op'>)</span>
+
+<span class='va'>sce</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>readRDS</a></span><span class='op'>(</span><span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"SCEs"</span>, <span class='st'>"C057_Cooney.annotated.SCE.rds"</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>cycling_sce</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>readRDS</a></span><span class='op'>(</span>
+  <span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"SCEs"</span>, <span class='st'>"C057_Cooney.cycling.annotated.SCE.rds"</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>not_cycling_sce</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>readRDS</a></span><span class='op'>(</span>
+  <span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"SCEs"</span>, <span class='st'>"C057_Cooney.not_cycling.annotated.SCE.rds"</span><span class='op'>)</span><span class='op'>)</span>
+
+<span class='co'># Some useful colours</span>
+<span class='va'>sample_colours</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/setNames.html'>setNames</a></span><span class='op'>(</span>
+  <span class='fu'><a href='https://rdrr.io/r/base/unique.html'>unique</a></span><span class='op'>(</span><span class='va'>sce</span><span class='op'>$</span><span class='va'>sample_colours</span><span class='op'>)</span>,
+  <span class='fu'><a href='https://rdrr.io/r/base/unique.html'>unique</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>sce</span><span class='op'>$</span><span class='va'>sample_colours</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>treatment_colours</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/setNames.html'>setNames</a></span><span class='op'>(</span>
+  <span class='fu'><a href='https://rdrr.io/r/base/unique.html'>unique</a></span><span class='op'>(</span><span class='va'>sce</span><span class='op'>$</span><span class='va'>treatment_colours</span><span class='op'>)</span>,
+  <span class='fu'><a href='https://rdrr.io/r/base/unique.html'>unique</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>sce</span><span class='op'>$</span><span class='va'>treatment_colours</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>cluster_colours</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/setNames.html'>setNames</a></span><span class='op'>(</span>
+  <span class='fu'><a href='https://rdrr.io/r/base/unique.html'>unique</a></span><span class='op'>(</span><span class='va'>sce</span><span class='op'>$</span><span class='va'>cluster_colours</span><span class='op'>)</span>,
+  <span class='fu'><a href='https://rdrr.io/r/base/unique.html'>unique</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>sce</span><span class='op'>$</span><span class='va'>cluster_colours</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+
+<span class='co'># Re-level Treatment</span>
+<span class='va'>sce</span><span class='op'>$</span><span class='va'>Treatment</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/relevel.html'>relevel</a></span><span class='op'>(</span><span class='va'>sce</span><span class='op'>$</span><span class='va'>Treatment</span>, <span class='st'>"Uninfected"</span><span class='op'>)</span>
+<span class='va'>cycling_sce</span><span class='op'>$</span><span class='va'>Treatment</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/relevel.html'>relevel</a></span><span class='op'>(</span><span class='va'>cycling_sce</span><span class='op'>$</span><span class='va'>Treatment</span>, <span class='st'>"Uninfected"</span><span class='op'>)</span>
+<span class='va'>not_cycling_sce</span><span class='op'>$</span><span class='va'>Treatment</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/relevel.html'>relevel</a></span><span class='op'>(</span><span class='va'>not_cycling_sce</span><span class='op'>$</span><span class='va'>Treatment</span>, <span class='st'>"Uninfected"</span><span class='op'>)</span>
+
+<span class='kw'><a href='https://rdrr.io/r/base/source.html'>source</a></span><span class='op'>(</span><span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"code"</span>, <span class='st'>"helper_functions.R"</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+</div>
+<h1 id="analysis-based-on-cycling_subset">Analysis based on <code>cycling_subset</code></h1>
+<h2 id="de">DE</h2>
+<p>Please see <a href="../output/DEGs/cycling_subset/"><code>output/DEGs/cycling_subset/</code></a> for heatmaps and spreadsheets of these DEG lists, including results of GO and KEGG analyses using the <code>goana()</code> and <code>kegga()</code> functions from the <em><a href="https://bioconductor.org/packages/3.12/limma">limma</a></em> package. This directory also contains interactive <em><a href="https://bioconductor.org/packages/3.12/Glimma">Glimma</a></em> plots of the differential expression results. The <em><a href="https://bioconductor.org/packages/3.12/Glimma">Glimma</a></em> plots show the pseudobulk data for that label.</p>
+<aside>
+Note that the DEG list spreadsheets contain all labels and genes whereas the Glimma plots only contain labels and genes actually tested for DE. The column names in the Glimma tables may be abbreviated. There are two types of heatmaps: (1) showing the ‘pseudobulk’ expression and (2) showing the average single-cell expression.
+</aside>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># NOTE: Have to drop the complicated TRA and TRB DFrameList objects.</span>
+<span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>sce</span>
+<span class='va'>x</span><span class='op'>$</span><span class='va'>TRA</span> <span class='op'>&lt;-</span> <span class='cn'>NULL</span>
+<span class='va'>x</span><span class='op'>$</span><span class='va'>TRB</span> <span class='op'>&lt;-</span> <span class='cn'>NULL</span>
+<span class='va'>summed</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scuttle/man/aggregateAcrossCells.html'>aggregateAcrossCells</a></span><span class='op'>(</span>
+  <span class='va'>x</span>,
+  id <span class='op'>=</span> <span class='fu'>colData</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>[</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"cycling_subset"</span>, <span class='st'>"Sample"</span><span class='op'>)</span><span class='op'>]</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/pkg/SingleCellExperiment/man/sizeFactors.html'>sizeFactors</a></span><span class='op'>(</span><span class='va'>summed</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='cn'>NULL</span>
+<span class='va'>summed</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scuttle/man/logNormCounts.html'>logNormCounts</a></span><span class='op'>(</span><span class='va'>summed</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/pkg/SingleCellExperiment/man/colLabels.html'>colLabels</a></span><span class='op'>(</span><span class='va'>summed</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='va'>summed</span><span class='op'>$</span><span class='va'>cycling_subset</span>
+<span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>summed</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>summed</span><span class='op'>$</span><span class='va'>cycling_subset</span>, <span class='st'>"."</span>, <span class='va'>summed</span><span class='op'>$</span><span class='va'>Sample</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>summed</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/runMDS.html'>runMDS</a></span><span class='op'>(</span><span class='va'>summed</span><span class='op'>)</span>
+<span class='va'>p1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotMDS</a></span><span class='op'>(</span>
+  <span class='va'>summed</span>,
+  colour_by <span class='op'>=</span> <span class='st'>"Treatment"</span>,
+  shape_by <span class='op'>=</span> <span class='st'>"cycling_subset"</span>,
+  point_size <span class='op'>=</span> <span class='fl'>3</span>,
+  point_alpha <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>scale_colour_manual</span><span class='op'>(</span>values <span class='op'>=</span> <span class='va'>treatment_colours</span>, name <span class='op'>=</span> <span class='st'>"Treatment"</span><span class='op'>)</span>
+<span class='va'>p2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotMDS</a></span><span class='op'>(</span>
+  <span class='va'>summed</span>,
+  colour_by <span class='op'>=</span> <span class='st'>"Sample"</span>,
+  shape_by <span class='op'>=</span> <span class='st'>"cycling_subset"</span>,
+  point_size <span class='op'>=</span> <span class='fl'>3</span>,
+  point_alpha <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>scale_colour_manual</span><span class='op'>(</span>values <span class='op'>=</span> <span class='va'>sample_colours</span>, name <span class='op'>=</span> <span class='st'>"Treatment"</span><span class='op'>)</span>
+<span class='va'>p1</span> <span class='op'>+</span> <span class='va'>p2</span> <span class='op'>+</span> <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_layout.html'>plot_layout</a></span><span class='op'>(</span>guides <span class='op'>=</span> <span class='st'>"collect"</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-3-1.png" width="624" /></p>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>summed_filt</span> <span class='op'>&lt;-</span> <span class='va'>summed</span><span class='op'>[</span>, <span class='va'>summed</span><span class='op'>$</span><span class='va'>ncells</span> <span class='op'>&gt;=</span> <span class='fl'>10</span><span class='op'>]</span>
+
+<span class='va'>de_results</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scran/man/pseudoBulkDGE.html'>pseudoBulkDGE</a></span><span class='op'>(</span>
+  <span class='va'>summed_filt</span>,
+  label <span class='op'>=</span> <span class='va'>summed_filt</span><span class='op'>$</span><span class='va'>cycling_subset</span>,
+  design <span class='op'>=</span> <span class='op'>~</span><span class='va'>Treatment</span>,
+  coef <span class='op'>=</span> <span class='st'>"TreatmentInfected"</span>,
+  condition <span class='op'>=</span> <span class='va'>summed_filt</span><span class='op'>$</span><span class='va'>Treatment</span>,
+  include.intermediates <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+</div>
+<ul>
+<li>Labels for which we couldn’t run DE (<code>character(0)</code> means none)</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'>metadata</span><span class='op'>(</span><span class='va'>de_results</span><span class='op'>)</span><span class='op'>$</span><span class='va'>failed</span>
+</code></pre>
+</div>
+</details>
+<pre><code>character(0)</code></pre>
+</div>
+<ul>
+<li>Number of DEGs per label (<code>-1</code> means downregulated in <code>Infected</code> vs. <code>Uninfected</code>, <code>0</code> means not DE, <code>1</code> means upregulated in <code>Infected</code> vs. <code>Uninfected</code>)</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>is.de</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scran/man/decideTestsPerLabel.html'>decideTestsPerLabel</a></span><span class='op'>(</span><span class='va'>de_results</span>, threshold <span class='op'>=</span> <span class='fl'>0.05</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/pkg/scran/man/decideTestsPerLabel.html'>summarizeTestsPerLabel</a></span><span class='op'>(</span><span class='va'>is.de</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<pre><code>             -1     0   1    NA
+Cycling     147  9560 183 10712
+Not cycling 530 10048 617  9407</code></pre>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>outdir</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"output"</span>, <span class='st'>"DEGs"</span>, <span class='st'>"cycling_subset"</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/files2.html'>dir.create</a></span><span class='op'>(</span><span class='va'>outdir</span>, recursive <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
+<span class='fu'>createDEGOutputs</span><span class='op'>(</span>
+  outdir <span class='op'>=</span> <span class='va'>outdir</span>, 
+  de_results <span class='op'>=</span> <span class='va'>de_results</span>, 
+  summed_filt <span class='op'>=</span> <span class='va'>summed_filt</span>,
+  sce <span class='op'>=</span> <span class='va'>sce</span>,
+  fdr <span class='op'>=</span> <span class='fl'>0.05</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>de_results</span><span class='op'>)</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span> <span class='op'>{</span>
+  <span class='va'>se</span> <span class='op'>&lt;-</span> <span class='va'>summed_filt</span><span class='op'>[</span>, <span class='va'>summed_filt</span><span class='op'>$</span><span class='va'>label</span> <span class='op'>==</span> <span class='va'>n</span><span class='op'>]</span>
+  <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>de_results</span><span class='op'>[[</span><span class='va'>n</span><span class='op'>]</span><span class='op'>]</span>
+  <span class='va'>features</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>$</span><span class='va'>FDR</span> <span class='op'>&lt;</span> <span class='fl'>0.05</span><span class='op'>)</span>, <span class='op'>]</span><span class='op'>)</span>
+  <span class='kw'>if</span> <span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>features</span><span class='op'>)</span> <span class='op'>&gt;</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>{</span>
+    <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plotHeatmap.html'>plotHeatmap</a></span><span class='op'>(</span>
+      <span class='va'>se</span>,
+      features <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>features</span>, <span class='fl'>50</span><span class='op'>)</span>,
+      center <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      zlim <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>3</span>, <span class='fl'>3</span><span class='op'>)</span>,
+      symmetric <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      color <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grDevices/palettes.html'>hcl.colors</a></span><span class='op'>(</span><span class='fl'>101</span>, <span class='st'>"Blue-Red 3"</span><span class='op'>)</span>,
+      order_columns_by <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Treatment"</span>, <span class='st'>"Sample"</span><span class='op'>)</span>,
+      column_annotation_colors <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>
+        Treatment <span class='op'>=</span> <span class='va'>treatment_colours</span>,
+        Sample <span class='op'>=</span> <span class='va'>sample_colours</span><span class='op'>)</span>,
+      cluster_rows <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      fontsize <span class='op'>=</span> <span class='fl'>8</span>,
+      main <span class='op'>=</span> <span class='va'>n</span>,
+      filename <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span><span class='op'>(</span><span class='va'>outdir</span>, <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>n</span>, <span class='st'>".pseudobulk_heatmap.pdf"</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+    
+    <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plotGroupedHeatmap.html'>plotGroupedHeatmap</a></span><span class='op'>(</span>
+      <span class='va'>sce</span>,
+      features <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>features</span>, <span class='fl'>50</span><span class='op'>)</span>,
+      group <span class='op'>=</span> <span class='st'>"Sample"</span>,
+      columns <span class='op'>=</span> <span class='va'>sce</span><span class='op'>$</span><span class='va'>cycling_subset</span> <span class='op'>==</span> <span class='va'>n</span>,
+      center <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      symmetric <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      color <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grDevices/palettes.html'>hcl.colors</a></span><span class='op'>(</span><span class='fl'>101</span>, <span class='st'>"Blue-Red 3"</span><span class='op'>)</span>,
+      cluster_rows <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      fontsize <span class='op'>=</span> <span class='fl'>8</span>,
+      main <span class='op'>=</span> <span class='va'>n</span>,
+      cluster_cols <span class='op'>=</span> <span class='cn'>FALSE</span>,
+      filename <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span><span class='op'>(</span>
+        <span class='va'>outdir</span>,
+        <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>n</span>, <span class='st'>".average_expression_heatmap.pdf"</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+  <span class='op'>}</span>
+<span class='op'>}</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+</div>
+<h2 id="da">DA</h2>
+<ul>
+<li>Number of cells/label/sample</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>abundances</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/table.html'>table</a></span><span class='op'>(</span><span class='va'>sce</span><span class='op'>$</span><span class='va'>cycling_subset</span>, <span class='va'>sce</span><span class='op'>$</span><span class='va'>Sample</span><span class='op'>)</span>
+<span class='va'>abundances</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/class.html'>unclass</a></span><span class='op'>(</span><span class='va'>abundances</span><span class='op'>)</span>
+<span class='va'>abundances</span>
+</code></pre>
+</div>
+</details>
+<pre><code>             
+              infected_1 infected_2 infected_3 uninfected_1
+  Cycling            226        171        327          171
+  Not cycling       1121       1004       1007         1618
+             
+              uninfected_2 uninfected_3
+  Cycling              358          142
+  Not cycling         1694         1292</code></pre>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>p1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotUMAP</a></span><span class='op'>(</span>
+  <span class='va'>sce</span>, 
+  colour_by <span class='op'>=</span> <span class='st'>"cycling_subset"</span>, 
+  text_by <span class='op'>=</span> <span class='st'>"cycling_subset"</span>,
+  point_size <span class='op'>=</span> <span class='fl'>0.5</span>,
+  point_alpha <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>
+<span class='va'>p2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotUMAP</a></span><span class='op'>(</span>
+  <span class='va'>sce</span>, 
+  colour_by <span class='op'>=</span> <span class='st'>"Treatment"</span>,
+  point_size <span class='op'>=</span> <span class='fl'>0.5</span>,
+  point_alpha <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>scale_colour_manual</span><span class='op'>(</span>values <span class='op'>=</span> <span class='va'>treatment_colours</span>, name <span class='op'>=</span> <span class='st'>"Treatment"</span><span class='op'>)</span>
+<span class='va'>p1</span> <span class='op'>+</span> <span class='va'>p2</span>
+</code></pre>
+</div>
+</details>
+<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-10-1.png" width="624" /></p>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>p3</span> <span class='op'>&lt;-</span> <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/as.data.frame.html'>as.data.frame</a></span><span class='op'>(</span><span class='fu'>colData</span><span class='op'>(</span><span class='va'>sce</span><span class='op'>)</span><span class='op'>[</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"cycling_subset"</span>, <span class='st'>"Sample"</span><span class='op'>)</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+    <span class='fu'>geom_bar</span><span class='op'>(</span>
+      <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>cycling_subset</span>, fill <span class='op'>=</span> <span class='va'>Sample</span><span class='op'>)</span>,
+      position <span class='op'>=</span> <span class='fu'>position_fill</span><span class='op'>(</span>reverse <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+    <span class='fu'>coord_flip</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+    <span class='fu'>ylab</span><span class='op'>(</span><span class='st'>"Frequency"</span><span class='op'>)</span> <span class='op'>+</span>
+    <span class='fu'>scale_fill_manual</span><span class='op'>(</span>values <span class='op'>=</span> <span class='va'>sample_colours</span><span class='op'>)</span> <span class='op'>+</span>
+    <span class='fu'><a href='https://wilkelab.org/cowplot/reference/theme_cowplot.html'>theme_cowplot</a></span><span class='op'>(</span>font_size <span class='op'>=</span> <span class='fl'>8</span><span class='op'>)</span>
+<span class='va'>p4</span> <span class='op'>&lt;-</span> <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/as.data.frame.html'>as.data.frame</a></span><span class='op'>(</span><span class='fu'>colData</span><span class='op'>(</span><span class='va'>sce</span><span class='op'>)</span><span class='op'>[</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"cycling_subset"</span>, <span class='st'>"Treatment"</span><span class='op'>)</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+    <span class='fu'>geom_bar</span><span class='op'>(</span>
+      <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>cycling_subset</span>, fill <span class='op'>=</span> <span class='va'>Treatment</span><span class='op'>)</span>,
+      position <span class='op'>=</span> <span class='fu'>position_fill</span><span class='op'>(</span>reverse <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+    <span class='fu'>coord_flip</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+    <span class='fu'>ylab</span><span class='op'>(</span><span class='st'>"Frequency"</span><span class='op'>)</span> <span class='op'>+</span>
+    <span class='fu'>scale_fill_manual</span><span class='op'>(</span>values <span class='op'>=</span> <span class='va'>treatment_colours</span><span class='op'>)</span> <span class='op'>+</span>
+    <span class='fu'><a href='https://wilkelab.org/cowplot/reference/theme_cowplot.html'>theme_cowplot</a></span><span class='op'>(</span>font_size <span class='op'>=</span> <span class='fl'>8</span><span class='op'>)</span>
+<span class='va'>p5</span> <span class='op'>&lt;-</span> <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/as.data.frame.html'>as.data.frame</a></span><span class='op'>(</span><span class='fu'>colData</span><span class='op'>(</span><span class='va'>sce</span><span class='op'>)</span><span class='op'>[</span>, <span class='st'>"cycling_subset"</span>, drop <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+    <span class='fu'>geom_bar</span><span class='op'>(</span><span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>cycling_subset</span>, fill <span class='op'>=</span> <span class='va'>cycling_subset</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+    <span class='fu'>coord_flip</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+    <span class='fu'>ylab</span><span class='op'>(</span><span class='st'>"Number of cells"</span><span class='op'>)</span> <span class='op'>+</span>
+    <span class='fu'><a href='https://wilkelab.org/cowplot/reference/theme_cowplot.html'>theme_cowplot</a></span><span class='op'>(</span>font_size <span class='op'>=</span> <span class='fl'>8</span><span class='op'>)</span> <span class='op'>+</span>
+    <span class='fu'>guides</span><span class='op'>(</span>fill <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
+<span class='va'>p3</span> <span class='op'>+</span> <span class='va'>p4</span> <span class='op'>+</span> <span class='va'>p5</span> <span class='op'>+</span> <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_layout.html'>plot_layout</a></span><span class='op'>(</span>ncol <span class='op'>=</span> <span class='fl'>3</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-11-1.png" width="624" /></p>
+</div>
+<ul>
+<li><code>TRUE</code>/<code>FALSE</code> if label can be tested for DA</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># NOTE: Can't use quasi-likelihood framework with only two labels.</span>
+
+<span class='va'>extra.info</span> <span class='op'>&lt;-</span> <span class='fu'>colData</span><span class='op'>(</span><span class='va'>sce</span><span class='op'>)</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/match.html'>match</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>abundances</span><span class='op'>)</span>, <span class='va'>sce</span><span class='op'>$</span><span class='va'>Sample</span><span class='op'>)</span>, <span class='op'>]</span>
+<span class='va'>y.ab</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/edgeR/man/DGEList.html'>DGEList</a></span><span class='op'>(</span><span class='va'>abundances</span>, samples <span class='op'>=</span> <span class='va'>extra.info</span><span class='op'>)</span>
+
+<span class='va'>keep</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/edgeR/man/filterByExpr.html'>filterByExpr</a></span><span class='op'>(</span><span class='va'>y.ab</span>, group <span class='op'>=</span> <span class='va'>y.ab</span><span class='op'>$</span><span class='va'>samples</span><span class='op'>$</span><span class='va'>Treatment</span><span class='op'>)</span>
+<span class='va'>keep</span>
+</code></pre>
+</div>
+</details>
+<pre><code>    Cycling Not cycling 
+       TRUE        TRUE </code></pre>
+</div>
+<ul>
+<li>Number of labels that are DA (<code>-1</code> means less abundant in <code>Infected</code> vs. <code>Uninfected</code>, <code>0</code> means not DE, <code>1</code> means more abundant in <code>Infected</code> vs. <code>Uninfected</code>)</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>y.ab</span> <span class='op'>&lt;-</span> <span class='va'>y.ab</span><span class='op'>[</span><span class='va'>keep</span>,<span class='op'>]</span>
+
+<span class='va'>design</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>Treatment</span>, <span class='va'>y.ab</span><span class='op'>$</span><span class='va'>samples</span><span class='op'>)</span>
+
+<span class='va'>y.ab</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/edgeR/man/estimateDisp.html'>estimateDisp</a></span><span class='op'>(</span><span class='va'>y.ab</span>, <span class='va'>design</span>, trend <span class='op'>=</span> <span class='st'>"none"</span><span class='op'>)</span>
+<span class='va'>fit.ab</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/edgeR/man/glmfit.html'>glmFit</a></span><span class='op'>(</span><span class='va'>y.ab</span><span class='op'>)</span>
+<span class='va'>res</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/edgeR/man/glmfit.html'>glmLRT</a></span><span class='op'>(</span><span class='va'>fit.ab</span>, coef <span class='op'>=</span> <span class='st'>"TreatmentInfected"</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='fu'>decideTests</span><span class='op'>(</span><span class='va'>res</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<pre><code>       TreatmentInfected
+Down                   0
+NotSig                 2
+Up                     0</code></pre>
+</div>
+<ul>
+<li>Full results (negative <code>logFC</code> means less abundant in <code>Infected</code> vs. <code>Uninfected</code>, positive <code>logFC</code> means more abundant in <code>Infected</code> vs. <code>Uninfected</code>)</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/pkg/edgeR/man/topTags.html'>topTags</a></span><span class='op'>(</span><span class='va'>res</span>, n <span class='op'>=</span> <span class='cn'>Inf</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<pre><code>Coefficient:  TreatmentInfected 
+                 logFC   logCPM       LR     PValue       FDR
+Cycling      0.5952481 17.24486 2.947518 0.08600953 0.1720191
+Not cycling -0.1075603 19.68781 1.001231 0.31701277 0.3170128</code></pre>
+</div>
+<h1 id="analysis-based-on-subcluster-labels-in-not-cycling-subset">Analysis based on subcluster labels in <code>Not cycling</code> subset</h1>
+<h2 id="de-1">DE</h2>
+<p>Please see <a href="../output/DEGs/not_cycling_subset_subclusters/"><code>output/DEGs/not_cycling_subset_subclusters/</code></a> for heatmaps and spreadsheets of these DEG lists, including results of GO and KEGG analyses using the <code>goana()</code> and <code>kegga()</code> functions from the <em><a href="https://bioconductor.org/packages/3.12/limma">limma</a></em> package. This directory also contains interactive <em><a href="https://bioconductor.org/packages/3.12/Glimma">Glimma</a></em> plots of the differential expression results. The <em><a href="https://bioconductor.org/packages/3.12/Glimma">Glimma</a></em> plots show the pseudobulk data for that label.</p>
+<aside>
+Note that the DEG list spreadsheets contain all labels and genes whereas the Glimma plots only contain labels and genes actually tested for DE. The column names in the Glimma tables may be abbreviated. There are two types of heatmaps: (1) showing the ‘pseudobulk’ expression and (2) showing the average single-cell expression.
+</aside>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># NOTE: Have to drop the complicated TRA and TRB DFrameList objects.</span>
+<span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>not_cycling_sce</span>
+<span class='va'>x</span><span class='op'>$</span><span class='va'>TRA</span> <span class='op'>&lt;-</span> <span class='cn'>NULL</span>
+<span class='va'>x</span><span class='op'>$</span><span class='va'>TRB</span> <span class='op'>&lt;-</span> <span class='cn'>NULL</span>
+<span class='va'>summed</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scuttle/man/aggregateAcrossCells.html'>aggregateAcrossCells</a></span><span class='op'>(</span>
+  <span class='va'>x</span>,
+  id <span class='op'>=</span> <span class='fu'>colData</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>[</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"subcluster"</span>, <span class='st'>"Sample"</span><span class='op'>)</span><span class='op'>]</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/pkg/SingleCellExperiment/man/sizeFactors.html'>sizeFactors</a></span><span class='op'>(</span><span class='va'>summed</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='cn'>NULL</span>
+<span class='va'>summed</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scuttle/man/logNormCounts.html'>logNormCounts</a></span><span class='op'>(</span><span class='va'>summed</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/pkg/SingleCellExperiment/man/colLabels.html'>colLabels</a></span><span class='op'>(</span><span class='va'>summed</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='va'>summed</span><span class='op'>$</span><span class='va'>subcluster</span>
+<span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>summed</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>summed</span><span class='op'>$</span><span class='va'>subcluster</span>, <span class='st'>"."</span>, <span class='va'>summed</span><span class='op'>$</span><span class='va'>Sample</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>summed</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/runMDS.html'>runMDS</a></span><span class='op'>(</span><span class='va'>summed</span><span class='op'>)</span>
+<span class='va'>p1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotMDS</a></span><span class='op'>(</span>
+  <span class='va'>summed</span>,
+  colour_by <span class='op'>=</span> <span class='st'>"subcluster"</span>,
+  shape_by <span class='op'>=</span> <span class='st'>"Treatment"</span>,
+  point_size <span class='op'>=</span> <span class='fl'>3</span>,
+  point_alpha <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span>
+<span class='va'>p2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotMDS</a></span><span class='op'>(</span>
+  <span class='va'>summed</span>,
+  colour_by <span class='op'>=</span> <span class='st'>"subcluster"</span>,
+  shape_by <span class='op'>=</span> <span class='st'>"Sample"</span>,
+  point_size <span class='op'>=</span> <span class='fl'>3</span>,
+  point_alpha <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span>
+<span class='va'>p1</span> <span class='op'>+</span> <span class='va'>p2</span> <span class='op'>+</span> <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_layout.html'>plot_layout</a></span><span class='op'>(</span>guides <span class='op'>=</span> <span class='st'>"collect"</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-16-1.png" width="624" /></p>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>summed_filt</span> <span class='op'>&lt;-</span> <span class='va'>summed</span><span class='op'>[</span>, <span class='va'>summed</span><span class='op'>$</span><span class='va'>ncells</span> <span class='op'>&gt;=</span> <span class='fl'>10</span><span class='op'>]</span>
+
+<span class='va'>de_results</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scran/man/pseudoBulkDGE.html'>pseudoBulkDGE</a></span><span class='op'>(</span>
+  <span class='va'>summed_filt</span>,
+  label <span class='op'>=</span> <span class='va'>summed_filt</span><span class='op'>$</span><span class='va'>subcluster</span>,
+  design <span class='op'>=</span> <span class='op'>~</span><span class='va'>Treatment</span>,
+  coef <span class='op'>=</span> <span class='st'>"TreatmentInfected"</span>,
+  condition <span class='op'>=</span> <span class='va'>summed_filt</span><span class='op'>$</span><span class='va'>Treatment</span>,
+  include.intermediates <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+</div>
+<ul>
+<li>Labels for which we couldn’t run DE (<code>character(0)</code> means none)</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'>metadata</span><span class='op'>(</span><span class='va'>de_results</span><span class='op'>)</span><span class='op'>$</span><span class='va'>failed</span>
+</code></pre>
+</div>
+</details>
+<pre><code>character(0)</code></pre>
+</div>
+<ul>
+<li>Number of DEGs per label (<code>-1</code> means downregulated in <code>Infected</code> vs. <code>Uninfected</code>, <code>0</code> means not DE, <code>1</code> means upregulated in <code>Infected</code> vs. <code>Uninfected</code>)</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>is.de</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scran/man/decideTestsPerLabel.html'>decideTestsPerLabel</a></span><span class='op'>(</span><span class='va'>de_results</span>, threshold <span class='op'>=</span> <span class='fl'>0.05</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/pkg/scran/man/decideTestsPerLabel.html'>summarizeTestsPerLabel</a></span><span class='op'>(</span><span class='va'>is.de</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<pre><code>              -1    0  1    NA
+Not cycling.1  6 6103 12 14481
+Not cycling.2  8 8239 14 12341
+Not cycling.3 68 8712 84 11738
+Not cycling.4 17 9058 14 11513
+Not cycling.5 46 9361 88 11107</code></pre>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>outdir</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"output"</span>, <span class='st'>"DEGs"</span>, <span class='st'>"not_cycling_subset_subcluster"</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/files2.html'>dir.create</a></span><span class='op'>(</span><span class='va'>outdir</span>, recursive <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
+<span class='fu'>createDEGOutputs</span><span class='op'>(</span>
+  outdir <span class='op'>=</span> <span class='va'>outdir</span>, 
+  de_results <span class='op'>=</span> <span class='va'>de_results</span>, 
+  summed_filt <span class='op'>=</span> <span class='va'>summed_filt</span>,
+  sce <span class='op'>=</span> <span class='va'>x</span>,
+  fdr <span class='op'>=</span> <span class='fl'>0.05</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>de_results</span><span class='op'>)</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span> <span class='op'>{</span>
+  <span class='va'>se</span> <span class='op'>&lt;-</span> <span class='va'>summed_filt</span><span class='op'>[</span>, <span class='va'>summed_filt</span><span class='op'>$</span><span class='va'>label</span> <span class='op'>==</span> <span class='va'>n</span><span class='op'>]</span>
+  <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>de_results</span><span class='op'>[[</span><span class='va'>n</span><span class='op'>]</span><span class='op'>]</span>
+  <span class='va'>features</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>$</span><span class='va'>FDR</span> <span class='op'>&lt;</span> <span class='fl'>0.05</span><span class='op'>)</span>, <span class='op'>]</span><span class='op'>)</span>
+  <span class='kw'>if</span> <span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>features</span><span class='op'>)</span> <span class='op'>&gt;</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>{</span>
+    <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plotHeatmap.html'>plotHeatmap</a></span><span class='op'>(</span>
+      <span class='va'>se</span>,
+      features <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>features</span>, <span class='fl'>50</span><span class='op'>)</span>,
+      center <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      zlim <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>3</span>, <span class='fl'>3</span><span class='op'>)</span>,
+      symmetric <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      color <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grDevices/palettes.html'>hcl.colors</a></span><span class='op'>(</span><span class='fl'>101</span>, <span class='st'>"Blue-Red 3"</span><span class='op'>)</span>,
+      order_columns_by <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Treatment"</span>, <span class='st'>"Sample"</span><span class='op'>)</span>,
+      column_annotation_colors <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>
+        Treatment <span class='op'>=</span> <span class='va'>treatment_colours</span>,
+        Sample <span class='op'>=</span> <span class='va'>sample_colours</span><span class='op'>)</span>,
+      cluster_rows <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      fontsize <span class='op'>=</span> <span class='fl'>8</span>,
+      main <span class='op'>=</span> <span class='va'>n</span>,
+      filename <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span><span class='op'>(</span><span class='va'>outdir</span>, <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>n</span>, <span class='st'>".pseudobulk_heatmap.pdf"</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+    
+    <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plotGroupedHeatmap.html'>plotGroupedHeatmap</a></span><span class='op'>(</span>
+      <span class='va'>not_cycling_sce</span>,
+      features <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>features</span>, <span class='fl'>50</span><span class='op'>)</span>,
+      group <span class='op'>=</span> <span class='st'>"Sample"</span>,
+      columns <span class='op'>=</span> <span class='va'>not_cycling_sce</span><span class='op'>$</span><span class='va'>subcluster</span> <span class='op'>==</span> <span class='va'>n</span>,
+      center <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      symmetric <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      color <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grDevices/palettes.html'>hcl.colors</a></span><span class='op'>(</span><span class='fl'>101</span>, <span class='st'>"Blue-Red 3"</span><span class='op'>)</span>,
+      cluster_rows <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      fontsize <span class='op'>=</span> <span class='fl'>8</span>,
+      main <span class='op'>=</span> <span class='va'>n</span>,
+      cluster_cols <span class='op'>=</span> <span class='cn'>FALSE</span>,
+      filename <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span><span class='op'>(</span>
+        <span class='va'>outdir</span>,
+        <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>n</span>, <span class='st'>".average_expression_heatmap.pdf"</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+  <span class='op'>}</span>
+<span class='op'>}</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+</div>
+<h2 id="da-1">DA</h2>
+<ul>
+<li>Number of cells/label/sample</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>abundances</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/table.html'>table</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>$</span><span class='va'>subcluster</span>, <span class='va'>x</span><span class='op'>$</span><span class='va'>Sample</span><span class='op'>)</span>
+<span class='va'>abundances</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/class.html'>unclass</a></span><span class='op'>(</span><span class='va'>abundances</span><span class='op'>)</span>
+<span class='va'>abundances</span>
+</code></pre>
+</div>
+</details>
+<pre><code>               
+                infected_1 infected_2 infected_3 uninfected_1
+  Not cycling.1         32          3         14          247
+  Not cycling.2         53         11          7          342
+  Not cycling.3        241        101         70          366
+  Not cycling.4        532        848        881           29
+  Not cycling.5        263         41         35          634
+               
+                uninfected_2 uninfected_3
+  Not cycling.1          507           97
+  Not cycling.2          258          197
+  Not cycling.3          440          380
+  Not cycling.4           30           41
+  Not cycling.5          459          577</code></pre>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>p1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotUMAP</a></span><span class='op'>(</span>
+  <span class='va'>x</span>,
+  colour_by <span class='op'>=</span> <span class='st'>"subcluster"</span>,
+  text_by <span class='op'>=</span> <span class='st'>"subcluster"</span>,
+  point_size <span class='op'>=</span> <span class='fl'>0.5</span>,
+  point_alpha <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>
+<span class='va'>p2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotUMAP</a></span><span class='op'>(</span>
+  <span class='va'>x</span>,
+  colour_by <span class='op'>=</span> <span class='st'>"Treatment"</span>,
+  point_size <span class='op'>=</span> <span class='fl'>0.5</span>,
+  point_alpha <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>scale_colour_manual</span><span class='op'>(</span>values <span class='op'>=</span> <span class='va'>treatment_colours</span><span class='op'>)</span>
+<span class='va'>p1</span> <span class='op'>+</span> <span class='va'>p2</span>
+</code></pre>
+</div>
+</details>
+<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-23-1.png" width="624" /></p>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>p3</span> <span class='op'>&lt;-</span> <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/as.data.frame.html'>as.data.frame</a></span><span class='op'>(</span><span class='fu'>colData</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>[</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"subcluster"</span>, <span class='st'>"Sample"</span><span class='op'>)</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>geom_bar</span><span class='op'>(</span>
+    <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>subcluster</span>, fill <span class='op'>=</span> <span class='va'>Sample</span><span class='op'>)</span>,
+    position <span class='op'>=</span> <span class='fu'>position_fill</span><span class='op'>(</span>reverse <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>coord_flip</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>ylab</span><span class='op'>(</span><span class='st'>"Frequency"</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>scale_fill_manual</span><span class='op'>(</span>values <span class='op'>=</span> <span class='va'>sample_colours</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://wilkelab.org/cowplot/reference/theme_cowplot.html'>theme_cowplot</a></span><span class='op'>(</span>font_size <span class='op'>=</span> <span class='fl'>8</span><span class='op'>)</span>
+<span class='va'>p4</span> <span class='op'>&lt;-</span> <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/as.data.frame.html'>as.data.frame</a></span><span class='op'>(</span><span class='fu'>colData</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>[</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"subcluster"</span>, <span class='st'>"Treatment"</span><span class='op'>)</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>geom_bar</span><span class='op'>(</span>
+    <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>subcluster</span>, fill <span class='op'>=</span> <span class='va'>Treatment</span><span class='op'>)</span>,
+    position <span class='op'>=</span> <span class='fu'>position_fill</span><span class='op'>(</span>reverse <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>coord_flip</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>ylab</span><span class='op'>(</span><span class='st'>"Frequency"</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>scale_fill_manual</span><span class='op'>(</span>values <span class='op'>=</span> <span class='va'>treatment_colours</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://wilkelab.org/cowplot/reference/theme_cowplot.html'>theme_cowplot</a></span><span class='op'>(</span>font_size <span class='op'>=</span> <span class='fl'>8</span><span class='op'>)</span>
+<span class='va'>p5</span> <span class='op'>&lt;-</span> <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/as.data.frame.html'>as.data.frame</a></span><span class='op'>(</span><span class='fu'>colData</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>[</span>, <span class='st'>"subcluster"</span>, drop <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>geom_bar</span><span class='op'>(</span><span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>subcluster</span>, fill <span class='op'>=</span> <span class='va'>subcluster</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>coord_flip</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>ylab</span><span class='op'>(</span><span class='st'>"Number of cells"</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://wilkelab.org/cowplot/reference/theme_cowplot.html'>theme_cowplot</a></span><span class='op'>(</span>font_size <span class='op'>=</span> <span class='fl'>8</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>guides</span><span class='op'>(</span>fill <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
+<span class='va'>p3</span> <span class='op'>+</span> <span class='va'>p4</span> <span class='op'>+</span> <span class='va'>p5</span> <span class='op'>+</span> <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_layout.html'>plot_layout</a></span><span class='op'>(</span>ncol <span class='op'>=</span> <span class='fl'>3</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-24-1.png" width="624" /></p>
+</div>
+<ul>
+<li><code>TRUE</code>/<code>FALSE</code> if label can be tested for DA</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>extra.info</span> <span class='op'>&lt;-</span> <span class='fu'>colData</span><span class='op'>(</span><span class='va'>sce</span><span class='op'>)</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/match.html'>match</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>abundances</span><span class='op'>)</span>, <span class='va'>sce</span><span class='op'>$</span><span class='va'>Sample</span><span class='op'>)</span>, <span class='op'>]</span>
+<span class='va'>y.ab</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/edgeR/man/DGEList.html'>DGEList</a></span><span class='op'>(</span><span class='va'>abundances</span>, samples <span class='op'>=</span> <span class='va'>extra.info</span><span class='op'>)</span>
+
+<span class='va'>keep</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/edgeR/man/filterByExpr.html'>filterByExpr</a></span><span class='op'>(</span><span class='va'>y.ab</span>, group <span class='op'>=</span> <span class='va'>y.ab</span><span class='op'>$</span><span class='va'>samples</span><span class='op'>$</span><span class='va'>Treatment</span><span class='op'>)</span>
+<span class='va'>keep</span>
+</code></pre>
+</div>
+</details>
+<pre><code>Not cycling.1 Not cycling.2 Not cycling.3 Not cycling.4 Not cycling.5 
+         TRUE          TRUE          TRUE          TRUE          TRUE </code></pre>
+</div>
+<ul>
+<li>Number of labels that are DA (<code>-1</code> means less abundant in <code>Infected</code> vs. <code>Uninfected</code>, <code>0</code> means not DE, <code>1</code> means more abundant in <code>Infected</code> vs. <code>Uninfected</code>)</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>y.ab</span> <span class='op'>&lt;-</span> <span class='va'>y.ab</span><span class='op'>[</span><span class='va'>keep</span>,<span class='op'>]</span>
+
+<span class='va'>design</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>Treatment</span>, <span class='va'>y.ab</span><span class='op'>$</span><span class='va'>samples</span><span class='op'>)</span>
+
+<span class='va'>y.ab</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/edgeR/man/estimateDisp.html'>estimateDisp</a></span><span class='op'>(</span><span class='va'>y.ab</span>, <span class='va'>design</span>, trend <span class='op'>=</span> <span class='st'>"none"</span><span class='op'>)</span>
+<span class='va'>fit.ab</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/edgeR/man/glmfit.html'>glmFit</a></span><span class='op'>(</span><span class='va'>y.ab</span><span class='op'>)</span>
+<span class='va'>res</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/edgeR/man/glmfit.html'>glmLRT</a></span><span class='op'>(</span><span class='va'>fit.ab</span>, coef <span class='op'>=</span> <span class='st'>"TreatmentInfected"</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='fu'>decideTests</span><span class='op'>(</span><span class='va'>res</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<pre><code>       TreatmentInfected
+Down                   3
+NotSig                 1
+Up                     1</code></pre>
+</div>
+<ul>
+<li>Full results (negative <code>logFC</code> means less abundant in <code>Infected</code> vs. <code>Uninfected</code>, positive <code>logFC</code> means more abundant in <code>Infected</code> vs. <code>Uninfected</code>)</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/pkg/edgeR/man/topTags.html'>topTags</a></span><span class='op'>(</span><span class='va'>res</span>, n <span class='op'>=</span> <span class='cn'>Inf</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<pre><code>Coefficient:  TreatmentInfected 
+                  logFC   logCPM        LR       PValue          FDR
+Not cycling.4  5.023174 18.52370 35.433894 2.638552e-09 1.319276e-08
+Not cycling.1 -3.521606 16.56704 19.295114 1.119926e-05 2.799814e-05
+Not cycling.2 -2.973163 16.58736 14.604386 1.326055e-04 2.210092e-04
+Not cycling.5 -1.835740 17.85842  6.212515 1.268503e-02 1.585629e-02
+Not cycling.3 -1.017010 17.57522  2.006615 1.566145e-01 1.566145e-01</code></pre>
+</div>
+<h1 id="analysis-based-on-subcluster-labels-in-cycling-subset">Analysis based on subcluster labels in <code>Cycling</code> subset</h1>
+<h2 id="de-2">DE</h2>
+<p>Please see <a href="../output/DEGs/cycling_subset_subclusters/"><code>output/DEGs/cycling_subset_subclusters/</code></a> for heatmaps and spreadsheets of these DEG lists, including results of GO and KEGG analyses using the <code>goana()</code> and <code>kegga()</code> functions from the <em><a href="https://bioconductor.org/packages/3.12/limma">limma</a></em> package. This directory also contains interactive <em><a href="https://bioconductor.org/packages/3.12/Glimma">Glimma</a></em> plots of the differential expression results. The <em><a href="https://bioconductor.org/packages/3.12/Glimma">Glimma</a></em> plots show the pseudobulk data for that label.</p>
+<aside>
+Note that the DEG list spreadsheets contain all labels and genes whereas the Glimma plots only contain labels and genes actually tested for DE. The column names in the Glimma tables may be abbreviated. There are two types of heatmaps: (1) showing the ‘pseudobulk’ expression and (2) showing the average single-cell expression.
+</aside>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># NOTE: Have to drop the complicated TRA and TRB DFrameList objects.</span>
+<span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>cycling_sce</span>
+<span class='va'>x</span><span class='op'>$</span><span class='va'>TRA</span> <span class='op'>&lt;-</span> <span class='cn'>NULL</span>
+<span class='va'>x</span><span class='op'>$</span><span class='va'>TRB</span> <span class='op'>&lt;-</span> <span class='cn'>NULL</span>
+<span class='va'>summed</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scuttle/man/aggregateAcrossCells.html'>aggregateAcrossCells</a></span><span class='op'>(</span>
+  <span class='va'>x</span>,
+  id <span class='op'>=</span> <span class='fu'>colData</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>[</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"subcluster"</span>, <span class='st'>"Sample"</span><span class='op'>)</span><span class='op'>]</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/pkg/SingleCellExperiment/man/sizeFactors.html'>sizeFactors</a></span><span class='op'>(</span><span class='va'>summed</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='cn'>NULL</span>
+<span class='va'>summed</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scuttle/man/logNormCounts.html'>logNormCounts</a></span><span class='op'>(</span><span class='va'>summed</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/pkg/SingleCellExperiment/man/colLabels.html'>colLabels</a></span><span class='op'>(</span><span class='va'>summed</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='va'>summed</span><span class='op'>$</span><span class='va'>subcluster</span>
+<span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>summed</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>summed</span><span class='op'>$</span><span class='va'>subcluster</span>, <span class='st'>"."</span>, <span class='va'>summed</span><span class='op'>$</span><span class='va'>Sample</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>summed</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/runMDS.html'>runMDS</a></span><span class='op'>(</span><span class='va'>summed</span><span class='op'>)</span>
+<span class='va'>p1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotMDS</a></span><span class='op'>(</span>
+  <span class='va'>summed</span>,
+  colour_by <span class='op'>=</span> <span class='st'>"subcluster"</span>,
+  shape_by <span class='op'>=</span> <span class='st'>"Treatment"</span>,
+  point_size <span class='op'>=</span> <span class='fl'>3</span>,
+  point_alpha <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span>
+<span class='va'>p2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotMDS</a></span><span class='op'>(</span>
+  <span class='va'>summed</span>,
+  colour_by <span class='op'>=</span> <span class='st'>"subcluster"</span>,
+  shape_by <span class='op'>=</span> <span class='st'>"Sample"</span>,
+  point_size <span class='op'>=</span> <span class='fl'>3</span>,
+  point_alpha <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span>
+<span class='va'>p1</span> <span class='op'>+</span> <span class='va'>p2</span> <span class='op'>+</span> <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_layout.html'>plot_layout</a></span><span class='op'>(</span>guides <span class='op'>=</span> <span class='st'>"collect"</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-29-1.png" width="624" /></p>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>summed_filt</span> <span class='op'>&lt;-</span> <span class='va'>summed</span><span class='op'>[</span>, <span class='va'>summed</span><span class='op'>$</span><span class='va'>ncells</span> <span class='op'>&gt;=</span> <span class='fl'>10</span><span class='op'>]</span>
+
+<span class='va'>de_results</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scran/man/pseudoBulkDGE.html'>pseudoBulkDGE</a></span><span class='op'>(</span>
+  <span class='va'>summed_filt</span>,
+  label <span class='op'>=</span> <span class='va'>summed_filt</span><span class='op'>$</span><span class='va'>subcluster</span>,
+  design <span class='op'>=</span> <span class='op'>~</span><span class='va'>Treatment</span>,
+  coef <span class='op'>=</span> <span class='st'>"TreatmentInfected"</span>,
+  condition <span class='op'>=</span> <span class='va'>summed_filt</span><span class='op'>$</span><span class='va'>Treatment</span>,
+  include.intermediates <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+</div>
+<ul>
+<li>Labels for which we couldn’t run DE (<code>character(0)</code> means none)</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'>metadata</span><span class='op'>(</span><span class='va'>de_results</span><span class='op'>)</span><span class='op'>$</span><span class='va'>failed</span>
+</code></pre>
+</div>
+</details>
+<pre><code>character(0)</code></pre>
+</div>
+<ul>
+<li>Number of DEGs per label (<code>-1</code> means downregulated in <code>Infected</code> vs. <code>Uninfected</code>, <code>0</code> means not DE, <code>1</code> means upregulated in <code>Infected</code> vs. <code>Uninfected</code>)</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>is.de</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scran/man/decideTestsPerLabel.html'>decideTestsPerLabel</a></span><span class='op'>(</span><span class='va'>de_results</span>, threshold <span class='op'>=</span> <span class='fl'>0.05</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/pkg/scran/man/decideTestsPerLabel.html'>summarizeTestsPerLabel</a></span><span class='op'>(</span><span class='va'>is.de</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<pre><code>          -1    0   1    NA
+Cycling.1 98 7519  98 12887
+Cycling.2 66 6051  98 14387
+Cycling.3 75 8356 112 12059</code></pre>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>outdir</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"output"</span>, <span class='st'>"DEGs"</span>, <span class='st'>"cycling_subset_subcluster"</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/files2.html'>dir.create</a></span><span class='op'>(</span><span class='va'>outdir</span>, recursive <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
+<span class='fu'>createDEGOutputs</span><span class='op'>(</span>
+  outdir <span class='op'>=</span> <span class='va'>outdir</span>, 
+  de_results <span class='op'>=</span> <span class='va'>de_results</span>, 
+  summed_filt <span class='op'>=</span> <span class='va'>summed_filt</span>,
+  sce <span class='op'>=</span> <span class='va'>x</span>,
+  fdr <span class='op'>=</span> <span class='fl'>0.05</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>de_results</span><span class='op'>)</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span> <span class='op'>{</span>
+  <span class='va'>se</span> <span class='op'>&lt;-</span> <span class='va'>summed_filt</span><span class='op'>[</span>, <span class='va'>summed_filt</span><span class='op'>$</span><span class='va'>label</span> <span class='op'>==</span> <span class='va'>n</span><span class='op'>]</span>
+  <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>de_results</span><span class='op'>[[</span><span class='va'>n</span><span class='op'>]</span><span class='op'>]</span>
+  <span class='va'>features</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>$</span><span class='va'>FDR</span> <span class='op'>&lt;</span> <span class='fl'>0.05</span><span class='op'>)</span>, <span class='op'>]</span><span class='op'>)</span>
+  <span class='kw'>if</span> <span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>features</span><span class='op'>)</span> <span class='op'>&gt;</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>{</span>
+    <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plotHeatmap.html'>plotHeatmap</a></span><span class='op'>(</span>
+      <span class='va'>se</span>,
+      features <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>features</span>, <span class='fl'>50</span><span class='op'>)</span>,
+      center <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      zlim <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>3</span>, <span class='fl'>3</span><span class='op'>)</span>,
+      symmetric <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      color <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grDevices/palettes.html'>hcl.colors</a></span><span class='op'>(</span><span class='fl'>101</span>, <span class='st'>"Blue-Red 3"</span><span class='op'>)</span>,
+      order_columns_by <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Treatment"</span>, <span class='st'>"Sample"</span><span class='op'>)</span>,
+      column_annotation_colors <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>
+        Treatment <span class='op'>=</span> <span class='va'>treatment_colours</span>,
+        Sample <span class='op'>=</span> <span class='va'>sample_colours</span><span class='op'>)</span>,
+      cluster_rows <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      fontsize <span class='op'>=</span> <span class='fl'>8</span>,
+      main <span class='op'>=</span> <span class='va'>n</span>,
+      filename <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span><span class='op'>(</span><span class='va'>outdir</span>, <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>n</span>, <span class='st'>".pseudobulk_heatmap.pdf"</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+    
+    <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plotGroupedHeatmap.html'>plotGroupedHeatmap</a></span><span class='op'>(</span>
+      <span class='va'>cycling_sce</span>,
+      features <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>features</span>, <span class='fl'>50</span><span class='op'>)</span>,
+      group <span class='op'>=</span> <span class='st'>"Sample"</span>,
+      columns <span class='op'>=</span> <span class='va'>cycling_sce</span><span class='op'>$</span><span class='va'>subcluster</span> <span class='op'>==</span> <span class='va'>n</span>,
+      center <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      symmetric <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      color <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grDevices/palettes.html'>hcl.colors</a></span><span class='op'>(</span><span class='fl'>101</span>, <span class='st'>"Blue-Red 3"</span><span class='op'>)</span>,
+      cluster_rows <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      fontsize <span class='op'>=</span> <span class='fl'>8</span>,
+      main <span class='op'>=</span> <span class='va'>n</span>,
+      cluster_cols <span class='op'>=</span> <span class='cn'>FALSE</span>,
+      filename <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span><span class='op'>(</span>
+        <span class='va'>outdir</span>,
+        <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>n</span>, <span class='st'>".average_expression_heatmap.pdf"</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+  <span class='op'>}</span>
+<span class='op'>}</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+</div>
+<h2 id="da-2">DA</h2>
+<ul>
+<li>Number of cells/label/sample</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>abundances</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/table.html'>table</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>$</span><span class='va'>subcluster</span>, <span class='va'>x</span><span class='op'>$</span><span class='va'>Sample</span><span class='op'>)</span>
+<span class='va'>abundances</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/class.html'>unclass</a></span><span class='op'>(</span><span class='va'>abundances</span><span class='op'>)</span>
+<span class='va'>abundances</span>
+</code></pre>
+</div>
+</details>
+<pre><code>           
+            infected_1 infected_2 infected_3 uninfected_1
+  Cycling.1         73         65        147           42
+  Cycling.2         72         45         55           55
+  Cycling.3         81         61        125           74
+           
+            uninfected_2 uninfected_3
+  Cycling.1          112           48
+  Cycling.2          113           43
+  Cycling.3          133           51</code></pre>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>p1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotUMAP</a></span><span class='op'>(</span>
+  <span class='va'>x</span>,
+  colour_by <span class='op'>=</span> <span class='st'>"subcluster"</span>,
+  text_by <span class='op'>=</span> <span class='st'>"subcluster"</span>,
+  point_size <span class='op'>=</span> <span class='fl'>0.5</span>,
+  point_alpha <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>
+<span class='va'>p2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotUMAP</a></span><span class='op'>(</span>
+  <span class='va'>x</span>,
+  colour_by <span class='op'>=</span> <span class='st'>"Treatment"</span>,
+  point_size <span class='op'>=</span> <span class='fl'>0.5</span>,
+  point_alpha <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>scale_colour_manual</span><span class='op'>(</span>values <span class='op'>=</span> <span class='va'>treatment_colours</span><span class='op'>)</span>
+<span class='va'>p1</span> <span class='op'>+</span> <span class='va'>p2</span>
+</code></pre>
+</div>
+</details>
+<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-36-1.png" width="624" /></p>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>p3</span> <span class='op'>&lt;-</span> <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/as.data.frame.html'>as.data.frame</a></span><span class='op'>(</span><span class='fu'>colData</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>[</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"subcluster"</span>, <span class='st'>"Sample"</span><span class='op'>)</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>geom_bar</span><span class='op'>(</span>
+    <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>subcluster</span>, fill <span class='op'>=</span> <span class='va'>Sample</span><span class='op'>)</span>,
+    position <span class='op'>=</span> <span class='fu'>position_fill</span><span class='op'>(</span>reverse <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>coord_flip</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>ylab</span><span class='op'>(</span><span class='st'>"Frequency"</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>scale_fill_manual</span><span class='op'>(</span>values <span class='op'>=</span> <span class='va'>sample_colours</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://wilkelab.org/cowplot/reference/theme_cowplot.html'>theme_cowplot</a></span><span class='op'>(</span>font_size <span class='op'>=</span> <span class='fl'>8</span><span class='op'>)</span>
+<span class='va'>p4</span> <span class='op'>&lt;-</span> <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/as.data.frame.html'>as.data.frame</a></span><span class='op'>(</span><span class='fu'>colData</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>[</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"subcluster"</span>, <span class='st'>"Treatment"</span><span class='op'>)</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>geom_bar</span><span class='op'>(</span>
+    <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>subcluster</span>, fill <span class='op'>=</span> <span class='va'>Treatment</span><span class='op'>)</span>,
+    position <span class='op'>=</span> <span class='fu'>position_fill</span><span class='op'>(</span>reverse <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>coord_flip</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>ylab</span><span class='op'>(</span><span class='st'>"Frequency"</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>scale_fill_manual</span><span class='op'>(</span>values <span class='op'>=</span> <span class='va'>treatment_colours</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://wilkelab.org/cowplot/reference/theme_cowplot.html'>theme_cowplot</a></span><span class='op'>(</span>font_size <span class='op'>=</span> <span class='fl'>8</span><span class='op'>)</span>
+<span class='va'>p5</span> <span class='op'>&lt;-</span> <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/as.data.frame.html'>as.data.frame</a></span><span class='op'>(</span><span class='fu'>colData</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>[</span>, <span class='st'>"subcluster"</span>, drop <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>geom_bar</span><span class='op'>(</span><span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>subcluster</span>, fill <span class='op'>=</span> <span class='va'>subcluster</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>coord_flip</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>ylab</span><span class='op'>(</span><span class='st'>"Number of cells"</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://wilkelab.org/cowplot/reference/theme_cowplot.html'>theme_cowplot</a></span><span class='op'>(</span>font_size <span class='op'>=</span> <span class='fl'>8</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>guides</span><span class='op'>(</span>fill <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
+<span class='va'>p3</span> <span class='op'>+</span> <span class='va'>p4</span> <span class='op'>+</span> <span class='va'>p5</span> <span class='op'>+</span> <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_layout.html'>plot_layout</a></span><span class='op'>(</span>ncol <span class='op'>=</span> <span class='fl'>3</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-37-1.png" width="624" /></p>
+</div>
+<ul>
+<li><code>TRUE</code>/<code>FALSE</code> if label can be tested for DA</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>extra.info</span> <span class='op'>&lt;-</span> <span class='fu'>colData</span><span class='op'>(</span><span class='va'>sce</span><span class='op'>)</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/match.html'>match</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>abundances</span><span class='op'>)</span>, <span class='va'>sce</span><span class='op'>$</span><span class='va'>Sample</span><span class='op'>)</span>, <span class='op'>]</span>
+<span class='va'>y.ab</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/edgeR/man/DGEList.html'>DGEList</a></span><span class='op'>(</span><span class='va'>abundances</span>, samples <span class='op'>=</span> <span class='va'>extra.info</span><span class='op'>)</span>
+
+<span class='va'>keep</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/edgeR/man/filterByExpr.html'>filterByExpr</a></span><span class='op'>(</span><span class='va'>y.ab</span>, group <span class='op'>=</span> <span class='va'>y.ab</span><span class='op'>$</span><span class='va'>samples</span><span class='op'>$</span><span class='va'>Treatment</span><span class='op'>)</span>
+<span class='va'>keep</span>
+</code></pre>
+</div>
+</details>
+<pre><code>Cycling.1 Cycling.2 Cycling.3 
+     TRUE      TRUE      TRUE </code></pre>
+</div>
+<ul>
+<li>Number of labels that are DA (<code>-1</code> means less abundant in <code>Infected</code> vs. <code>Uninfected</code>, <code>0</code> means not DE, <code>1</code> means more abundant in <code>Infected</code> vs. <code>Uninfected</code>)</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>y.ab</span> <span class='op'>&lt;-</span> <span class='va'>y.ab</span><span class='op'>[</span><span class='va'>keep</span>,<span class='op'>]</span>
+
+<span class='va'>design</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>Treatment</span>, <span class='va'>y.ab</span><span class='op'>$</span><span class='va'>samples</span><span class='op'>)</span>
+
+<span class='va'>y.ab</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/edgeR/man/estimateDisp.html'>estimateDisp</a></span><span class='op'>(</span><span class='va'>y.ab</span>, <span class='va'>design</span>, trend <span class='op'>=</span> <span class='st'>"none"</span><span class='op'>)</span>
+<span class='va'>fit.ab</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/edgeR/man/glmfit.html'>glmFit</a></span><span class='op'>(</span><span class='va'>y.ab</span><span class='op'>)</span>
+<span class='va'>res</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/edgeR/man/glmfit.html'>glmLRT</a></span><span class='op'>(</span><span class='va'>fit.ab</span>, coef <span class='op'>=</span> <span class='st'>"TreatmentInfected"</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='fu'>decideTests</span><span class='op'>(</span><span class='va'>res</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<pre><code>       TreatmentInfected
+Down                   0
+NotSig                 3
+Up                     0</code></pre>
+</div>
+<ul>
+<li>Full results (negative <code>logFC</code> means less abundant in <code>Infected</code> vs. <code>Uninfected</code>, positive <code>logFC</code> means more abundant in <code>Infected</code> vs. <code>Uninfected</code>)</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/pkg/edgeR/man/topTags.html'>topTags</a></span><span class='op'>(</span><span class='va'>res</span>, n <span class='op'>=</span> <span class='cn'>Inf</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<pre><code>Coefficient:  TreatmentInfected 
+                logFC   logCPM        LR     PValue       FDR
+Cycling.1  0.37294181 18.40769 3.7213695 0.05372029 0.1611609
+Cycling.2 -0.35382545 18.10346 2.1597911 0.14166395 0.2124959
+Cycling.3 -0.06526804 18.53074 0.2197015 0.63926749 0.6392675</code></pre>
+</div>
+<h1 id="concluding-remarks">Concluding remarks</h1>
+<p>The <a href="../output/DEGs/"><code>output/DEGs/</code></a> directory contains CSV files summarising the differential expression results and PDFs showing the pseudobulk expression data for each DEG.</p>
+<h1 id="additional-information" class="appendix">Additional information</h1>
+<p>The following are available on request:</p>
+<ul>
+<li>Full CSV tables of any data presented.</li>
+<li>PDF/PNG files of any static plots.</li>
+</ul>
+<h1 id="session-info" class="appendix">Session info</h1>
+<summary>The analysis and this document were prepared using the following software (click triangle to expand)</summary>
+<details>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'>sessioninfo</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/sessioninfo/man/session_info.html'>session_info</a></span><span class='op'>(</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<pre><code>─ Session info ─────────────────────────────────────────────────────
+ setting  value                       
+ version  R version 4.0.3 (2020-10-10)
+ os       CentOS Linux 7 (Core)       
+ system   x86_64, linux-gnu           
+ ui       X11                         
+ language (EN)                        
+ collate  en_US.UTF-8                 
+ ctype    en_US.UTF-8                 
+ tz       Australia/Melbourne         
+ date     2021-04-08                  
+
+─ Packages ─────────────────────────────────────────────────────────
+ ! package              * version  date       lib source        
+ P annotate               1.68.0   2020-10-27 [?] Bioconductor  
+ P AnnotationDbi        * 1.52.0   2020-10-27 [?] Bioconductor  
+ P assertthat             0.2.1    2019-03-21 [?] CRAN (R 4.0.0)
+ P beachmat               2.6.4    2020-12-20 [?] Bioconductor  
+ P beeswarm               0.2.3    2016-04-25 [?] CRAN (R 4.0.0)
+ P Biobase              * 2.50.0   2020-10-27 [?] Bioconductor  
+   BiocGenerics         * 0.36.0   2020-10-27 [1] Bioconductor  
+ P BiocManager            1.30.10  2019-11-16 [?] CRAN (R 4.0.0)
+ P BiocNeighbors          1.8.2    2020-12-07 [?] Bioconductor  
+   BiocParallel           1.24.1   2020-11-06 [1] Bioconductor  
+ P BiocSingular           1.6.0    2020-10-27 [?] Bioconductor  
+   BiocStyle              2.18.1   2020-11-24 [1] Bioconductor  
+ P bit                    4.0.4    2020-08-04 [?] CRAN (R 4.0.0)
+ P bit64                  4.0.5    2020-08-30 [?] CRAN (R 4.0.0)
+ P bitops                 1.0-6    2013-08-17 [?] CRAN (R 4.0.0)
+ P blob                   1.2.1    2020-01-20 [?] CRAN (R 4.0.0)
+ P bluster                1.0.0    2020-10-27 [?] Bioconductor  
+ P bslib                  0.2.4    2021-01-25 [?] CRAN (R 4.0.3)
+ P cachem                 1.0.4    2021-02-13 [?] CRAN (R 4.0.3)
+ P cli                    2.3.1    2021-02-23 [?] CRAN (R 4.0.3)
+ P colorspace             2.0-0    2020-11-11 [?] CRAN (R 4.0.3)
+ P cowplot              * 1.1.1    2020-12-30 [?] CRAN (R 4.0.3)
+ P crayon                 1.4.1    2021-02-08 [?] CRAN (R 4.0.3)
+ P DBI                    1.1.1    2021-01-15 [?] CRAN (R 4.0.3)
+ P DelayedArray           0.16.2   2021-02-26 [?] Bioconductor  
+ P DelayedMatrixStats     1.12.3   2021-02-03 [?] Bioconductor  
+ P DESeq2                 1.30.1   2021-02-19 [?] Bioconductor  
+ P digest                 0.6.27   2020-10-24 [?] CRAN (R 4.0.2)
+ P distill                1.2      2021-01-13 [?] CRAN (R 4.0.3)
+ P downlit                0.2.1    2020-11-04 [?] CRAN (R 4.0.3)
+ P dplyr                  1.0.4    2021-02-02 [?] CRAN (R 4.0.3)
+ P dqrng                  0.2.1    2019-05-17 [?] CRAN (R 4.0.0)
+ P edgeR                * 3.32.1   2021-01-14 [?] Bioconductor  
+ P ellipsis               0.3.1    2020-05-15 [?] CRAN (R 4.0.0)
+ P evaluate               0.14     2019-05-28 [?] CRAN (R 4.0.0)
+ P fansi                  0.4.2    2021-01-15 [?] CRAN (R 4.0.3)
+ P farver                 2.1.0    2021-02-28 [?] CRAN (R 4.0.3)
+ P fastmap                1.1.0    2021-01-25 [?] CRAN (R 4.0.3)
+ P genefilter             1.72.1   2021-01-21 [?] Bioconductor  
+ P geneplotter            1.68.0   2020-10-27 [?] Bioconductor  
+ P generics               0.1.0    2020-10-31 [?] CRAN (R 4.0.3)
+ P GenomeInfoDb         * 1.26.2   2020-12-08 [?] Bioconductor  
+   GenomeInfoDbData       1.2.4    2021-02-04 [1] Bioconductor  
+ P GenomicRanges        * 1.42.0   2020-10-27 [?] Bioconductor  
+ P ggbeeswarm             0.6.0    2017-08-07 [?] CRAN (R 4.0.0)
+ P ggplot2              * 3.3.3    2020-12-30 [?] CRAN (R 4.0.3)
+ P Glimma                 2.0.0    2020-10-27 [?] Bioconductor  
+ P glue                   1.4.2    2020-08-27 [?] CRAN (R 4.0.0)
+ P GO.db                  3.12.1   2020-11-04 [?] Bioconductor  
+ P gridExtra              2.3      2017-09-09 [?] CRAN (R 4.0.0)
+ P gtable                 0.3.0    2019-03-25 [?] CRAN (R 4.0.0)
+ P here                 * 1.0.1    2020-12-13 [?] CRAN (R 4.0.3)
+ P highr                  0.8      2019-03-20 [?] CRAN (R 4.0.0)
+ P htmltools              0.5.1.1  2021-01-22 [?] CRAN (R 4.0.3)
+ P htmlwidgets            1.5.3    2020-12-10 [?] CRAN (R 4.0.3)
+ P httr                   1.4.2    2020-07-20 [?] CRAN (R 4.0.0)
+ P igraph                 1.2.6    2020-10-06 [?] CRAN (R 4.0.2)
+ P IRanges              * 2.24.1   2020-12-12 [?] Bioconductor  
+ P irlba                  2.3.3    2019-02-05 [?] CRAN (R 4.0.0)
+ P jquerylib              0.1.3    2020-12-17 [?] CRAN (R 4.0.3)
+ P jsonlite               1.7.2    2020-12-09 [?] CRAN (R 4.0.3)
+ P knitr                  1.31     2021-01-27 [?] CRAN (R 4.0.3)
+ P labeling               0.4.2    2020-10-20 [?] CRAN (R 4.0.0)
+ P lattice                0.20-41  2020-04-02 [?] CRAN (R 4.0.0)
+ P lifecycle              1.0.0    2021-02-15 [?] CRAN (R 4.0.3)
+   limma                * 3.46.0   2020-10-27 [1] Bioconductor  
+ P locfit                 1.5-9.4  2020-03-25 [?] CRAN (R 4.0.0)
+ P magrittr             * 2.0.1    2020-11-17 [?] CRAN (R 4.0.3)
+ P Matrix                 1.3-2    2021-01-06 [?] CRAN (R 4.0.3)
+   MatrixGenerics       * 1.2.1    2021-01-30 [1] Bioconductor  
+ P matrixStats          * 0.58.0   2021-01-29 [?] CRAN (R 4.0.3)
+ P memoise                2.0.0    2021-01-26 [?] CRAN (R 4.0.3)
+ P munsell                0.5.0    2018-06-12 [?] CRAN (R 4.0.0)
+ P org.Hs.eg.db         * 3.12.0   2020-10-20 [?] Bioconductor  
+ P patchwork            * 1.1.1    2020-12-17 [?] CRAN (R 4.0.3)
+ P pheatmap               1.0.12   2019-01-04 [?] CRAN (R 4.0.0)
+ P pillar                 1.5.0    2021-02-22 [?] CRAN (R 4.0.3)
+ P pkgconfig              2.0.3    2019-09-22 [?] CRAN (R 4.0.0)
+ P purrr                  0.3.4    2020-04-17 [?] CRAN (R 4.0.0)
+ P R6                     2.5.0    2020-10-28 [?] CRAN (R 4.0.2)
+ P RColorBrewer           1.1-2    2014-12-07 [?] CRAN (R 4.0.0)
+ P Rcpp                   1.0.6    2021-01-15 [?] CRAN (R 4.0.3)
+ P RCurl                  1.98-1.2 2020-04-18 [?] CRAN (R 4.0.0)
+ P rlang                  0.4.10   2020-12-30 [?] CRAN (R 4.0.3)
+ P rmarkdown              2.7      2021-02-19 [?] CRAN (R 4.0.3)
+ P rprojroot              2.0.2    2020-11-15 [?] CRAN (R 4.0.3)
+ P RSQLite                2.2.3    2021-01-24 [?] CRAN (R 4.0.3)
+ P rsvd                   1.0.3    2020-02-17 [?] CRAN (R 4.0.0)
+ P S4Vectors            * 0.28.1   2020-12-09 [?] Bioconductor  
+ P sass                   0.3.1    2021-01-24 [?] CRAN (R 4.0.3)
+ P scales                 1.1.1    2020-05-11 [?] CRAN (R 4.0.0)
+ P scater               * 1.18.6   2021-02-26 [?] Bioconductor  
+ P scran                * 1.18.5   2021-02-04 [?] Bioconductor  
+ P scuttle                1.0.4    2020-12-17 [?] Bioconductor  
+ P sessioninfo            1.1.1    2018-11-05 [?] CRAN (R 4.0.0)
+ P SingleCellExperiment * 1.12.0   2020-10-27 [?] Bioconductor  
+ P sparseMatrixStats      1.2.1    2021-02-02 [?] Bioconductor  
+ P statmod                1.4.35   2020-10-19 [?] CRAN (R 4.0.2)
+ P stringi                1.5.3    2020-09-09 [?] CRAN (R 4.0.0)
+ P stringr                1.4.0    2019-02-10 [?] CRAN (R 4.0.0)
+ P SummarizedExperiment * 1.20.0   2020-10-27 [?] Bioconductor  
+ P survival               3.2-7    2020-09-28 [?] CRAN (R 4.0.2)
+ P tibble                 3.1.0    2021-02-25 [?] CRAN (R 4.0.3)
+ P tidyselect             1.1.0    2020-05-11 [?] CRAN (R 4.0.0)
+ P utf8                   1.1.4    2018-05-24 [?] CRAN (R 4.0.0)
+ P vctrs                  0.3.6    2020-12-17 [?] CRAN (R 4.0.3)
+ P vipor                  0.4.5    2017-03-22 [?] CRAN (R 4.0.0)
+ P viridis                0.5.1    2018-03-29 [?] CRAN (R 4.0.0)
+ P viridisLite            0.3.0    2018-02-01 [?] CRAN (R 4.0.0)
+ P withr                  2.4.1    2021-01-26 [?] CRAN (R 4.0.3)
+ P xfun                   0.21     2021-02-10 [?] CRAN (R 4.0.3)
+ P XML                    3.99-0.5 2020-07-23 [?] CRAN (R 4.0.0)
+ P xtable                 1.8-4    2019-04-21 [?] CRAN (R 4.0.0)
+ P XVector                0.30.0   2020-10-27 [?] Bioconductor  
+ P yaml                   2.2.1    2020-02-01 [?] CRAN (R 4.0.0)
+ P zlibbioc               1.36.0   2020-10-27 [?] Bioconductor  
+
+[1] /stornext/Projects/score/Analyses/C057_Cooney/renv/library/R-4.0/x86_64-pc-linux-gnu
+[2] /stornext/System/data/apps/R/R-4.0.3/lib64/R/library
+
+ P ── Loaded and on-disk path mismatch.</code></pre>
+</div>
+</details>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<!--radix_placeholder_article_footer-->
+<!--/radix_placeholder_article_footer-->
+</div>
+
+<div class="d-appendix">
+</div>
+
+
+<!--radix_placeholder_site_after_body-->
+<!--/radix_placeholder_site_after_body-->
+<!--radix_placeholder_appendices-->
+<div class="appendix-bottom">
+<h3 id="references">References</h3>
+<div id="references-listing"></div>
+</div>
+<!--/radix_placeholder_appendices-->
+<!--radix_placeholder_navigation_after_body-->
+<!--/radix_placeholder_navigation_after_body-->
+
+</body>
+
+</html>
