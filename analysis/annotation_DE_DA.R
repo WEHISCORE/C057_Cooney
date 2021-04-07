@@ -1616,12 +1616,3 @@ p5 <- ggplot(as.data.frame(colData(tmp)[, "subcluster", drop = FALSE])) +
   theme_cowplot() +
   guides(fill = FALSE)
 p3 + p4 + p5 + plot_layout(ncol = 3)
-
-# TODOs ------------------------------------------------------------------------
-
-# - [x] Cell cycle could really be proliferation of T-cells upon activation.
-# - [x] Are samples paired?
-#   - No
-# - [ ] Heatmaps and CSVs of DEGs (UP TO HERE)
-# - [x] Block on treatment/donor during marker gene detection?
-# - [ ] Convert to Rmd (and split into annotation and DE/DA)
