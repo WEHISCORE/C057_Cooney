@@ -136,12 +136,24 @@
       "Source": "Bioconductor",
       "Hash": "f3e78fee6ebbdbfdf679cfeaa0ec0083"
     },
+    "ExperimentHub": {
+      "Package": "ExperimentHub",
+      "Version": "1.16.0",
+      "Source": "Bioconductor",
+      "Hash": "661c05ba07a43937d58fa12c6c1df197"
+    },
     "FNN": {
       "Package": "FNN",
       "Version": "1.1.3",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "b56998fff55e4a4b4860ad6e8c67e0f9"
+    },
+    "GO.db": {
+      "Package": "GO.db",
+      "Version": "3.12.1",
+      "Source": "Bioconductor",
+      "Hash": "1ed8d8ec3449f0c6fba5f1932ac333ae"
     },
     "GenomeInfoDb": {
       "Package": "GenomeInfoDb",
@@ -185,6 +197,12 @@
       "Source": "Bioconductor",
       "Hash": "07fd74c160b1265137c0cdd815dc42b5"
     },
+    "Homo.sapiens": {
+      "Package": "Homo.sapiens",
+      "Version": "1.3.1",
+      "Source": "Bioconductor",
+      "Hash": "28bbb4610bc2a0805f54960803a61809"
+    },
     "IRanges": {
       "Package": "IRanges",
       "Version": "2.24.1",
@@ -210,6 +228,12 @@
       "Version": "1.2.1",
       "Source": "Bioconductor",
       "Hash": "fbae799fc848a8599a46a3adfe8a975a"
+    },
+    "OrganismDbi": {
+      "Package": "OrganismDbi",
+      "Version": "1.32.0",
+      "Source": "Bioconductor",
+      "Hash": "dc29ad9ced0243adb1419cad92f21fc7"
     },
     "Polychrome": {
       "Package": "Polychrome",
@@ -251,6 +275,12 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "b203113193e70978a696b2809525649d"
+    },
+    "RBGL": {
+      "Package": "RBGL",
+      "Version": "1.66.0",
+      "Source": "Bioconductor",
+      "Hash": "1769a317bb8efa5c9a8bb7e04a77411a"
     },
     "RColorBrewer": {
       "Package": "RColorBrewer",
@@ -322,6 +352,12 @@
       "Repository": "CRAN",
       "Hash": "1c0aa18b97e6aaa17f93b8b866c0ace5"
     },
+    "ResidualMatrix": {
+      "Package": "ResidualMatrix",
+      "Version": "1.0.0",
+      "Source": "Bioconductor",
+      "Hash": "a6359ebe8106451188623f982fb9af20"
+    },
     "Rhdf5lib": {
       "Package": "Rhdf5lib",
       "Version": "1.12.1",
@@ -363,6 +399,12 @@
       "Version": "1.20.0",
       "Source": "Bioconductor",
       "Hash": "2da24c5f66521d18cff602d324834b20"
+    },
+    "TxDb.Hsapiens.UCSC.hg19.knownGene": {
+      "Package": "TxDb.Hsapiens.UCSC.hg19.knownGene",
+      "Version": "3.2.2",
+      "Source": "Bioconductor",
+      "Hash": "5d19899944856d66d65ae635c4be688d"
     },
     "XML": {
       "Package": "XML",
@@ -431,6 +473,12 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "543776ae6848fde2f48ff3816d0628bc"
+    },
+    "batchelor": {
+      "Package": "batchelor",
+      "Version": "1.6.2",
+      "Source": "Bioconductor",
+      "Hash": "0881eb8faadd983eb1d15c56193c722d"
     },
     "beachmat": {
       "Package": "beachmat",
@@ -512,6 +560,12 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "2703a46dcabfb902f10060b2bca9f708"
+    },
+    "celldex": {
+      "Package": "celldex",
+      "Version": "1.0.0",
+      "Source": "Bioconductor",
+      "Hash": "1bed4a4c05354e8620e0bf813c1fbb96"
     },
     "cli": {
       "Package": "cli",
@@ -739,6 +793,12 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "6efd734b14c6471cfe443345f3e35e29"
+    },
+    "graph": {
+      "Package": "graph",
+      "Version": "1.68.0",
+      "Source": "Bioconductor",
+      "Hash": "38322867731e9e137d21b13778a96b5f"
     },
     "gridExtra": {
       "Package": "gridExtra",
@@ -1154,6 +1214,12 @@
       "Repository": "CRAN",
       "Hash": "3ef1adfe46b7b144b970d74ce33ab0d6"
     },
+    "scDblFinder": {
+      "Package": "scDblFinder",
+      "Version": "1.4.0",
+      "Source": "Bioconductor",
+      "Hash": "d578f334c561c69607bf1cb8e7b212f9"
+    },
     "scales": {
       "Package": "scales",
       "Version": "1.1.1",
@@ -1380,6 +1446,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "f3ddcca198959a42e8cb6b06c30d4f1e"
+    },
+    "xgboost": {
+      "Package": "xgboost",
+      "Version": "1.3.2.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "280eff8c373dbd496580381dc0c5bd84"
     },
     "xml2": {
       "Package": "xml2",

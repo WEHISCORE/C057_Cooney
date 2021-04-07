@@ -13,35 +13,17 @@ editor_options:
 bibliography: ref.bib
 ---
 
-```{r setup}
-library(SingleCellExperiment)
-library(here)
-library(scater)
-library(scran)
-library(ggplot2)
-library(cowplot)
-library(edgeR)
-library(Glimma)
-library(BiocParallel)
-library(patchwork)
-
-source(here("code", "helper_functions.R"))
-
-# NOTE: Using multiple cores seizes up my laptop. Can use more on unix box.
-options("mc.cores" = ifelse(Sys.info()[["nodename"]] == "PC1331", 2L, 8L))
-register(MulticoreParam(workers = getOption("mc.cores")))
-
-knitr::opts_chunk$set(fig.path = "C057_Cooney.annotate_files/")
-```
-
-# Preparing the data
-
-We start from the preprocessed *SingleCellExperiment* object created in ['Selection of biologically relevant cells for the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney.cell_selection.html).
+# Setup
 
 ```{r}
-sce <- readRDS(here("data", "SCEs", "C057_Cooney.cells_selected.SCE.rds"))
+library(SingleCellExperiment)
+library(here)
+library(cowplot)
+library(patchwork)
 
-# data frames containing co-ordinates and factors for creating reduced 
+sce <- readRDS(here("data/SCEs/C057_Cooney.cells_selected.SCE.rds"))
+
+# data frames containing co-ordinates and factors for creating reduced
 # dimensionality plots.
 umap_df <- cbind(
   data.frame(
@@ -59,17 +41,11 @@ treatment_colours <- setNames(
 cluster_colours <- setNames(
   unique(sce$cluster_colours),
   unique(names(sce$cluster_colours)))
-label_main_collapsed_colours <- setNames(
-  unique(sce$label_main_collapsed_colours),
-  unique(names(sce$label_main_collapsed_colours)))
-label_fine_collapsed_colours <- setNames(
-  unique(sce$label_fine_collapsed_colours),
-  unique(names(sce$label_fine_collapsed_colours)))
 
 # Some useful gene sets
 mito_set <- rownames(sce)[which(rowData(sce)$CHR == "MT")]
 ribo_set <- grep("^RP(S|L)", rownames(sce), value = TRUE)
-# NOTE: A more curated approach for identifying ribosomal protein genes 
+# NOTE: A more curated approach for identifying ribosomal protein genes
 #       (https://github.com/Bioconductor/OrchestratingSingleCellAnalysis-base/blob/ae201bf26e3e4fa82d9165d8abf4f4dc4b8e5a68/feature-selection.Rmd#L376-L380)
 library(msigdbr)
 c2_sets <- msigdbr(species = "Homo sapiens", category = "C2")
@@ -78,422 +54,1035 @@ ribo_set <- union(
   c2_sets[c2_sets$gs_name == "KEGG_RIBOSOME", ]$human_gene_symbol)
 ```
 
+## Re-processing
 
-# Motivation
-
-The most challenging task in scRNA-seq data analysis is arguably the annotation of cells with meaningful labels.
-We might attempt to label cells individually or to label clusters (with cells assigned to those clusters 'inheriting' the cluster-level label).
-
-In ['Selection of biologically relevant cells for the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney.cell_selection.html), we obtained two sets of labels:
-
-1. 'cell-type' labels using `r BiocStyle::Biocpkg("SingleR")`. These labels can be very useful, but are limited by the resolution of the reference dataset(s). For example, the cell-type labels we obtained are unlikely to be able to distinguish more subtle differences between cells, such as changes in activation or differentiation state.
-2. 'cluster' labels using clustering. Obtaining clusters of cells is fairly straightforward, but it is more difficult to determine what biological state is represented by each of those clusters.
-
-These two sets of labels need not be in perfect agreement.
-For example, Figure \@ref(fig:umap-with-clusters-and-fine-labels) shows that there are regions of the UMAP plot that are enriched for certain `r BiocStyle::Biocpkg("SingleR")` labels but that these regions do not always correspond precisely to the cluster labels.
-
-```{r umap-with-clusters-and-fine-labels, fig.asp = 1 / 2, fig.cap = "UMAP plot. Each point represents a cluster and is coloured by the 'fine' cell-level label. Each panel highlights droplets from a particular predicted cluster type. Cluster labels with < 1% frequency are grouped together as `other`."}
-p_cluster <- ggplot(aes(x = x, y = y), data = umap_df) +
-  geom_point(
-    aes(colour = cluster),
-    alpha = 1,
-    size = 0.25) +
-  scale_fill_manual(values = cluster_colours) +
-  scale_colour_manual(values = cluster_colours) +
-  theme_cowplot(font_size = 10) +
-  xlab("Dimension 1") +
-  ylab("Dimension 2") +
-  ggtitle("Clusters")
-
-bg <- dplyr::select(umap_df, -label_cell_fine)
-p_label_cell_fine <- ggplot(aes(x = x, y = y), data = umap_df) +
-  geom_point(data = bg, colour = scales::alpha("grey", 0.5), size = 0.125) +
-  geom_point(
-    aes(colour = label_cell_fine_collapsed),
-    alpha = 1,
-    size = 0.25) +
-  scale_fill_manual(values = label_fine_collapsed_colours) +
-  scale_colour_manual(values = label_fine_collapsed_colours) +
-  theme_cowplot(font_size = 4) +
-  xlab("Dimension 1") +
-  ylab("Dimension 2") +
-  facet_wrap(~ label_cell_fine, ncol = 4) +
-  guides(colour = FALSE) + 
-  ggtitle("'Fine' cell-level label")
-
-p_cluster + p_label_cell_fine + plot_layout(widths = c(1, 4 / 3))
-```
-
-More importantly, this 'disagreement' between the two sets of labels need not be cause for concern because there are several reasons why these may not match up, including:
-
-1. The genes driving the cluster labels may be different to the genes driving the `r BiocStyle::Biocpkg("SingleR")` labels. For example, the genes driving the clustering may be related to biological processes other than 'cell type' (e.g., T-cell activation, cell cycle, etc.).
-2. The choice of clustering resolution depends on the question being asked (i.e. it may be focused on sub-cell type details or super-cell-type details).
-3. The cell-level labels do not make use of the clustering information and so may be noisy.
-
-In practice, a combination of automated and manual classification methods are usually necessary to properly annotate an scRNA-seq data set.
-
-In this section we identify the genes that drive separation between clusters to help us interpret the clustering results.
-
-# Cluster marker gene detection
-
-## Motivation
-
-To interpret our clustering results, we identify the genes that drive separation between clusters.
-We focus on identifying genes that are more highly expressed in one cluster compared to all the other clusters (a.k.a. 'uniquely upregulated' or 'cluster-specific' marker genes).
-
-These marker genes allow us to assign biological meaning to each cluster based on their functional annotation.
-In the most obvious case, the marker genes for each cluster are *a priori* associated with particular cell types, allowing us to treat the clustering as a proxy for cell type identity.
-The same principle can be applied to more subtle differences in activation status or differentiation state.
-
-Identification of marker genes is usually based around the retrospective detection of differential expression between clusters^[Differential expression analyses is performed on the original log-expression values.].
-Genes that are more strongly DE are more likely to have driven cluster separation in the first place.
-The top DE genes are likely to be good candidate markers as they can effectively distinguish between cells in different clusters.
-
-## Statistical methodology and considerations
-
-It is important to have some understanding of the statistical methodology used for marker gene detection.
-This section gives an overview.
-
-### Gene lists
-
-For each cluster, the DE results of the relevant comparisons are consolidated into a single output table.
-This allows a set of marker genes to be easily defined by taking the top DE genes from each pairwise comparison between clusters.
-Other statistics are also reported for each gene, including the adjusted p-values^[It must be stressed that the (adjusted) p-values computed here cannot be properly interpreted as measures of significance because the clusters have been empirically identified from the data. Nonetheless, they can still be used as way to rank 'interesting' genes.] and the log-fold changes relative to every other cluster.
-
-### Use of pairwise comparisons
-
-We intentionally use pairwise comparisons between clusters rather than comparing each cluster to the average of all other cells.
-The latter approach is sensitive to the population composition, potentially resulting in wildly different sets of markers when cell type abundances change in different contexts.
-In the worst case, the presence of a single dominant subpopulation will drive the selection of top markers for every other cluster, pushing out useful genes that can resolve the various minor subpopulations.
-Moreover, pairwise comparisons naturally provide more information to interpret of the utility of a marker, e.g., by providing log-fold changes to indicate which clusters are distinguished by this gene.
-
-### Choice of test statistic
-
-The Welch $t$-test is an obvious choice of statistical method to test for differences in expression between clusters.
-It is quickly computed and has good statistical properties for large numbers of cells [@soneson2018bias].
-
-Alternatively, we could consider the Wilcoxon rank sum test (also known as the Wilcoxon-Mann-Whitney test, or WMW test).
-Its strength lies in the fact that it directly assesses separation between the expression distributions of different clusters.
-The WMW test statistic is proportional to the area-under-the-curve (AUC), i.e., the concordance probability, which is the probability of a random cell from one cluster having higher expression than a random cell from another cluster.
-In a pairwise comparison, AUCs of 1 or 0 indicate that the two clusters have perfectly separated expression distributions. 
-Thus, the WMW test directly addresses the most desirable property of a candidate marker gene, while the $t$-test only does so indirectly via the difference in the means and the intra-group variance.
-
-Another alternative, the binomial test, identifies genes that differ in the proportion of expressing cells between clusters^[For the purposes of this test, a cell is considered to express a gene simply if it has one or more counts for that gene.].
-This represents a much more stringent definition of marker genes compared to the other methods, as differences in expression between clusters are effectively ignored if both distributions of expression values are not near zero.
-The premise is that genes are more likely to contribute to important biological decisions if they were active in one cluster and silent in another, compared to more subtle 'tuning' effects from changing the expression of an active gene.
-From a practical perspective, a binary measure of presence/absence is easier to validate.
-
-The Welch $t$-test is our default method for identifying marker genes.
-
-### Blocking
-
-We perform intra-sample comparisons by blocking on the `Sample` to avoid confounding effects from differential expression between samples^[Intra-sample comparisons are robust to differences between libraries but assume that each pair of clusters is present in at least one library. When this is not the case, we cannot commute a logFC for that pair of clusters.].
-
-### Focus on cluster-specific marker genes
-
-As noted above, we aim to identify genes that are more highly expressed in one cluster compared to all the other clusters (aka 'uniquely upregulated' or 'cluster-specific' marker genes)^[To achieve this, we use an intersection-union test [@berger1996bioequivalence] where the combined $p$-value for each gene is the maximum of the $p$-values from all pairwise comparisons. A gene will only achieve a low combined $p$-value if it is strongly upregulated in all comparisons to other clusters.].
-
-This strategy will only report genes that are highly specific to the cluster of interest.
-When it works, it can be highly effective as it generates a small focused set of candidate markers. 
-However, any gene that is expressed at the same level in two or more clusters will simply not be detected. 
-This is likely to discard many interesting genes, especially if the clusters are finely resolved with weak separation.
-
-To give a concrete example, consider a mixed population of CD4^+^-only, CD8^+^-only, double-positive and double-negative T cells.
-Using this strategy, neither _Cd4_ or _Cd8_ would be detected as subpopulation-specific markers because each gene is expressed in two subpopulations.
-In comparison, a strategy that identified marker genes as those that are differentially expressed between *any* pair of clusters would identify these genes, albeit with these then appearing as marker genes for multiple clusters.
-
-## Analysis
-
-### $t$-test
+This is a no-op if the same hvg set is used from cell selection.
 
 ```{r}
-test.type <- "t"
-```
+library(scran)
+set.seed(1000)
+var_fit <- modelGeneVarByPoisson(sce, block = sce$batch)
+hvg <- getTopHVGs(var_fit, var.threshold = 0)
+is_mito <- hvg %in% mito_set
+is_ribo <- hvg %in% ribo_set
+hvg <- hvg[!(is_mito | is_ribo)]
 
-#### Cluster-specific marker genes
+set.seed(1010)
+var_fit.sample <- modelGeneVarByPoisson(sce, block = sce$Sample)
+hvg.sample <- getTopHVGs(var_fit.sample, var.threshold = 0)
+is_mito <- hvg.sample %in% mito_set
+is_ribo <- hvg.sample %in% ribo_set
+hvg.sample <- hvg.sample[!(is_mito | is_ribo)]
 
-```{r}
-markers_uniquely_up <- findMarkers(
-  sce,
-  groups = sce$cluster,
-  block = sce$donor_id,
-  pval.type = "all",
-  direction = "up",
-  test = test.type)
-```
-
-The following table gives the number of cluster-specific marker genes ($FDR < 0.05$) for each cluster.
-
-```{r}
-n <- sapply(markers_uniquely_up, function(x) sum(x$FDR < 0.05))
-knitr::kable(
+library(scater)
+# NOTE: 
+set.seed(11235)
+sce <- denoisePCA(sce, var_fit, subset.row = hvg)
+set.seed(8875)
+sce <- runUMAP(sce, dimred = "PCA")
+umap_df <- cbind(
   data.frame(
-    cluster = names(markers_uniquely_up),
-    n = sapply(markers_uniquely_up, function(x) sum(x$FDR < 0.05))),
-  caption = "Number of cluster-specific genes for each cluster.")
-most_unique_markers <- names(which.max(n))
+    x = reducedDim(sce, "UMAP")[, 1],
+    y = reducedDim(sce, "UMAP")[, 2]),
+  as.data.frame(colData(sce)[, !colnames(colData(sce)) %in% c("TRA", "TRB")]))
+set.seed(8111)
+snn_gr <- buildSNNGraph(sce, use.dimred = "PCA")
+clusters <- igraph::cluster_louvain(snn_gr)
+sce$cluster <- factor(clusters$membership)
+umap_df$cluster <- sce$cluster
+cluster_colours <- setNames(
+  Polychrome::glasbey.colors(nlevels(sce$cluster) + 1)[-1],
+  levels(sce$cluster))
+sce$cluster_colours <- cluster_colours[sce$cluster]
 ```
 
-CSV files of these cluster marker gene lists can be found in the [`output/marker_genes/t/uniquely_up/`](../output/marker_genes/t/uniquely_up/) directory.
+# Diagnosing batch effects
+
+- Samples were collected in a single capture, but there are some strong differences between Venetoclax and Control samples.
+- Explore whether batch effect exists and how it might be corrected.
 
 ```{r}
-dir.create(
-  here("output", "marker_genes", test.type, "uniquely_up"), recursive = TRUE)
-for (cluster in levels(sce$cluster)) {
-  gzout <- gzfile(
-    description = here(
-      "output", 
-      "marker_genes", 
-      test.type,
-      "uniquely_up",
-      sprintf(
-        "cluster_%02d.%s.uniquely_up.csv.gz",
-        as.integer(cluster),
-        test.type)),
-    open = "wb")
-  write.table(
-    x = markers_uniquely_up[[cluster]] %>%
-      as.data.frame() %>%
-      tibble::rownames_to_column("gene_ID"), 
-    file = gzout, 
-    sep = ",", 
-    quote = FALSE, 
-    row.names = FALSE,
-    col.names = TRUE)
-  close(gzout)
-}
+table(cluster = sce$cluster, treatment = sce$Treatment)
+```
+
+```{r, fig.asp = 1/2}
+uncorrected.p1 <- plotUMAP(sce, colour_by = "Treatment", point_size = 0.5) +
+  scale_colour_manual(values = treatment_colours, name = "Treatment") +
+  ggtitle("Uncorrected")
+uncorrected.p2 <- plotUMAP(sce, colour_by = "cluster", point_size = 0.5) +
+  scale_colour_manual(values = cluster_colours, name = "cluster") +
+  ggtitle("Uncorrected")
+uncorrected.p1 + uncorrected.p2
+```
+
+```{r, fig.asp = 1 / 3}
+p1 <- ggplot(as.data.frame(colData(sce)[, c("cluster", "Sample")])) +
+  geom_bar(
+    aes(x = cluster, fill = Sample),
+    position = position_fill(reverse = TRUE)) +
+  coord_flip() +
+  ylab("Frequency") +
+  scale_fill_manual(values = sample_colours) +
+  theme_cowplot(font_size = 8)
+p2 <- ggplot(as.data.frame(colData(sce)[, c("cluster", "Treatment")])) +
+  geom_bar(
+    aes(x = cluster, fill = Treatment),
+    position = position_fill(reverse = TRUE)) +
+  coord_flip() +
+  ylab("Frequency") +
+  scale_fill_manual(values = treatment_colours) +
+  theme_cowplot(font_size = 8)
+p3 <- ggplot(as.data.frame(colData(sce)[, "cluster", drop = FALSE])) +
+  geom_bar(aes(x = cluster, fill = cluster)) +
+  coord_flip() +
+  ylab("Number of cells") +
+  scale_fill_manual(values = cluster_colours) +
+  theme_cowplot(font_size = 8) +
+  guides(fill = FALSE)
+p1 + p2 + p3
+```
+
+## Linear regression with `rescaleBatches()`
+
+```{r}
+library(batchelor)
+rescaled <- rescaleBatches(sce, batch = sce$Treatment)
+library(scran)
+set.seed(666)
+rescaled <- denoisePCA(
+  rescaled,
+  var_fit,
+  subset.row = hvg,
+  assay.type = "corrected")
+snn.gr <- buildSNNGraph(rescaled, use.dimred="PCA")
+clusters.resc <- igraph::cluster_louvain(snn.gr)$membership
+rescaled <- runUMAP(rescaled, dimred="PCA")
+rescaled$batch <- factor(rescaled$batch)
+rescaled$cluster <- factor(clusters.resc)
+table(cluster=clusters.resc, treatment=rescaled$batch)
+```
+
+```{r, fig.asp = 1 / 2}
+rescaled.p1 <- plotUMAP(rescaled, colour_by = "batch", point_size = 0.5) +
+  scale_colour_manual(values = treatment_colours, name = "Treatment") +
+  ggtitle("Rescaled")
+rescaled.p2 <- plotUMAP(rescaled, colour_by = "cluster", point_size = 0.5) +
+  ggtitle("Rescaled")
+rescaled.p1 + rescaled.p2
+```
+
+```{r, fig.asp = 1 / 3}
+p1 <- ggplot(as.data.frame(
+  cbind(
+    colData(sce)[, "Sample", drop = FALSE],
+    colData(rescaled)[, "cluster", drop = FALSE]))) +
+  geom_bar(
+    aes(x = cluster, fill = Sample),
+    position = position_fill(reverse = TRUE)) +
+  coord_flip() +
+  ylab("Frequency") +
+    scale_fill_manual(values = sample_colours) +
+    theme_cowplot(font_size = 8)
+p2 <- ggplot(as.data.frame(
+    cbind(
+      colData(sce)[, "Treatment", drop = FALSE],
+      colData(rescaled)[, "cluster", drop = FALSE]))) +
+    geom_bar(
+      aes(x = cluster, fill = Treatment),
+      position = position_fill(reverse = TRUE)) +
+    coord_flip() +
+    ylab("Frequency") +
+    scale_fill_manual(values = treatment_colours) +
+    theme_cowplot(font_size = 8)
+p3 <- ggplot(as.data.frame(colData(rescaled)[, "cluster", drop = FALSE])) +
+  geom_bar(aes(x = cluster, fill = cluster)) +
+  coord_flip() +
+  ylab("Number of cells") +
+  theme_cowplot(font_size = 8) +
+  guides(fill = FALSE)
+p1 + p2 + p3
+```
+
+## Linear regression with `regressBatches()`
+
+```{r}
+set.seed(10001)
+residuals <- regressBatches(sce, batch = sce$Treatment, d = 50,
+                            subset.row=hvg, correct.all=TRUE)
+
+snn.gr <- buildSNNGraph(residuals, use.dimred="corrected")
+clusters.resid <- igraph::cluster_louvain(snn.gr)$membership
+table(Cluster=clusters.resid, treatment=residuals$batch)
+```
+
+```{r, fig.asp = 1 / 2}
+residuals <- runUMAP(residuals, dimred="corrected")
+residuals$batch <- factor(residuals$batch)
+residuals$cluster <- factor(clusters.resid)
+residuals.p1 <- plotUMAP(residuals, colour_by = "batch", point_size = 0.5) +
+  scale_colour_manual(values = treatment_colours, name = "Treatment") +
+  ggtitle("Residuals")
+residuals.p2 <- plotUMAP(residuals, colour_by = "cluster", point_size = 0.5) +
+  ggtitle("Residuals")
+residuals.p1 + residuals.p2
+```
+
+```{r, fig.asp = 1 / 3}
+p1 <- ggplot(as.data.frame(
+    cbind(
+      colData(sce)[, "Sample", drop = FALSE],
+      colData(residuals)[, "cluster", drop = FALSE]))) +
+    geom_bar(
+      aes(x = cluster, fill = Sample),
+      position = position_fill(reverse = TRUE)) +
+    coord_flip() +
+    ylab("Frequency") +
+    scale_fill_manual(values = sample_colours) +
+    theme_cowplot(font_size = 8)
+p2 <- ggplot(as.data.frame(
+    cbind(
+      colData(sce)[, "Treatment", drop = FALSE],
+      colData(residuals)[, "cluster", drop = FALSE]))) +
+    geom_bar(
+      aes(x = cluster, fill = Treatment),
+      position = position_fill(reverse = TRUE)) +
+    coord_flip() +
+    ylab("Frequency") +
+    scale_fill_manual(values = treatment_colours) +
+    theme_cowplot(font_size = 8)
+p3 <- ggplot(as.data.frame(colData(residuals)[, "cluster", drop = FALSE])) +
+    geom_bar(aes(x = cluster, fill = cluster)) +
+    coord_flip() +
+    ylab("Number of cells") +
+    theme_cowplot(font_size = 8) +
+    guides(fill = FALSE)
+p1 + p2 + p3
+```
+
+
+## MNN by treatment
+
+```{r}
+set.seed(1000101001)
+mnn_treatment.out <- fastMNN(
+  sce,
+  batch = sce$Treatment,
+  d = 50,
+  k = 20,
+  subset.row = hvg)
+snn.gr <- buildSNNGraph(mnn_treatment.out, use.dimred="corrected")
+clusters.mnn_treatment <- igraph::cluster_louvain(snn.gr)$membership
+table(Cluster=clusters.mnn_treatment, treatment=mnn_treatment.out$batch)
+```
+
+```{r, fig.asp = 1 / 2}
+mnn_treatment.out <- runUMAP(mnn_treatment.out, dimred="corrected")
+mnn_treatment.out$batch <- factor(mnn_treatment.out$batch)
+mnn_treatment.out$cluster <- factor(clusters.mnn_treatment)
+mnn_treatment.p1 <- plotUMAP(
+  mnn_treatment.out,
+  colour_by = "batch",
+  point_size = 0.5) +
+  scale_colour_manual(values = treatment_colours, name = "Treatment") +
+  ggtitle("MNN (treatment)")
+mnn_treatment.p2 <- plotUMAP(
+  mnn_treatment.out,
+  colour_by = "cluster",
+  point_size = 0.5) +
+  ggtitle("MNN (treatment)")
+mnn_treatment.p1 + mnn_treatment.p2
 ```
 
 ```{r}
-k <- 10
+metadata(mnn_treatment.out)$merge.info$lost.var
 ```
 
-As an example of the information available in these gene lists, Figure \@ref(fig:cluster-markers-heatmap) is heatmap showing the expression of the top-`r k` cluster-specific marker genes across the dataset.
-From this was can observe that:
+```{r, fig.asp = 1 / 3}
+p1 <- ggplot(as.data.frame(
+    cbind(
+      colData(sce)[, "Sample", drop = FALSE],
+      colData(mnn_treatment.out)[, "cluster", drop = FALSE]))) +
+    geom_bar(
+      aes(x = cluster, fill = Sample),
+      position = position_fill(reverse = TRUE)) +
+    coord_flip() +
+    ylab("Frequency") +
+    scale_fill_manual(values = sample_colours) +
+    theme_cowplot(font_size = 8)
+p2 <- ggplot(as.data.frame(
+    cbind(
+      colData(sce)[, "Treatment", drop = FALSE],
+      colData(mnn_treatment.out)[, "cluster", drop = FALSE]))) +
+    geom_bar(
+      aes(x = cluster, fill = Treatment),
+      position = position_fill(reverse = TRUE)) +
+    coord_flip() +
+    ylab("Frequency") +
+    scale_fill_manual(values = treatment_colours) +
+    theme_cowplot(font_size = 8)
+p3 <- ggplot(
+  as.data.frame(colData(mnn_treatment.out)[, "cluster", drop = FALSE])) +
+  geom_bar(aes(x = cluster, fill = cluster)) +
+  coord_flip() +
+  ylab("Number of cells") +
+  theme_cowplot(font_size = 8) +
+  guides(fill = FALSE)
+p1 + p2 + p3
+```
 
-- Most clusters only have a small number of marker genes with strong logFCs compared to all other clusters.
-- Cluster 3, comprised mostly of `Infected` cells, has very high and distinct expression of several key immune genes (e.g., *GNLY*, *CCL5*, *CST7*, *CD74*). Some of the only other cells with such high expression of these genes appear to be the `Infected` cells in cluster 7, suggesting that those cells in cluster 7 may be of similar cell type to cells in cluster 3 but distinguished by strong upregualation of an additional set of genes.
-- Cluster 7, comprised of `Infected` and `Uninfected` cells in a roughly 50:50 split, has very high and distinct expression of genes that are not obviously immune genes.
-- Cluster 8 has very high expression of *FOXP3*, a classic marker of regulatory T cells. Indeed, most cells in this cluster were annotated by `r BiocStyle::Biocpkg("SingleR")` as being `T cells, CD4+, memory TREG`. However, so too were many cells from other clusters that have almost no expression of *FOXP3*. This perhaps highlights both the power of using a multi-gene approach to annotation (such as that used by `r BiocStyle::Biocpkg("SingleR")`) and the limitations of relying on 'known' marker genes for cell type annotation.
+##  MNN by sample
 
-```{r cluster-markers-heatmap, fig.wide = TRUE, fig.cap = "Heatmap of log-expression values of top-10 cluster-specific marker genes for each cluster. Each column is a sample, each row a gene", fig.asp = 1.5}
-markers <- lapply(markers_uniquely_up, function(x) {
-  xx <- x[x$FDR < 0.05, ]
-  rownames(xx[order(xx$summary.logFC, decreasing = TRUE), ])
-})
+```{r}
+set.seed(1000101001)
+mnn_sample.out <- fastMNN(
+  sce,
+  batch = sce$Sample,
+  d = 50,
+  k = 20,
+  subset.row = hvg.sample)
+snn.gr <- buildSNNGraph(mnn_sample.out, use.dimred="corrected")
+clusters.mnn_sample <- igraph::cluster_louvain(snn.gr)$membership
+table(Cluster = clusters.mnn_sample, treatment = mnn_sample.out$batch)
+```
 
-# NOTE: The code below basically does what the commented out code does but 
-#       allows me to provide annotation_colors.
-# plotHeatmap(
-#   sce,
-#   features = unlist(lapply(markers, head, n = k)),
-#   colour_columns_by = c("cluster", "Treatment"),
-#   center = TRUE,
-#   symmetric = TRUE,
-#   order_columns_by = c("cluster", "Treatment"),
-#   cluster_rows = FALSE,
-#   cluster_cols = FALSE,
-#   zlim = c(-3, 3))
-k <- 10
-features <- unlist(lapply(markers, head, n = k))
-mat <- logcounts(sce)[features, ]
-mat <- mat - rowMeans(mat)
-zlim <- c(-3, 3)
-mat[mat < zlim[1]] <- zlim[1]
-mat[mat > zlim[2]] <- zlim[2]
-library(pheatmap)
-o <- order(sce$cluster, sce$Treatment)
-pheatmap(
-  mat = mat[, o],
+```{r, fig.asp = 1}
+mnn_sample.out <- runUMAP(mnn_sample.out, dimred="corrected")
+mnn_sample.out$batch <- factor(mnn_sample.out$batch)
+mnn_sample.out$cluster <- factor(clusters.mnn_sample)
+mnn_sample.p1 <- plotUMAP(
+  mnn_sample.out,
+  colour_by = I(sce$Treatment),
+  point_size = 0.5) +
+  scale_colour_manual(values = treatment_colours, name = "Treatment") +
+  ggtitle("MNN (sample)")
+mnn_sample.p2 <- plotUMAP(
+  mnn_sample.out,
+  colour_by = "cluster",
+  point_size = 0.5) +
+  ggtitle("MNN (sample)")
+mnn_sample.p3 <- plotUMAP(
+  mnn_sample.out,
+  colour_by = "batch",
+  point_size = 0.5) +
+  scale_colour_manual(values = sample_colours, name = "sample") +
+  ggtitle("MNN (sample)")
+mnn_sample.p1 + mnn_sample.p2 + mnn_sample.p3 + plot_layout(ncol = 2)
+```
+
+```{r}
+round(metadata(mnn_sample.out)$merge.info$lost.var, 3)
+```
+
+```{r, fig.asp = 1 / 3}
+p1 <- ggplot(as.data.frame(
+  cbind(
+    colData(sce)[, "Sample", drop = FALSE],
+    colData(mnn_sample.out)[, "cluster", drop = FALSE]))) +
+  geom_bar(
+    aes(x = cluster, fill = Sample),
+    position = position_fill(reverse = TRUE)) +
+  coord_flip() +
+  ylab("Frequency") +
+  scale_fill_manual(values = sample_colours) +
+  theme_cowplot(font_size = 8)
+p2 <- ggplot(as.data.frame(
+    cbind(
+      colData(sce)[, "Treatment", drop = FALSE],
+      colData(mnn_sample.out)[, "cluster", drop = FALSE]))) +
+    geom_bar(
+      aes(x = cluster, fill = Treatment),
+      position = position_fill(reverse = TRUE)) +
+    coord_flip() +
+    ylab("Frequency") +
+    scale_fill_manual(values = treatment_colours) +
+    theme_cowplot(font_size = 8)
+p3 <- ggplot(
+  as.data.frame(colData(mnn_sample.out)[, "cluster", drop = FALSE])) +
+    geom_bar(aes(x = cluster, fill = cluster)) +
+    coord_flip() +
+    ylab("Number of cells") +
+    theme_cowplot(font_size = 8) +
+    guides(fill = FALSE)
+p1 + p2 + p3 + plot_layout(ncol = 3)
+```
+
+## Summary of data integration results 
+
+```{r, fig.asp = 3 / 2}
+uncorrected.p1 + rescaled.p1 + residuals.p1 + mnn_treatment.p1 +
+  mnn_sample.p1 + plot_layout(ncol = 2, guides = "collect")
+```
+
+```{r, fig.asp = 3 / 2}
+uncorrected.p2 + rescaled.p2 + residuals.p2 + mnn_treatment.p2 +
+  mnn_sample.p2 + plot_layout(ncol = 2)
+```
+
+- Uncorrected data has strong treatment-specific differences (and presumably donor-specific differences).
+- Correcting for treatment using any of the 4 approaches removes / dampens those treatment-specific differences.
+- However, it's a little hard to interpret if this is a good or bad thing.
+- Therefore, will just use uncorrected data in what follows while remembering that this means there will be very treatment-specific (and perhaps donor-specific) clusters.
+
+# Clustering at different resolutions
+
+- In all clusterings we observe an 'out group' on the right hand side.
+
+```{r, fig.asp = 1}
+set.seed(126)
+snn_gr <- buildSNNGraph(sce, use.dimred = "PCA", k = 20)
+clusters <- igraph::cluster_louvain(snn_gr)
+sce$cluster_k20 <- factor(clusters$membership)
+snn_gr <- buildSNNGraph(sce, use.dimred = "PCA", k = 50)
+clusters <- igraph::cluster_louvain(snn_gr)
+sce$cluster_k50 <- factor(clusters$membership)
+snn_gr <- buildSNNGraph(sce, use.dimred = "PCA", k = 100)
+clusters <- igraph::cluster_louvain(snn_gr)
+sce$cluster_k100 <- factor(clusters$membership)
+
+p1 <- plotUMAP(
+  sce,
+  colour_by = "cluster",
+  point_size = 0.5,
+  point_alpha = 1,
+  text_by = "cluster") +
+  scale_colour_manual(values = cluster_colours, name = "cluster") +
+  ggtitle("Uncorrected: k = 10") +
+  guides(colour = FALSE)
+p2 <- plotUMAP(
+  sce,
+  colour_by = "cluster_k20",
+  point_size = 0.5,
+  point_alpha = 1,
+  text_by = "cluster_k20") +
+  ggtitle("Uncorrected: k = 20") +
+  guides(colour = FALSE)
+p3 <- plotUMAP(
+  sce,
+  colour_by = "cluster_k50",
+  point_size = 0.5,
+  point_alpha = 1,
+  text_by = "cluster_k50") +
+  ggtitle("Uncorrected: k = 50") +
+  guides(colour = FALSE)
+p4 <- plotUMAP(
+  sce,
+  colour_by = "cluster_k100",
+  point_size = 0.5,
+  point_alpha = 1,
+  text_by = "cluster_k100") +
+  ggtitle("Uncorrected: k = 100") +
+  guides(colour = FALSE)
+p1 + p2 + p3 + p4 + plot_layout(ncol = 2)
+```
+
+# Some clusters are readily annotated by uniquely upregulated markers
+
+
+```{r, fig.asp = 1}
+plotUMAP(
+  sce,
+  colour_by = "cluster",
+  point_size = 0.5,
+  point_alpha = 1,
+  text_by = "cluster") +
+  scale_colour_manual(values = cluster_colours, name = "cluster") +
+  ggtitle("Uncorrected") +
+  guides(colour = guide_legend(override.aes = list(size = 5)))
+```
+
+```{r, fig.asp = 1.5}
+# NOTE: Not blocking on `Sample` because some clusters are so `Sample`- and 
+#       `Treatment`-specific.
+out <- pairwiseTTests(
+  sce,
+  sce$cluster,
+  direction = "up",
+  lfc = 0.5)
+top_markers <- getTopMarkers(
+  out$statistics,
+  out$pairs,
+  pairwise = FALSE,
+  pval.type = "all")
+features <- unlist(top_markers)
+sce$libsize <- log10(sce$sum)
+plotHeatmap(
+  sce,
+  features,
+  order_columns_by = c("cluster", "libsize"),
   cluster_rows = FALSE,
-  cluster_cols = FALSE,
-  show_colnames = FALSE,
+  color = hcl.colors(101, "Blue-Red 3"),
+  center = TRUE,
+  zlim = c(-3, 3),
+  column_annotation_colors = list(
+    cluster = cluster_colours),
   annotation_row = data.frame(
-    cluster = rep(levels(sce$cluster), each = k),
+    cluster = names(features),
     row.names = features),
-  annotation_col = data.frame(
-    cluster = sce$cluster[o],
-    Treatment = sce$Treatment[o],
-    row.names = colnames(sce)[o]),
-  annotation_colors = list(
-    cluster = cluster_colours[levels(sce$cluster)],
-    Treatment = treatment_colours))
+  main = "Uniquely upregulated (logFC > 0.5) cluster marker genes")
 ```
 
-## Summary
+# Cell cycle / proliferation of activated T-cells
 
-Cluster `r most_unique_markers` has the the largest number of cluster-specific marker genes ($n =$ `r n[most_unique_markers]`)).
+```{r}
+cycling_subset <- "8"
+```
 
-The provided cluster marker gene lists can be analysed like any other gene list, such as by using gene set enrichment analysis against the Gene Ontology (GO) or Kyoto Encyclopedia of Genes and Genomes (KEGG) databases.
-We strongly recommend that you visualise the expression patterns of any genes of interest to better understand what is driving their inclusion in the marker gene lists.
+- There appears to be a cycling and non-cycling subset of clusters driving the initial clustering (cluster `r cycling_subset`)
+- Cycling subset typified by upregulation of a large number of genes, larger library sizes, and cyclin expression
+- **Cell cycle could really be proliferation of T-cells upon activation**
 
-<aside>
-The `r BiocStyle::Biocpkg("iSEE")` package may be useful for visualizing the expression patterns of these genes. Please let me know if you would like a lesson in how to use it.
-</aside>
+```{r, fig.asp = 1 / 2}
+sce$cycling_subset <- ifelse(
+  sce$cluster %in% cycling_subset,
+  "Cycling",
+  "Not cycling")
+p1 <- plotUMAP(
+  sce,
+  colour_by = "cluster",
+  text_by = "cluster",
+  point_size = 0.5,
+  point_alpha = 1) +
+  scale_colour_manual(values = cluster_colours) +
+  guides(colour = FALSE)
+p2 <- plotUMAP(
+  sce,
+  colour_by = "cycling_subset",
+  text_by = "cluster",
+  point_size = 0.5,
+  point_alpha = 1)
+p1 + p2
+```
 
-If the provided gene lists are insufficient for annotating the clusters, we may consider other strategies for identifying cluster marker genes.
-As previously mentioned, these could be a different choice of test statistic or a different choice of strategy for combining the pairwise differential expression results into a marker list.
-To better characterise specific clusters, it may also be necessary to perform differential expression analysis between a selected subset of clusters.
+```{r, fig.asp = 1 / 3}
+p1 <- ggplot(as.data.frame(colData(sce)[, c("cycling_subset", "Sample")])) +
+    geom_bar(
+      aes(x = cycling_subset, fill = Sample),
+      position = position_fill(reverse = TRUE)) +
+    coord_flip() +
+    ylab("Frequency") +
+    scale_fill_manual(values = sample_colours) +
+    theme_cowplot(font_size = 8)
+p2 <- ggplot(as.data.frame(colData(sce)[, c("cycling_subset", "Treatment")])) +
+    geom_bar(
+      aes(x = cycling_subset, fill = Treatment),
+      position = position_fill(reverse = TRUE)) +
+    coord_flip() +
+    ylab("Frequency") +
+    scale_fill_manual(values = treatment_colours) +
+    theme_cowplot(font_size = 8)
+p3 <- ggplot(as.data.frame(colData(sce)[, "cycling_subset", drop = FALSE])) +
+    geom_bar(aes(x = cycling_subset, fill = cycling_subset)) +
+    coord_flip() +
+    ylab("Number of cells") +
+    theme_cowplot(font_size = 8) +
+    guides(fill = FALSE)
+p1 + p2 + p3
+```
 
-If the clusters themselves are thought to be inadequate, we can use a different clustering resolution and repeat the entire process.
+## Gene ontology analysis of cycling subset markers
 
-# Cell cycle
+```{r}
+markers <- findMarkers(
+  sce,
+  sce$cluster,
+  direction = "up",
+  block = sce$Sample,
+  lfc = 0.5,
+  pval.type = "all")
+cluster_8_markers <- markers[[cycling_subset]][
+  markers[[cycling_subset]]$FDR < 0.05, ]
+features <- rownames(cluster_8_markers)
+unlist(features)
+```
 
-On occasion, it can be desirable to determine cell cycle activity from scRNA-seq data.
-In and of itself, the distribution of cells across phases of the cell cycle is not usually informative, but we can use this to determine if there are differences in cell cycle progression between subpopulations or across treatment conditions.
-Many of the key events in the cell cycle (e.g., passage through checkpoints) are post-translational and thus not directly visible in transcriptomic data; nonetheless, there are enough changes in expression that can be exploited to determine cell cycle phase.
+```{r}
+library(limma)
+go <- goana(
+  de = unlist(rowData(sce)[features, "NCBI.ENTREZID"]),
+  species = "Hs")
+DT::datatable(topGO(go, number = 100)) %>%
+  DT::formatSignif("P.DE")
+```
 
-## Using the cyclins
+## Cycling subset has larger library sizes
 
-```{r, results = "hide"}
+```{r, fig.asp = 1}
+p3 <- plotColData(
+  sce,
+  "sum",
+  x = "cluster",
+  colour_by = "cycling_subset",
+  point_size = 0.5,
+  point_alpha = 1)
+(p1 + p2) / p3 + plot_layout(guides = "collect")
+```
+
+## Expression of cycling subset markers and cyclins
+
+```{r, fig.asp = 1.5}
+cycling_subset_markers <- findMarkers(
+  sce,
+  sce$cycling_subset,
+  direction = "up",
+  block = sce$Sample,
+  lfc = 0.5)
+
 cyclin_genes <- grep("^CCN[ABDE][0-9]$", rowData(sce)$Symbol)
-cyclin_genes <- rownames(sce)[cyclin_genes]
-cyclin_genes
-```
+cyclin_genes <- sort(rownames(sce)[cyclin_genes])
 
-The cyclins control progression through the cell cycle and have well-characterized patterns of expression across cell cycle phases.
-The cyclins available in this dataset are as follows: `r glue::glue_collapse(cyclin_genes, ", ", last = ", and ")`.
-
-- Cyclin A is expressed across S and G2.
-- cyclin B is expressed highest in late G2 and mitosis.
-- Cyclin D is expressed throughout but peaks at G1.
-- Cyclin E is expressed highest in the G1/S transition.
-
-Inspection of the relative expression of cyclins across the population can often be sufficient to determine the relative cell cycle activity in each cluster.
-
-For example, Figure \@ref(fig:cyclin-heatmap) shows that cluster 7 may be in G2/M phase while the other clusters are scattered across the later phases.
-
-```{r cyclin-heatmap, fig.cap = "Heatmap of the log-normalized expression values of the cyclin genes in the dataset."}
-# NOTE: The code below basically does what the commented out code does but 
-#       allows me to provide annotation_colors.
-# plotHeatmap(
-#   sce,
-#   color = viridisLite::magma(101),
-#   colour_columns_by = "cluster",
-#   cluster_cols = FALSE,
-#   columns = order(sce$cluster),
-#   cluster_rows = FALSE,
-#   features = sort(cyclin_genes),
-#   show_colnames = FALSE)
-features <- sort(cyclin_genes)
-mat <- logcounts(sce)[features, ]
-o <- order(sce$cluster, sce$Treatment)
-pheatmap(
-  mat = mat[, o],
-  color = viridisLite::magma(101),
+features <- unlist(
+  List(
+    cycling_markers = head(
+      rownames(cycling_subset_markers[["Not cycling"]]),
+      25),
+    not_cycling_markers = head(
+      rownames(cycling_subset_markers[["Cycling"]]),
+      25),
+    cyclins = cyclin_genes))
+plotHeatmap(
+  sce,
+  features,
+  order_columns_by = c("cycling_subset", "cluster", "libsize"),
   cluster_rows = FALSE,
-  cluster_cols = FALSE,
-  show_colnames = FALSE,
-  # NOTE: These annotations are a little clunky to be useful.
-  # annotation_row = data.frame(
-  #   cycle = dplyr::case_when(
-  #     grepl("^CCNA", features) ~ "S,G2",
-  #     grepl("^CCNB", features) ~ "G2,M",
-  #     grepl("^CCND", features) ~ "G0,*G1*,S,G2,M",
-  #     grepl("^CCNE", features) ~ "G1/S"),
-  #   row.names = features),
-  annotation_col = data.frame(
-    cluster = sce$cluster[o],
-    Treatment = sce$Treatment[o],
-    row.names = colnames(sce)[o]),
-  annotation_colors = list(
-    cluster = cluster_colours[levels(sce$cluster)],
-    Treatment = treatment_colours))
+  color = hcl.colors(101, "Blue-Red 3"),
+  center = TRUE,
+  zlim = c(-3, 3),
+  column_annotation_colors = list(cluster = cluster_colours),
+  annotation_row = data.frame(
+    GeneSet = names(features),
+    row.names = features))
 ```
 
-We can also use standard differential expression methods to look for upregulation of each cyclin, allowing us to determine if there are more cells in the corresponding phase of the cell cycle between subpopulations.
+## Using the `cyclone()` classifier
 
-Here we use pairwise Wilcoxon rank sum tests to compute differential expression of cycline genes between each pair of clusters.
-The Wilcoxon test estimates effect sizes as overlap proportions (`overlap` in the tables below).
-The overlap proportion is defined as the probability that a randomly selected cell in $A$ has a greater expression value of $X$ than a randomly selected cell in $B$.
-Overlap proportions near 0 ($A$ is lower than $B$) or 1 ($A$ is higher than $B$) indicate that the expression distributions are well-separated.
-The Wilcoxon rank sum test effectively tests for significant deviations from an overlap proportion of 0.5.
+- Unsure how much I trust these results given the classifier was trained on quite a different dataset
 
 ```{r}
-cyclin_markers <- findMarkers(
-  sce, 
-  subset.row = sort(cyclin_genes), 
-  group = sce$cluster, 
-  block = sce$Sample, 
-  direction = "up", 
-  pval.type = "any",
-  test.type = "wilcox")
-
-g2_cluster <- "7"
+# NOTE: This was run and the results saved.
+# hs.pairs <- readRDS(system.file("exdata", "human_cycle_markers.rds",
+#                                 package="scran"))
+#
+# # Using Ensembl IDs to match up with the annotation in 'hs.pairs'.
+# set.seed(100)
+# assignments <- cyclone(
+#   sce,
+#   hs.pairs,
+#   gene.names = rowData(sce)$ENSEMBL.GENEID)
+assignments <- readRDS(here("data", "cyclone_assignments.rds"))
+colData(sce) <- cbind(colData(sce), DataFrame(assignments$score))
+sce$phases <- assignments$phases
 ```
 
-We can infer that cluster `r g2_cluster` likely has more cells in S,G2 or G2/M than the other clusters, based on higher expression of some of the cyclin A and B genes.
+```{r, fig.asp = 1}
+par(mfrow = c(2, 2))
+boxplot(
+  sce$G1 ~ sce$cluster,
+  ylab = "score",
+  col = cluster_colours,
+  xlab = "cluster",
+  main = "Cyclone: G1")
+boxplot(
+  sce$G2M ~ sce$cluster,
+  ylab = "score",
+  col = cluster_colours,
+  xlab = "cluster",
+  main = "Cyclone: G2M")
+boxplot(
+  sce$S ~ sce$cluster,
+  ylab = "score",
+  col = cluster_colours,
+  xlab = "cluster",
+  main = "Cyclone: S")
+```
 
 ```{r}
-knitr::kable(
-  as.data.frame(cyclin_markers[[g2_cluster]]),
-  caption = paste0(
-    "Cyclin DE analysis comparing cluster ",
-    g2_cluster,
-    " to all other clusters."),
-  digits = 2)
+proportions(table(sce$cluster, assignments$phases), 1)
 ```
 
-Direct examination of cyclin expression is easily understood, interpreted and validated with other technologies.
-However, it is best suited for statements about relative cell cycle activity; for example, we would find it difficult to assign cell cycle phase in Figure \@ref(fig:cyclin-heatmap) without the presence of clusters spanning all phases to provide benchmarks for "high" and "low" expression of each cyclin.
-We also assume that cyclin expression is not affected by biological processes other than the cell cycle, which may be a strong assumption in some cases, e.g., malignant cells.
-
-## Summary
-
-We can infer that cluster `r g2_cluster` likely contains cells in S,G2 or G2/M (based on higher expression of some of the cyclin A and B genes) and that the remaining clusters are likely in G1 (based on fairly ubiquitous expression of cyclin D genes).
-
-For some time, it was popular to regress out the cell cycle phase prior to downstream analyses.
-The aim was to remove uninteresting variation due to cell cycle, thus improving resolution of other biological processes of interest.
-However, we do not consider adjusting for cell cycle to be a necessary step in routine scRNA-seq analyses.
-
-Any attempt at removal would need to assume that the cell cycle effect is orthogonal to other biological processes.
-If this was violated (i.e. the cell cycle effect was associated with other biological processes), then the regression would potentially remove interesting signal if cell cycle activity varied across clusters or conditions.
-
-A prime example of cell cycle being associated with other biological processes is the increased proliferation of activated T cells [@richard2018tcell].
-As these data are from CD4+ T-cells, for this reason we are hesitate perform cell cycle adjustment.
-
-# Summary
-
-We have now identified cluster-specific marker genes (i.e. genes that are uniquely upregulated in each cluster compared to all other clusters) and performed a focused analysis using the cyclin genes.
-
-<aside>
-Additional analyses focused on specific gene sets could be considered.
-</aside>
-
-The cluster marker gene analysis analysis identified cluster `r g2_cluster` as having by far the largest number of cluster-specific marker genes.
-Cells in this same cluster had high expression of genes associated with a different phase of the cell cycle (G2) to the majority of cells in other clusters (G1).
-Figure \@ref(fig:libsize) shows that cells in this cluster also have larger library sizes than cells in other clusters.
-
-```{r libsize, fig.cap = "Library sizes of cells in each cluster."}
-plotColData(sce, "sum", x = "cluster", colour_by = "cluster") + 
-  scale_fill_manual(values = cluster_colours) + 
-  scale_y_log10() + 
-  guides(FALSE)
+```{r}
+proportions(table(sce$cycling_subset, sce$phases), 1)
 ```
 
-However, based on the `r BiocStyle::Biocpkg("SingleR")` analysis, the cells in this cluster appear to be CD4+ T-cells, just like the other cells in the dataset and not of any unique subtype.
+```{r, fig.asp = 1}
+p1 <- plotUMAP(
+  sce,
+  colour_by = "G1",
+  text_by = "cluster",
+  point_size = 0.5,
+  point_alpha = 1)
+p2 <- plotUMAP(
+  sce,
+  colour_by = "G2M",
+  text_by = "cluster",
+  point_size = 0.5,
+  point_alpha = 1)
+p3 <- plotUMAP(
+    sce,
+    colour_by = "S",
+    text_by = "cluster",
+    point_size = 0.5,
+    point_alpha = 1)
+p4 <- plotUMAP(
+    sce,
+    colour_by = "cluster",
+    text_by = "cluster",
+    point_size = 0.5,
+    point_alpha = 1) +
+  scale_colour_manual(values = cluster_colours, name = "cluster") 
+p1 + p2 + p3 + p4 + plot_layout(ncol = 2)
+```
 
-One possibility that is suggested by this set of results is that these are activated T-cells that are actively proliferating.
+# Subset analysis based on `cycling_subset`
 
-<aside>
-It is worth noting that cells in this cluster are split roughly 50:50 between `Infected` and `Uninfected` samples. So this 'activation' signal does not appear to be associated with `Treatment`.
-</aside>
+- Using a fairly coarse clustering (`k = 50`)
 
-These marker gene lists should be used in combination with the automated cell type labelling from `r BiocStyle::Biocpkg("SingleR")` to develop biologically relevant, meaningful, and useful labels for cells in this dataset.
+```{r}
+set.seed(9391)
+list_of_sce <- quickSubCluster(
+  sce,
+  groups = sce$cycling_subset,
+  prepFUN = function(x) {
+    var_fit <- modelGeneVarByPoisson(x)
+    hvg <- getTopHVGs(var_fit, var.threshold = 0)
+    is_mito <- hvg %in% mito_set
+    is_ribo <- hvg %in% ribo_set
+    hvg <- hvg[!(is_mito | is_ribo)]
+    # NOTE: Keep the original dimensionality reduction around for downstream
+    #       plotting.
+    reducedDimNames(x) <- paste0("original_", reducedDimNames(x))
+    denoisePCA(x, var_fit, subset.row = hvg)
+  },
+  clusterFUN = function(x) {
+    snn_gr <- buildSNNGraph(x, use.dimred = "PCA", k = 50)
+    factor(igraph::cluster_louvain(snn_gr)$membership)
+  })
+# It's also useful to have per-sample UMAP representations.
+set.seed(17127)
+list_of_sce <- lapply(list_of_sce, runUMAP, dimred = "PCA")
+```
 
-<!-- # Concluding remarks -->
+```{r}
+# It's also useful to have SingleR DICE with fine labels for subclusters
+library(SingleR)
+library(celldex)
+ref <- DatabaseImmuneCellExpressionData()
+labels_fine <- ref$label.fine
+# NOTE: This code doesn't necessarily generalise beyond the DICE main labels.
+label_fine_collapsed_colours <- setNames(
+  c(
+    Polychrome::glasbey.colors(nlevels(factor(labels_fine)) + 1)[-1],
+    "orange"),
+  c(levels(factor(labels_fine)), "other"))
+list_of_sce <- lapply(list_of_sce, function(x) {
+  pred_subcluster_fine <- SingleR(
+    test = x,
+    ref = ref,
+    labels = labels_fine,
+    clusters = x$subcluster)
+  x$label_subcluster_fine <- factor(
+    pred_subcluster_fine[x$subcluster, "pruned.labels"])
+  x
+})
+list_of_sce <- lapply(list_of_sce, function(x) {
+  pred_cell_fine <- SingleR(
+    test = x,
+    ref = ref,
+    labels = labels_fine)
+  x$label_cell_fine <- factor(pred_cell_fine$pruned.labels)
+  x
+})
+```
 
-<!-- TODO: If James provides cell or cluster-level annotation, I'll add them to the bottom of this report and add to the SCE. -->
+```{r, fig.asp = 1 / 2}
+wrap_plots(
+  lapply(names(list_of_sce), function(n) {
+    x <- list_of_sce[[n]]
+    plotUMAP(x, colour_by = "subcluster", point_size = 0.5, point_alpha = 1) +
+      ggtitle(n)
+  }))
+```
 
-<!-- ```{r} -->
-<!-- saveRDS( -->
-<!--   sce, -->
-<!--   here("data", "SCEs", "C057_Cooney.annotated.SCE.rds"), -->
-<!--   compress = "xz") -->
-<!-- ``` -->
+```{r, fig.asp = 1 / 2}
+wrap_plots(
+  lapply(names(list_of_sce), function(n) {
+    x <- list_of_sce[[n]]
+    plotUMAP(
+      x,
+      colour_by = "label_subcluster_fine",
+      text_by = "subcluster",
+      point_size = 0.5,
+      point_alpha = 1) +
+      ggtitle(n)
+  })) + 
+  plot_layout(guides = "collect")
+```
 
-<!-- The processed *SingleCellExperiment* object is available (see [`data/SCEs/C057_Cooney.annotated.SCE.rds`](../data/SCEs/C057_Cooney.annotated.SCE.rds)). -->
-<!-- This will be used in downstream analyses, e.g., differential expression analysis between conditions within each cluster and differential abundance analyses between conditions for each cluster. -->
+```{r, fig.asp = 1 / 2}
+wrap_plots(
+  lapply(names(list_of_sce), function(n) {
+    x <- list_of_sce[[n]]
+    plotUMAP(
+      x,
+      colour_by = "label_cell_fine",
+      text_by = "subcluster",
+      point_size = 0.5,
+      point_alpha = 1) +
+      ggtitle(n)
+  })) + 
+  plot_layout(guides = "collect")
+```
+
+## `Cycling` subset analysis
+
+- `Cycling` subset subclusters are strongly enriched for `phases`
+- `Cycling` subset subclusters have strong marker genes (but these probably reflect more cell cycle and less cell type)
+- `Cycling` subset subclusters don't appear to be `Treatment`-specific
+
+
+```{r}
+cycling_sce <- list_of_sce[["Cycling"]]
+```
+
+```{r, fig.asp = 1}
+wrap_plots(
+  plotlist = c(
+    lapply(c("G1", "G2M", "S"), function(phase) {
+      plotUMAP(
+        cycling_sce,
+        colour_by = phase,
+        text_by = "subcluster",
+        point_size = 0.5,
+        point_alpha = 1)
+    }),
+    list(
+      ggplot(
+        as.data.frame(
+          colData(cycling_sce)[, c("subcluster", "phases")])) +
+        geom_bar(
+          aes(x = subcluster, fill = phases),
+          position = position_fill(reverse = TRUE)) +
+        coord_flip() +
+        ylab("Frequency") +
+        theme_cowplot(font_size = 8)))) +
+  plot_annotation(title = "Cycling cluster")
+```
+
+```{r, fig.asp = 1.5}
+out <- pairwiseTTests(
+  cycling_sce,
+  cycling_sce$subcluster,
+  direction = "up",
+  block = cycling_sce$Sample)
+top_markers <- getTopMarkers(
+  out$statistics,
+  out$pairs,
+  pairwise = FALSE,
+  pval.type = "all",
+  n = 10)
+features <- unlist(top_markers)
+markers <- findMarkers(
+  cycling_sce,
+  cycling_sce$subcluster,
+  direction = "up",
+  pval.type = "all",
+  block = cycling_sce$Sample)
+plotHeatmap(
+  cycling_sce,
+  features,
+  order_columns_by = c("subcluster", "Treatment", "Sample"),
+  cluster_rows = FALSE,
+  color = hcl.colors(101, "Blue-Red 3"),
+  center = TRUE,
+  zlim = c(-3, 3),
+  column_annotation_colors = list(
+    Treatment = treatment_colours,
+    Sample = sample_colours),
+  annotation_row = data.frame(
+    subcluster = names(features),
+    row.names = features),
+  main = "Cycling: Uniquely upregulated cluster marker genes")
+```
+
+```{r, fig.asp = 1 /3}
+p1 <- ggplot(as.data.frame(colData(cycling_sce)[, c("subcluster", "Sample")])) +
+    geom_bar(
+      aes(x = subcluster, fill = Sample),
+      position = position_fill(reverse = TRUE)) +
+    coord_flip() +
+    ylab("Frequency") +
+    scale_fill_manual(values = sample_colours) +
+    theme_cowplot(font_size = 8)
+p2 <- ggplot(as.data.frame(colData(cycling_sce)[, c("subcluster", "Treatment")])) +
+    geom_bar(
+      aes(x = subcluster, fill = Treatment),
+      position = position_fill(reverse = TRUE)) +
+    coord_flip() +
+    ylab("Frequency") +
+    scale_fill_manual(values = treatment_colours) +
+    theme_cowplot(font_size = 8)
+p3 <- ggplot(as.data.frame(colData(cycling_sce)[, "subcluster", drop = FALSE])) +
+    geom_bar(aes(x = subcluster, fill = subcluster)) +
+    coord_flip() +
+    ylab("Number of cells") +
+    theme_cowplot(font_size = 8) +
+    guides(fill = FALSE)
+
+p1 + p2 + p3 + plot_annotation(title = "Cycling")
+```
+
+```{r, fig.asp = 1 / 2}
+p1 <- plotUMAP(
+  cycling_sce,
+  colour_by = "subcluster",
+  text_by = "subcluster",
+  point_size = 0.5,
+  point_alpha = 1)
+p2 <- plotUMAP(
+  cycling_sce,
+  colour_by = "Treatment",
+  text_by = "subcluster",
+  point_size = 0.5,
+  point_alpha = 1) +
+  scale_colour_manual(values = treatment_colours, name = "Treatment")
+p1 + p2 + plot_annotation("Cycling subset")
+```
+
+## `Not cycling` subset analysis
+
+- `Not cycling` subset subclusters have little association with `phases` (or `G1`, `G2M`, or `S`)
+- `Not cycling` subset subclusters have strong marker genes (likely reflecting cell type / state)
+- `Not cycling` subset subclusters appear to be highly `Treatment`-specific
+
+```{r}
+not_cycling_sce <- list_of_sce[["Not cycling"]]
+```
+
+```{r, fig.asp = 1}
+wrap_plots(
+  plotlist = c(
+    lapply(c("G1", "G2M", "S"), function(phase) {
+      plotUMAP(
+        not_cycling_sce,
+        colour_by = phase,
+        text_by = "subcluster",
+        point_size = 0.5,
+        point_alpha = 1)
+    }),
+    list(
+      ggplot(
+        as.data.frame(
+          colData(not_cycling_sce)[, c("subcluster", "phases")])) +
+        geom_bar(
+          aes(x = subcluster, fill = phases),
+          position = position_fill(reverse = TRUE)) +
+        coord_flip() +
+        ylab("Frequency") +
+        theme_cowplot(font_size = 8)))) +
+  plot_annotation(title = "Cycling cluster")
+```
+
+```{r, fig.asp = 1.5}
+out <- pairwiseTTests(
+  not_cycling_sce,
+  not_cycling_sce$subcluster,
+  direction = "up",
+  block = not_cycling_sce$Sample)
+top_markers <- getTopMarkers(
+  out$statistics,
+  out$pairs,
+  pairwise = FALSE,
+  pval.type = "all",
+  n = 10)
+features <- unlist(top_markers)
+markers <- findMarkers(
+  not_cycling_sce,
+  not_cycling_sce$subcluster,
+  direction = "up",
+  pval.type = "all",
+  block = not_cycling_sce$Sample)
+plotHeatmap(
+  not_cycling_sce,
+  features,
+  order_columns_by = c("subcluster", "Treatment", "Sample"),
+  cluster_rows = FALSE,
+  color = hcl.colors(101, "Blue-Red 3"),
+  center = TRUE,
+  zlim = c(-3, 3),
+  column_annotation_colors = list(
+    Treatment = treatment_colours,
+    Sample = sample_colours),
+  annotation_row = data.frame(
+    subcluster = names(features),
+    row.names = features),
+  main = "Cycling: Uniquely upregulated cluster marker genes")
+```
+
+```{r, fig.asp = 1 /3}
+p1 <- ggplot(
+  as.data.frame(colData(not_cycling_sce)[, c("subcluster", "Sample")])) +
+    geom_bar(
+      aes(x = subcluster, fill = Sample),
+      position = position_fill(reverse = TRUE)) +
+    coord_flip() +
+    ylab("Frequency") +
+    scale_fill_manual(values = sample_colours) +
+    theme_cowplot(font_size = 8)
+p2 <- ggplot(
+  as.data.frame(colData(not_cycling_sce)[, c("subcluster", "Treatment")])) +
+    geom_bar(
+      aes(x = subcluster, fill = Treatment),
+      position = position_fill(reverse = TRUE)) +
+    coord_flip() +
+    ylab("Frequency") +
+    scale_fill_manual(values = treatment_colours) +
+    theme_cowplot(font_size = 8)
+p3 <- ggplot(
+  as.data.frame(colData(not_cycling_sce)[, "subcluster", drop = FALSE])) +
+    geom_bar(aes(x = subcluster, fill = subcluster)) +
+    coord_flip() +
+    ylab("Number of cells") +
+    theme_cowplot(font_size = 8) +
+    guides(fill = FALSE)
+
+p1 + p2 + p3 + plot_annotation(title = "Cycling")
+```
+
+```{r, fig.asp = 1 / 2}
+p1 <- plotUMAP(
+  not_cycling_sce,
+  colour_by = "subcluster",
+  text_by = "subcluster",
+  point_size = 0.5,
+  point_alpha = 1)
+p2 <- plotUMAP(
+  not_cycling_sce,
+  colour_by = "Treatment",
+  text_by = "subcluster",
+  point_size = 0.5,
+  point_alpha = 1) +
+  scale_colour_manual(values = treatment_colours, name = "Treatment")
+p1 + p2 + plot_annotation("Cycling subset")
+```
+
+# Concluding remarks
+
+```{r}
+saveRDS(
+  sce,
+  here("data", "SCEs", "C057_Cooney.annotated.SCE.rds"),
+  compress = "xz")
+saveRDS(
+  cycling_sce,
+  here("data", "SCEs", "C057_Cooney.cycling.annotated.SCE.rds"),
+  compress = "xz")
+saveRDS(
+  not_cycling_sce,
+  here("data", "SCEs", "C057_Cooney.not_cycling.annotated.SCE.rds"),
+  compress = "xz")
+```
+
+The processed *SingleCellExperiment* objects are available (see [`data/SCEs/C057_Cooney.cells_selected.SCE.rds`](../data/SCEs/C057_Cooney.cells_selected.SCE.rds), [`data/SCEs/C057_Cooney.cycling.annotated.SCE.rds`](../data/SCEs/C057_Cooney.cycling.annotated.SCE.rds), and [`data/SCEs/C057_Cooney.not_cycling.annotated.SCE.rds`](../data/SCEs/C057_Cooney.not_cycling.annotated.SCE.rds)).
+These will be used in downstream analyses, e.g., differential expression analysis between conditions within each cluster and differential abundance analyses between conditions for each cluster.
 
 # Additional information {.appendix}
 
@@ -510,3 +1099,6 @@ The following are available on request:
 ```{r}
 sessioninfo::session_info()
 ```
+
+</details>
+
