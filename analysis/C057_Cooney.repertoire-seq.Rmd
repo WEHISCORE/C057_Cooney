@@ -45,12 +45,10 @@ We aim to analyse the immune repertoire and integrate it with the RNA sequencing
 
 ## RNA-sequencing
 
-For the RNA-sequencing data, we start from the preprocessed *SingleCellExperiment* object created in ['Annotating the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney.annotate.html).
+For the RNA-sequencing data, we start from the processed *SingleCellExperiment* object created in ['Annotating the Cooney (C057) memory CD4+ T-cell data set'](C057_Cooney.annotate.html).
 
 ```{r}
-# TODO: Use the 'annotated' data if and when it's constructed.
-# sce <- readRDS(here("data", "SCEs", "C057_Cooney.annotated.SCE.rds"))
-sce <- readRDS(here("data", "SCEs", "C057_Cooney.cells_selected.SCE.rds"))
+sce <- readRDS(here("data", "SCEs", "C057_Cooney.annotated.SCE.rds"))
 
 # data frames containing co-ordinates and factors for creating reduced 
 # dimensionality plots.
