@@ -106,9 +106,13 @@ de_results <- pseudoBulkDGE(
   include.intermediates = TRUE)
 ```
 
+- Labels for which we couldn't run DE (`character(0)` means none)
+
 ```{r}
 metadata(de_results)$failed
 ```
+
+- Number of DEGs per label (`-1` means downregulated in `Infected` vs. `Uninfected`, `0` means not DE, `1` means upregulated in `Infected` vs. `Uninfected`)
 
 ```{r}
 is.de <- decideTestsPerLabel(de_results, threshold = 0.05)
@@ -169,14 +173,13 @@ lapply(names(de_results), function(n) {
 
 ## DA
 
-- Can't use quasi-likelihood framework with only two labels.
+- Number of cells/label/sample
 
 ```{r}
 abundances <- table(sce$cycling_subset, sce$Sample)
 abundances <- unclass(abundances)
 abundances
 ```
-
 
 ```{r, fig.asp = 1 / 2}
 p1 <- plotUMAP(
@@ -220,12 +223,21 @@ p5 <- ggplot(as.data.frame(colData(sce)[, "cycling_subset", drop = FALSE])) +
 p3 + p4 + p5 + plot_layout(ncol = 3)
 ```
 
+- `TRUE`/`FALSE` if label can be tested for DA
+
 ```{r}
+# NOTE: Can't use quasi-likelihood framework with only two labels.
+
 extra.info <- colData(sce)[match(colnames(abundances), sce$Sample), ]
 y.ab <- DGEList(abundances, samples = extra.info)
 
 keep <- filterByExpr(y.ab, group = y.ab$samples$Treatment)
-summary(keep)
+keep
+```
+
+- Number of labels that are DA (`-1` means less abundant in `Infected` vs. `Uninfected`, `0` means not DE, `1` means more abundant in `Infected` vs. `Uninfected`)
+
+```{r}
 y.ab <- y.ab[keep,]
 
 design <- model.matrix(~Treatment, y.ab$samples)
@@ -236,8 +248,10 @@ res <- glmLRT(fit.ab, coef = "TreatmentInfected")
 summary(decideTests(res))
 ```
 
+- Full results (negative `logFC` means less abundant in `Infected` vs. `Uninfected`, positive `logFC` means more abundant in `Infected` vs. `Uninfected`)
+
 ```{r}
-topTags(res)
+topTags(res, n = Inf)
 ```
 
 # Analysis based on subcluster labels in `Not cycling` subset
@@ -295,9 +309,13 @@ de_results <- pseudoBulkDGE(
   include.intermediates = TRUE)
 ```
 
+- Labels for which we couldn't run DE (`character(0)` means none)
+
 ```{r}
 metadata(de_results)$failed
 ```
+
+- Number of DEGs per label (`-1` means downregulated in `Infected` vs. `Uninfected`, `0` means not DE, `1` means upregulated in `Infected` vs. `Uninfected`)
 
 ```{r}
 is.de <- decideTestsPerLabel(de_results, threshold = 0.05)
@@ -358,6 +376,8 @@ lapply(names(de_results), function(n) {
 
 ## DA
 
+- Number of cells/label/sample
+
 ```{r}
 abundances <- table(x$subcluster, x$Sample)
 abundances <- unclass(abundances)
@@ -406,12 +426,19 @@ p5 <- ggplot(as.data.frame(colData(x)[, "subcluster", drop = FALSE])) +
 p3 + p4 + p5 + plot_layout(ncol = 3)
 ```
 
+- `TRUE`/`FALSE` if label can be tested for DA
+
 ```{r}
 extra.info <- colData(sce)[match(colnames(abundances), sce$Sample), ]
 y.ab <- DGEList(abundances, samples = extra.info)
 
 keep <- filterByExpr(y.ab, group = y.ab$samples$Treatment)
-summary(keep)
+keep
+```
+
+- Number of labels that are DA (`-1` means less abundant in `Infected` vs. `Uninfected`, `0` means not DE, `1` means more abundant in `Infected` vs. `Uninfected`)
+
+```{r}
 y.ab <- y.ab[keep,]
 
 design <- model.matrix(~Treatment, y.ab$samples)
@@ -422,8 +449,10 @@ res <- glmLRT(fit.ab, coef = "TreatmentInfected")
 summary(decideTests(res))
 ```
 
+- Full results (negative `logFC` means less abundant in `Infected` vs. `Uninfected`, positive `logFC` means more abundant in `Infected` vs. `Uninfected`)
+
 ```{r}
-topTags(res)
+topTags(res, n = Inf)
 ```
 
 # Analysis based on subcluster labels in `Cycling` subset
@@ -481,9 +510,13 @@ de_results <- pseudoBulkDGE(
   include.intermediates = TRUE)
 ```
 
+- Labels for which we couldn't run DE (`character(0)` means none)
+
 ```{r}
 metadata(de_results)$failed
 ```
+
+- Number of DEGs per label (`-1` means downregulated in `Infected` vs. `Uninfected`, `0` means not DE, `1` means upregulated in `Infected` vs. `Uninfected`)
 
 ```{r}
 is.de <- decideTestsPerLabel(de_results, threshold = 0.05)
@@ -544,6 +577,8 @@ lapply(names(de_results), function(n) {
 
 ## DA
 
+- Number of cells/label/sample
+
 ```{r}
 abundances <- table(x$subcluster, x$Sample)
 abundances <- unclass(abundances)
@@ -592,12 +627,19 @@ p5 <- ggplot(as.data.frame(colData(x)[, "subcluster", drop = FALSE])) +
 p3 + p4 + p5 + plot_layout(ncol = 3)
 ```
 
+- `TRUE`/`FALSE` if label can be tested for DA
+
 ```{r}
 extra.info <- colData(sce)[match(colnames(abundances), sce$Sample), ]
 y.ab <- DGEList(abundances, samples = extra.info)
 
 keep <- filterByExpr(y.ab, group = y.ab$samples$Treatment)
-summary(keep)
+keep
+```
+
+- Number of labels that are DA (`-1` means less abundant in `Infected` vs. `Uninfected`, `0` means not DE, `1` means more abundant in `Infected` vs. `Uninfected`)
+
+```{r}
 y.ab <- y.ab[keep,]
 
 design <- model.matrix(~Treatment, y.ab$samples)
@@ -608,8 +650,10 @@ res <- glmLRT(fit.ab, coef = "TreatmentInfected")
 summary(decideTests(res))
 ```
 
+- Full results (negative `logFC` means less abundant in `Infected` vs. `Uninfected`, positive `logFC` means more abundant in `Infected` vs. `Uninfected`)
+
 ```{r}
-topTags(res)
+topTags(res, n = Inf)
 ```
 
 # Concluding remarks
