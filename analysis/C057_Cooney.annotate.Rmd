@@ -526,8 +526,12 @@ plotHeatmap(
 # Cell cycle / proliferation of activated T-cells
 
 ```{r}
-colLabels(sce) <- sce$cycling_subset
 cycling_subset <- "8"
+sce$cycling_subset <- ifelse(
+  sce$cluster %in% cycling_subset,
+  "Cycling",
+  "Not cycling")
+colLabels(sce) <- sce$cycling_subset
 ```
 
 - There appears to be a cycling and non-cycling subset of clusters driving the initial clustering (cluster `r cycling_subset`)
@@ -535,10 +539,6 @@ cycling_subset <- "8"
 - **Cell cycle could really be proliferation of T-cells upon activation**
 
 ```{r, fig.asp = 1 / 2}
-sce$cycling_subset <- ifelse(
-  sce$cluster %in% cycling_subset,
-  "Cycling",
-  "Not cycling")
 p1 <- plotUMAP(
   sce,
   colour_by = "cluster",
