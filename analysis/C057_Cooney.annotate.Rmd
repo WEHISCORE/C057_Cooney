@@ -52,6 +52,8 @@ c2_sets <- msigdbr(species = "Homo sapiens", category = "C2")
 ribo_set <- union(
   ribo_set,
   c2_sets[c2_sets$gs_name == "KEGG_RIBOSOME", ]$human_gene_symbol)
+
+source(here("code", "helper_functions.R"))
 ```
 
 ## Re-processing
