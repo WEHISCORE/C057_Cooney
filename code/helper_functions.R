@@ -474,3 +474,142 @@ createDEGOutputs <- function(outdir, de_results, summed_filt, sce, fdr) {
     close(gzout)
   }
 }
+
+# NOTE: This function is customised for the C057_Cooney project
+createClusterMarkerOutputs <- function(sce, outdir, markers, k, ...) {
+
+  # Create CSVs
+  message("Creating CSVs")
+  for (label in names(markers)) {
+    message("\t", label)
+    gzout <- gzfile(
+      description = file.path(
+        outdir,
+        sprintf("%s.csv.gz", label)),
+      open = "wb")
+    write.csv(
+      as.data.frame(markers[[label]]),
+      gzout,
+      # NOTE: quote = TRUE needed because some fields contain commas.
+      quote = TRUE,
+      row.names = FALSE)
+    close(gzout)
+  }
+
+  # Create PDFs
+  message("Creating sample-cluster-level pseudobulk data")
+  summed_sample_label <- aggregateAcrossCells(
+    sce,
+    ids = colData(sce)[, c("label", "Sample", "Treatment")],
+    coldata_merge = FALSE)
+  colnames(summed_sample_label) <- paste0(
+    summed_sample_label$label,
+    ".",
+    summed_sample_label$Sample)
+  summed_sample_label <- logNormCounts(summed_sample_label)
+
+  message("Creating cluster-level pseudobulk data")
+  summed_label <- aggregateAcrossCells(
+    sce,
+    ids = colData(sce)[, c("label"), drop = FALSE],
+    coldata_merge = FALSE)
+  colnames(summed_label) <- summed_label$label
+  summed_label <- logNormCounts(summed_label)
+
+  message("Creating PDFs")
+  for (label in names(markers)) {
+    message("\t", label)
+    label_markers <- markers[[label]]
+    # Filter genes
+    label_markers <- label_markers[label_markers$FDR < 0.05, ]
+    features <- rownames(label_markers)
+    features <- setdiff(features, ribo_set)
+    # Select top-k
+    features <- head(features, k)
+    if (length(features) >= 2) {
+
+      # Cell-level
+      plotHeatmap(
+        sce,
+        features,
+        color = hcl.colors(101, "Blue-Red 3"),
+        label_cols = FALSE,
+        show_colnames = FALSE,
+        annotation_row = data.frame(
+          label = rep(label, min(k, length(features))),
+          row.names = features),
+        order_columns_by = c("label", "Treatment", "Sample"),
+        column_annotation_colors = list(
+          Sample = sample_colours,
+          Treatment = treatment_colours),
+        center = TRUE,
+        symmetric = TRUE,
+        zlim = c(-3, 3),
+        fontsize = 6,
+        # NOTE: Leave it to pheatmap() to create the PDFs because multipage
+        #       PDFs containing pheatmap() outputs are often broken (I
+        #       suspect it's something to do with not closing the PDF
+        #       graphics device, but I wasted too much time trying to fix
+        #       this).
+        filename = file.path(
+          outdir,
+          sprintf("%s.cell-level_heatmap.pdf", label)),
+        ...)
+
+      # Sample-label-level
+      plotHeatmap(
+        summed_sample_label,
+        features,
+        color = hcl.colors(101, "Blue-Red 3"),
+        label_cols = FALSE,
+        show_colnames = FALSE,
+        annotation_row = data.frame(
+          label = rep(label, min(k, length(features))),
+          row.names = features),
+        order_columns_by = c("label", "Treatment", "Sample"),
+        column_annotation_colors = list(
+          Sample = sample_colours,
+          Treatment = treatment_colours),
+        center = TRUE,
+        symmetric = TRUE,
+        fontsize = 6,
+        # NOTE: Leave it to pheatmap() to create the PDFs because multipage
+        #       PDFs containing pheatmap() outputs are often broken (I
+        #       suspect it's something to do with not closing the PDF
+        #       graphics device, but I wasted too much time trying to fix
+        #       this).
+        filename = file.path(
+          outdir,
+          sprintf("%s.sample-label-level_heatmap.pdf", label)),
+        ...)
+
+      # label-level
+      plotHeatmap(
+        summed_label,
+        features,
+        color = hcl.colors(101, "Blue-Red 3"),
+        label_cols = FALSE,
+        show_colnames = FALSE,
+        annotation_row = data.frame(
+          label = rep(label, min(k, length(features))),
+          row.names = features),
+        order_columns_by = c("label"),
+        column_annotation_colors = list(
+          Sample = sample_colours,
+          Treatment = treatment_colours),
+        center = TRUE,
+        symmetric = TRUE,
+        zlim = c(-3, 3),
+        fontsize = 6,
+        # NOTE: Leave it to pheatmap() to create the PDFs because multipage
+        #       PDFs containing pheatmap() outputs are often broken (I
+        #       suspect it's something to do with not closing the PDF
+        #       graphics device, but I wasted too much time trying to fix
+        #       this).
+        filename = file.path(
+          outdir,
+          sprintf("%s.label-level_heatmap.pdf", label)),
+        ...)
+    }
+  }
+}

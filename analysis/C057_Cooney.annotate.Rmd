@@ -524,6 +524,7 @@ plotHeatmap(
 # Cell cycle / proliferation of activated T-cells
 
 ```{r}
+colLabels(sce) <- sce$cycling_subset
 cycling_subset <- "8"
 ```
 
@@ -581,6 +582,8 @@ p1 + p2 + p3
 
 ## Gene ontology analysis of cycling subset markers
 
+- Marker genes for cluster associated with cell cycling (logFC > 0.5, FDR < 0.05)
+
 ```{r}
 markers <- findMarkers(
   sce,
@@ -594,6 +597,8 @@ cluster_8_markers <- markers[[cycling_subset]][
 features <- rownames(cluster_8_markers)
 unlist(features)
 ```
+
+- GO analysis of above gene list
 
 ```{r}
 library(limma)
@@ -619,13 +624,16 @@ p3 <- plotColData(
 
 ## Expression of cycling subset markers and cyclins
 
+Please see [`output/marker_genes/cycling_subset/`](../output/marker_genes/cycling_subset/) for heatmaps and spreadsheets of these marker gene lists.
+
 ```{r, fig.asp = 1.5}
 cycling_subset_markers <- findMarkers(
   sce,
   sce$cycling_subset,
   direction = "up",
   block = sce$Sample,
-  lfc = 0.5)
+  lfc = 0.5,
+  row.data = flattenDF(rowData(sce)))
 
 cyclin_genes <- grep("^CCN[ABDE][0-9]$", rowData(sce)$Symbol)
 cyclin_genes <- sort(rownames(sce)[cyclin_genes])
@@ -651,6 +659,18 @@ plotHeatmap(
   annotation_row = data.frame(
     GeneSet = names(features),
     row.names = features))
+```
+
+```{r}
+outdir <- here("output", "marker_genes", "cycling_subset")
+dir.create(outdir, recursive = TRUE)
+createClusterMarkerOutputs(
+  sce = sce,
+  outdir = outdir,
+  markers = cycling_subset_markers,
+  k = 100,
+  width = 6,
+  height = 7.5)
 ```
 
 ## Using the `cyclone()` classifier
@@ -834,6 +854,8 @@ wrap_plots(
 
 ## `Cycling` subset analysis
 
+Please see [`output/marker_genes/cycling_subset_subclusters/`](../output/marker_genes/cycling_subset_subclusters/) for heatmaps and spreadsheets of these marker gene lists.
+
 - `Cycling` subset subclusters are strongly enriched for `phases`
 - `Cycling` subset subclusters have strong marker genes (but these probably reflect more cell cycle and less cell type)
 - `Cycling` subset subclusters don't appear to be `Treatment`-specific
@@ -841,6 +863,7 @@ wrap_plots(
 
 ```{r}
 cycling_sce <- list_of_sce[["Cycling"]]
+colLabels(cycling_sce) <- cycling_sce$subcluster
 ```
 
 ```{r, fig.asp = 1}
@@ -880,12 +903,6 @@ top_markers <- getTopMarkers(
   pval.type = "all",
   n = 10)
 features <- unlist(top_markers)
-markers <- findMarkers(
-  cycling_sce,
-  cycling_sce$subcluster,
-  direction = "up",
-  pval.type = "all",
-  block = cycling_sce$Sample)
 plotHeatmap(
   cycling_sce,
   features,
@@ -947,7 +964,28 @@ p2 <- plotUMAP(
 p1 + p2 + plot_annotation("Cycling subset")
 ```
 
+```{r}
+markers <- findMarkers(
+  cycling_sce,
+  cycling_sce$subcluster,
+  direction = "up",
+  pval.type = "all",
+  block = cycling_sce$Sample,
+  row.data = flattenDF(rowData(cycling_sce)))
+outdir <- here("output", "marker_genes", "cycling_subset_subcluster")
+dir.create(outdir, recursive = TRUE)
+createClusterMarkerOutputs(
+  sce = cycling_sce,
+  outdir = outdir,
+  markers = markers,
+  k = 100,
+  width = 6,
+  height = 7.5)
+```
+
 ## `Not cycling` subset analysis
+
+Please see [`output/marker_genes/not_cycling_subset_subclusters/`](../output/marker_genes/not_cycling_subset_subclusters/) for heatmaps and spreadsheets of these marker gene lists.
 
 - `Not cycling` subset subclusters have little association with `phases` (or `G1`, `G2M`, or `S`)
 - `Not cycling` subset subclusters have strong marker genes (likely reflecting cell type / state)
@@ -955,6 +993,7 @@ p1 + p2 + plot_annotation("Cycling subset")
 
 ```{r}
 not_cycling_sce <- list_of_sce[["Not cycling"]]
+colLabels(not_cycling_sce) <- not_cycling_sce$subcluster
 ```
 
 ```{r, fig.asp = 1}
@@ -994,12 +1033,6 @@ top_markers <- getTopMarkers(
   pval.type = "all",
   n = 10)
 features <- unlist(top_markers)
-markers <- findMarkers(
-  not_cycling_sce,
-  not_cycling_sce$subcluster,
-  direction = "up",
-  pval.type = "all",
-  block = not_cycling_sce$Sample)
 plotHeatmap(
   not_cycling_sce,
   features,
@@ -1062,6 +1095,25 @@ p2 <- plotUMAP(
   point_alpha = 1) +
   scale_colour_manual(values = treatment_colours, name = "Treatment")
 p1 + p2 + plot_annotation("Cycling subset")
+```
+
+```{r}
+markers <- findMarkers(
+  not_cycling_sce,
+  not_cycling_sce$subcluster,
+  direction = "up",
+  pval.type = "all",
+  block = not_cycling_sce$Sample,
+  row.data = flattenDF(rowData(not_cycling_sce)))
+outdir <- here("output", "marker_genes", "not_cycling_subset_subcluster")
+dir.create(outdir, recursive = TRUE)
+createClusterMarkerOutputs(
+  sce = not_cycling_sce,
+  outdir = outdir,
+  markers = markers,
+  k = 100,
+  width = 6,
+  height = 7.5)
 ```
 
 # Concluding remarks
