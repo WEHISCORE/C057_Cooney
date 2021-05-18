@@ -1090,15 +1090,16 @@ Figure \@ref(fig:tcr-proportion) shows that cells in the 'monocyte' cluster have
 
 ```{r tcr-proportion, fig.wide = TRUE, fig.cap = "Proportion of counts from T cell receptor genes stratified by cluster."}
 is_tcr <- any(grepl("T cell receptor", rowData(sce)$NCBI.GENENAME))
-sce <- addPerCellQC(sce, subsets = list(tcr = which(is_tcr)))
+# NOTE: Don't add to original sce, otherwise end up with 'duplicate' columns in 
+#       colData.
+tmp <- addPerCellQC(sce, subsets = list(tcr = which(is_tcr)))
 plotColData(
-  sce,
+  tmp,
   "subsets_tcr_percent",
   x = "cluster",
   colour_by = data.frame(
-    Monocyte_cluster = sce$label_cluster_main == "Monocytes"))
+    Monocyte_cluster = tmp$label_cluster_main == "Monocytes"))
 ```
-
 
 #### Checking for enrichment of cells in experimental group
 
