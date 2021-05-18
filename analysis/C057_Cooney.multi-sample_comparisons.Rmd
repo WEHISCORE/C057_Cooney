@@ -66,26 +66,32 @@ Note that the DEG list spreadsheets contain all labels and genes whereas the Gli
 x <- sce
 x$TRA <- NULL
 x$TRB <- NULL
-summed <- aggregateAcrossCells(
+sce.cycling_subset_Sample <- aggregateAcrossCells(
   x,
-  id = colData(x)[, c("cycling_subset", "Sample")])
-sizeFactors(summed) <- NULL
-summed <- logNormCounts(summed)
-colLabels(summed) <- summed$cycling_subset
-colnames(summed) <- paste0(summed$cycling_subset, ".", summed$Sample)
+  id = colData(x)[, c("cycling_subset", "Sample", "Treatment")],
+  coldata.merge = FALSE,
+  use.dimred = FALSE,
+  use.altexps = FALSE)
+sizeFactors(sce.cycling_subset_Sample) <- NULL
+sce.cycling_subset_Sample <- logNormCounts(sce.cycling_subset_Sample)
+colLabels(sce.cycling_subset_Sample) <- sce.cycling_subset_Sample$cycling_subset
+colnames(sce.cycling_subset_Sample) <-
+  paste0(sce.cycling_subset_Sample$cycling_subset, 
+         ".",
+         sce.cycling_subset_Sample$Sample)
 ```
 
 ```{r, fig.asp = 1 / 2}
-summed <- runMDS(summed)
+sce.cycling_subset_Sample <- runMDS(sce.cycling_subset_Sample)
 p1 <- plotMDS(
-  summed,
+  sce.cycling_subset_Sample,
   colour_by = "Treatment",
   shape_by = "cycling_subset",
   point_size = 3,
   point_alpha = 2) +
   scale_colour_manual(values = treatment_colours, name = "Treatment")
 p2 <- plotMDS(
-  summed,
+  sce.cycling_subset_Sample,
   colour_by = "Sample",
   shape_by = "cycling_subset",
   point_size = 3,
@@ -95,14 +101,15 @@ p1 + p2 + plot_layout(guides = "collect")
 ```
 
 ```{r}
-summed_filt <- summed[, summed$ncells >= 10]
+sce.cycling_subset_Sample_filt <- 
+  sce.cycling_subset_Sample[, sce.cycling_subset_Sample$ncells >= 10]
 
 de_results <- pseudoBulkDGE(
-  summed_filt,
-  label = summed_filt$cycling_subset,
+  sce.cycling_subset_Sample_filt,
+  label = sce.cycling_subset_Sample_filt$cycling_subset,
   design = ~Treatment,
   coef = "TreatmentInfected",
-  condition = summed_filt$Treatment,
+  condition = sce.cycling_subset_Sample_filt$Treatment,
   include.intermediates = TRUE)
 ```
 
@@ -125,14 +132,14 @@ dir.create(outdir, recursive = TRUE)
 createDEGOutputs(
   outdir = outdir, 
   de_results = de_results, 
-  summed_filt = summed_filt,
+  summed_filt = sce.cycling_subset_Sample_filt,
   sce = sce,
   fdr = 0.05)
 ```
 
 ```{r, message = FALSE, results = "hide"}
 lapply(names(de_results), function(n) {
-  se <- summed_filt[, summed_filt$label == n]
+  se <- sce.cycling_subset_Sample_filt[, sce.cycling_subset_Sample_filt$label == n]
   x <- de_results[[n]]
   features <- rownames(x[which(x$FDR < 0.05), ])
   if (length(features) > 2) {
@@ -271,25 +278,33 @@ Note that the DEG list spreadsheets contain all labels and genes whereas the Gli
 x <- not_cycling_sce
 x$TRA <- NULL
 x$TRB <- NULL
-summed <- aggregateAcrossCells(
+not_cycling_sce.subcluster_Sample <- aggregateAcrossCells(
   x,
-  id = colData(x)[, c("subcluster", "Sample")])
-sizeFactors(summed) <- NULL
-summed <- logNormCounts(summed)
-colLabels(summed) <- summed$subcluster
-colnames(summed) <- paste0(summed$subcluster, ".", summed$Sample)
+  id = colData(x)[, c("subcluster", "Sample", "Treatment")],
+  coldata.merge = FALSE,
+  use.dimred = FALSE,
+  use.altexps = FALSE)
+sizeFactors(not_cycling_sce.subcluster_Sample) <- NULL
+not_cycling_sce.subcluster_Sample <-
+  logNormCounts(not_cycling_sce.subcluster_Sample)
+colLabels(not_cycling_sce.subcluster_Sample) <-
+  not_cycling_sce.subcluster_Sample$subcluster
+colnames(not_cycling_sce.subcluster_Sample) <- paste0(
+  not_cycling_sce.subcluster_Sample$subcluster,
+  ".", 
+  not_cycling_sce.subcluster_Sample$Sample)
 ```
 
 ```{r, fig.asp = 1 / 2}
-summed <- runMDS(summed)
+not_cycling_sce.subcluster_Sample <- runMDS(not_cycling_sce.subcluster_Sample)
 p1 <- plotMDS(
-  summed,
+  not_cycling_sce.subcluster_Sample,
   colour_by = "subcluster",
   shape_by = "Treatment",
   point_size = 3,
   point_alpha = 2)
 p2 <- plotMDS(
-  summed,
+  not_cycling_sce.subcluster_Sample,
   colour_by = "subcluster",
   shape_by = "Sample",
   point_size = 3,
@@ -298,14 +313,15 @@ p1 + p2 + plot_layout(guides = "collect")
 ```
 
 ```{r}
-summed_filt <- summed[, summed$ncells >= 10]
+not_cycling_sce.subcluster_Sample_filt <- 
+  not_cycling_sce.subcluster_Sample[, not_cycling_sce.subcluster_Sample$ncells >= 10]
 
 de_results <- pseudoBulkDGE(
-  summed_filt,
-  label = summed_filt$subcluster,
+  not_cycling_sce.subcluster_Sample_filt,
+  label = not_cycling_sce.subcluster_Sample_filt$subcluster,
   design = ~Treatment,
   coef = "TreatmentInfected",
-  condition = summed_filt$Treatment,
+  condition = not_cycling_sce.subcluster_Sample_filt$Treatment,
   include.intermediates = TRUE)
 ```
 
@@ -328,14 +344,14 @@ dir.create(outdir, recursive = TRUE)
 createDEGOutputs(
   outdir = outdir, 
   de_results = de_results, 
-  summed_filt = summed_filt,
+  summed_filt = not_cycling_sce.subcluster_Sample_filt,
   sce = x,
   fdr = 0.05)
 ```
 
 ```{r, message = FALSE, results = "hide"}
 lapply(names(de_results), function(n) {
-  se <- summed_filt[, summed_filt$label == n]
+  se <- not_cycling_sce.subcluster_Sample_filt[, not_cycling_sce.subcluster_Sample_filt$label == n]
   x <- de_results[[n]]
   features <- rownames(x[which(x$FDR < 0.05), ])
   if (length(features) > 2) {
@@ -472,25 +488,32 @@ Note that the DEG list spreadsheets contain all labels and genes whereas the Gli
 x <- cycling_sce
 x$TRA <- NULL
 x$TRB <- NULL
-summed <- aggregateAcrossCells(
+cycling_sce.subcluster_Sample <- aggregateAcrossCells(
   x,
-  id = colData(x)[, c("subcluster", "Sample")])
-sizeFactors(summed) <- NULL
-summed <- logNormCounts(summed)
-colLabels(summed) <- summed$subcluster
-colnames(summed) <- paste0(summed$subcluster, ".", summed$Sample)
+  id = colData(x)[, c("subcluster", "Sample", "Treatment")],
+  coldata.merge = FALSE,
+  use.dimred = FALSE,
+  use.altexps = FALSE)
+sizeFactors(cycling_sce.subcluster_Sample) <- NULL
+cycling_sce.subcluster_Sample <- logNormCounts(cycling_sce.subcluster_Sample)
+colLabels(cycling_sce.subcluster_Sample) <- 
+  cycling_sce.subcluster_Sample$subcluster
+colnames(cycling_sce.subcluster_Sample) <- paste0(
+  cycling_sce.subcluster_Sample$subcluster, 
+  ".", 
+  cycling_sce.subcluster_Sample$Sample)
 ```
 
 ```{r, fig.asp = 1 / 2}
-summed <- runMDS(summed)
+cycling_sce.subcluster_Sample <- runMDS(cycling_sce.subcluster_Sample)
 p1 <- plotMDS(
-  summed,
+  cycling_sce.subcluster_Sample,
   colour_by = "subcluster",
   shape_by = "Treatment",
   point_size = 3,
   point_alpha = 2)
 p2 <- plotMDS(
-  summed,
+  cycling_sce.subcluster_Sample,
   colour_by = "subcluster",
   shape_by = "Sample",
   point_size = 3,
@@ -499,14 +522,15 @@ p1 + p2 + plot_layout(guides = "collect")
 ```
 
 ```{r}
-summed_filt <- summed[, summed$ncells >= 10]
+cycling_sce.subcluster_Sample_filt <- 
+  cycling_sce.subcluster_Sample[, cycling_sce.subcluster_Sample$ncells >= 10]
 
 de_results <- pseudoBulkDGE(
-  summed_filt,
-  label = summed_filt$subcluster,
+  cycling_sce.subcluster_Sample_filt,
+  label = cycling_sce.subcluster_Sample_filt$subcluster,
   design = ~Treatment,
   coef = "TreatmentInfected",
-  condition = summed_filt$Treatment,
+  condition = cycling_sce.subcluster_Sample_filt$Treatment,
   include.intermediates = TRUE)
 ```
 
@@ -529,14 +553,14 @@ dir.create(outdir, recursive = TRUE)
 createDEGOutputs(
   outdir = outdir, 
   de_results = de_results, 
-  summed_filt = summed_filt,
+  summed_filt = cycling_sce.subcluster_Sample_filt,
   sce = x,
   fdr = 0.05)
 ```
 
 ```{r, message = FALSE, results = "hide"}
 lapply(names(de_results), function(n) {
-  se <- summed_filt[, summed_filt$label == n]
+  se <- cycling_sce.subcluster_Sample_filt[, cycling_sce.subcluster_Sample_filt$label == n]
   x <- de_results[[n]]
   features <- rownames(x[which(x$FDR < 0.05), ])
   if (length(features) > 2) {
@@ -657,6 +681,24 @@ topTags(res, n = Inf)
 ```
 
 # Concluding remarks
+
+```{r}
+saveRDS(
+  sce.cycling_subset_Sample,
+  here("data", "SCEs", "C057_Cooney.cycling_subset_Sample.sce.rds"),
+  compress = "xz")
+saveRDS(
+  not_cycling_sce.subcluster_Sample,
+  here("data", "SCEs", "C057_Cooney.not_cycling.subcluster_Sample.sce.rds"),
+  compress = "xz")
+saveRDS(
+  cycling_sce.subcluster_Sample,
+  here("data", "SCEs", "C057_Cooney.cycling.subcluster_Sample.sce.rds"),
+  compress = "xz")
+```
+
+The aggregated *SummarizedExperiment* objects are available (see [`data/SCEs/C057_Cooney.cycling_subset_Sample.sce.rds`](../data/SCEs/C057_Cooney.cycling_subset_Sample.sce.rds), [`data/SCEs/C057_Cooney.not_cycling.subcluster_Sample.sce.rds`](../data/SCEs/C057_Cooney.not_cycling.subcluster_Sample.sce.rds), and [`data/SCEs/C057_Cooney.cycling.subcluster_Sample.sce.rds`](../data/SCEs/C057_Cooney.cycling.subcluster_Sample.sce.rds)).
+These can be used for visualizations with `r BiocStyle::Biocpkg("iSEE")`.
 
 The [`output/DEGs/`](../output/DEGs/) directory contains CSV files summarising the differential expression results and PDFs showing the pseudobulk expression data for each DEG.
 
