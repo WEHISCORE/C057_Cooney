@@ -57,6 +57,8 @@ We require that a gene has an absolute fold change ($FC$) $>1.5$ (i.e. $|log_2(F
 This is achieved by using the `glmTreat()` method in `r BiocStyle::Biocpkg("edgeR")`, which is a statistically rigorous method for thresholded differential expression testing.
 
 Please see [`output/DEGs/cycling_subset/`](../output/DEGs/cycling_subset/) for heatmaps and spreadsheets of these DEG lists, including results of GO and KEGG analyses using the `goana()` and `kegga()` functions from the `r BiocStyle::Biocpkg("limma")` package.
+The heatmaps show up to the top-50 DEGs (ordered by $FDR$).
+
 This directory also contains interactive `r BiocStyle::Biocpkg("Glimma")` plots of the differential expression results.
 The `r BiocStyle::Biocpkg("Glimma")` plots show the pseudobulk data for that label.
 
@@ -145,6 +147,7 @@ createDEGOutputs(
 lapply(names(de_results), function(n) {
   se <- sce.cycling_subset_Sample_filt[, sce.cycling_subset_Sample_filt$label == n]
   x <- de_results[[n]]
+  x <- x[order(x$FDR), ]
   features <- rownames(x[which(x$FDR < 0.05), ])
   if (length(features) > 2) {
     plotHeatmap(
@@ -273,6 +276,8 @@ We require that a gene has an absolute fold change ($FC$) $>1.5$ (i.e. $|log_2(F
 This is achieved by using the `glmTreat()` method in `r BiocStyle::Biocpkg("edgeR")`, which is a statistically rigorous method for thresholded differential expression testing.
 
 Please see [`output/DEGs/not_cycling_subset_subclusters/`](../output/DEGs/not_cycling_subset_subclusters/) for heatmaps and spreadsheets of these DEG lists, including results of GO and KEGG analyses using the `goana()` and `kegga()` functions from the `r BiocStyle::Biocpkg("limma")` package.
+The heatmaps show up to the top-50 DEGs (ordered by $FDR$).
+
 This directory also contains interactive `r BiocStyle::Biocpkg("Glimma")` plots of the differential expression results.
 The `r BiocStyle::Biocpkg("Glimma")` plots show the pseudobulk data for that label.
 
@@ -361,6 +366,7 @@ createDEGOutputs(
 lapply(names(de_results), function(n) {
   se <- not_cycling_sce.subcluster_Sample_filt[, not_cycling_sce.subcluster_Sample_filt$label == n]
   x <- de_results[[n]]
+  x <- x[order(x$FDR), ]
   features <- rownames(x[which(x$FDR < 0.05), ])
   if (length(features) > 2) {
     plotHeatmap(
@@ -487,6 +493,8 @@ We require that a gene has an absolute fold change ($FC$) $>1.5$ (i.e. $|log_2(F
 This is achieved by using the `glmTreat()` method in `r BiocStyle::Biocpkg("edgeR")`, which is a statistically rigorous method for thresholded differential expression testing.
 
 Please see [`output/DEGs/cycling_subset_subclusters/`](../output/DEGs/cycling_subset_subclusters/) for heatmaps and spreadsheets of these DEG lists, including results of GO and KEGG analyses using the `goana()` and `kegga()` functions from the `r BiocStyle::Biocpkg("limma")` package.
+The heatmaps show up to the top-50 DEGs (ordered by $FDR$).
+
 This directory also contains interactive `r BiocStyle::Biocpkg("Glimma")` plots of the differential expression results.
 The `r BiocStyle::Biocpkg("Glimma")` plots show the pseudobulk data for that label.
 
@@ -574,6 +582,7 @@ createDEGOutputs(
 lapply(names(de_results), function(n) {
   se <- cycling_sce.subcluster_Sample_filt[, cycling_sce.subcluster_Sample_filt$label == n]
   x <- de_results[[n]]
+  x <- x[order(x$FDR), ]
   features <- rownames(x[which(x$FDR < 0.05), ])
   if (length(features) > 2) {
     plotHeatmap(
