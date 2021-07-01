@@ -91,8 +91,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
 
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2021-05-18"/>
-  <meta property="article:created" itemprop="dateCreated" content="2021-05-18"/>
+  <meta property="article:published" itemprop="datePublished" content="2021-07-01"/>
+  <meta property="article:created" itemprop="dateCreated" content="2021-07-01"/>
   <meta name="article:author" content="Peter Hickey"/>
 
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
@@ -110,7 +110,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--radix_placeholder_rmarkdown_metadata-->
 
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","editor_options","bibliography"]}},"value":[{"type":"character","attributes":{},"value":["Multi-sample comparisons with the Cooney (C057) memory CD4+ T-cell data set"]},{"type":"NULL"},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Peter Hickey"]},{"type":"character","attributes":{},"value":["https://peterhickey.org"]},{"type":"character","attributes":{},"value":["WEHI SCORE"]},{"type":"character","attributes":{},"value":["https://www.wehi.edu.au/people/shalin-naik/3310/score"]}]}]},{"type":"character","attributes":{},"value":["2021-05-18"]},{"type":"character","attributes":{},"value":["distill::distill_article"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]},{"type":"character","attributes":{},"value":["ref.bib"]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","editor_options","bibliography"]}},"value":[{"type":"character","attributes":{},"value":["Multi-sample comparisons with the Cooney (C057) memory CD4+ T-cell data set"]},{"type":"NULL"},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Peter Hickey"]},{"type":"character","attributes":{},"value":["https://peterhickey.org"]},{"type":"character","attributes":{},"value":["WEHI SCORE"]},{"type":"character","attributes":{},"value":["https://www.wehi.edu.au/people/shalin-naik/3310/score"]}]}]},{"type":"character","attributes":{},"value":["2021-07-01"]},{"type":"character","attributes":{},"value":["distill::distill_article"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]},{"type":"character","attributes":{},"value":["ref.bib"]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   <!--radix_placeholder_navigation_in_header-->
@@ -2055,7 +2055,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Multi-sample comparisons with the Cooney (C057) memory CD4+ T-cell data set","authors":[{"author":"Peter Hickey","authorURL":"https://peterhickey.org","affiliation":"WEHI SCORE","affiliationURL":"https://www.wehi.edu.au/people/shalin-naik/3310/score","orcidID":""}],"publishedDate":"2021-05-18T00:00:00.000+10:00","citationText":"Hickey, 2021"}
+{"title":"Multi-sample comparisons with the Cooney (C057) memory CD4+ T-cell data set","authors":[{"author":"Peter Hickey","authorURL":"https://peterhickey.org","affiliation":"WEHI SCORE","affiliationURL":"https://www.wehi.edu.au/people/shalin-naik/3310/score","orcidID":""}],"publishedDate":"2021-07-01T00:00:00.000+10:00","citationText":"Hickey, 2021"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -2107,7 +2107,7 @@ Supplementary files
 <div class="d-byline">
   Peter Hickey <a href="https://peterhickey.org" class="uri">https://peterhickey.org</a> (WEHI SCORE)<a href="https://www.wehi.edu.au/people/shalin-naik/3310/score" class="uri">https://www.wehi.edu.au/people/shalin-naik/3310/score</a>
   
-<br/>2021-05-18
+<br/>2021-07-01
 </div>
 
 <div class="d-article">
@@ -2116,19 +2116,23 @@ Supplementary files
 <h3>Contents</h3>
 <ul>
 <li><a href="#setup">Setup</a></li>
-<li><a href="#analysis-based-on-cycling_subset">Analysis based on <code>cycling_subset</code></a>
+<li><a href="#analysis-ignoring-cycling_subset">Analysis ignoring <code>cycling_subset</code></a>
 <ul>
 <li><a href="#de">DE</a></li>
+</ul></li>
+<li><a href="#analysis-based-on-cycling_subset">Analysis based on <code>cycling_subset</code></a>
+<ul>
+<li><a href="#de-1">DE</a></li>
 <li><a href="#da">DA</a></li>
 </ul></li>
 <li><a href="#analysis-based-on-subcluster-labels-in-not-cycling-subset">Analysis based on subcluster labels in <code>Not cycling</code> subset</a>
 <ul>
-<li><a href="#de-1">DE</a></li>
+<li><a href="#de-2">DE</a></li>
 <li><a href="#da-1">DA</a></li>
 </ul></li>
 <li><a href="#analysis-based-on-subcluster-labels-in-cycling-subset">Analysis based on subcluster labels in <code>Cycling</code> subset</a>
 <ul>
-<li><a href="#de-2">DE</a></li>
+<li><a href="#de-3">DE</a></li>
 <li><a href="#da-2">DA</a></li>
 </ul></li>
 <li><a href="#concluding-remarks">Concluding remarks</a></li>
@@ -2179,9 +2183,187 @@ Show code
 </div>
 </details>
 </div>
-<h1 id="analysis-based-on-cycling_subset">Analysis based on <code>cycling_subset</code></h1>
+<h1 id="analysis-ignoring-cycling_subset">Analysis ignoring <code>cycling_subset</code></h1>
+<p><strong>The results of this analysis are as if we had done a bulk RNA-seq experiment rather than scRNA-seq.</strong> <strong>It ignores the within-sample heterogeneity and consequently we recommend the results from the other differential analyses.</strong></p>
+<p>There is no DA analysis when ignoring <code>cycling_subset</code>.</p>
 <h2 id="de">DE</h2>
-<p>Please see <a href="../output/DEGs/cycling_subset/"><code>output/DEGs/cycling_subset/</code></a> for heatmaps and spreadsheets of these DEG lists, including results of GO and KEGG analyses using the <code>goana()</code> and <code>kegga()</code> functions from the <em><a href="https://bioconductor.org/packages/3.12/limma">limma</a></em> package. This directory also contains interactive <em><a href="https://bioconductor.org/packages/3.12/Glimma">Glimma</a></em> plots of the differential expression results. The <em><a href="https://bioconductor.org/packages/3.12/Glimma">Glimma</a></em> plots show the pseudobulk data for that label.</p>
+<p>We require that a gene has an absolute fold change (<span class="math inline">\(FC\)</span>) <span class="math inline">\(&gt;1.5\)</span> (i.e. <span class="math inline">\(|log_2(FC)| &gt; log_2(1.5) \approx 0.58\)</span>) and an <span class="math inline">\(FDR &lt; 0.05\)</span> to be called as differentially expressed. This is achieved by using the <code>glmTreat()</code> method in <em><a href="https://bioconductor.org/packages/3.12/edgeR">edgeR</a></em>, which is a statistically rigorous method for thresholded differential expression testing.</p>
+<p>Please see <a href="../output/DEGs/cycling_subset/"><code>output/DEGs/cycling_subset/</code></a> for heatmaps and spreadsheets of these DEG lists, including results of GO and KEGG analyses using the <code>goana()</code> and <code>kegga()</code> functions from the <em><a href="https://bioconductor.org/packages/3.12/limma">limma</a></em> package. The heatmaps show up to the top-50 DEGs (ordered by <span class="math inline">\(FDR\)</span>).</p>
+<p>This directory also contains interactive <em><a href="https://bioconductor.org/packages/3.12/Glimma">Glimma</a></em> plots of the differential expression results. The <em><a href="https://bioconductor.org/packages/3.12/Glimma">Glimma</a></em> plots show the pseudobulk data for that label.</p>
+<aside>
+Note that the DEG list spreadsheets contain all labels and genes whereas the Glimma plots only contain labels and genes actually tested for DE. The column names in the Glimma tables may be abbreviated. There are two types of heatmaps: (1) showing the ‘pseudobulk’ expression and (2) showing the average single-cell expression.
+</aside>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># NOTE: Have to drop the complicated TRA and TRB DFrameList objects.</span>
+<span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>sce</span>
+<span class='va'>x</span><span class='op'>$</span><span class='va'>TRA</span> <span class='op'>&lt;-</span> <span class='cn'>NULL</span>
+<span class='va'>x</span><span class='op'>$</span><span class='va'>TRB</span> <span class='op'>&lt;-</span> <span class='cn'>NULL</span>
+<span class='va'>sce.ignoring_cycling_subset</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scuttle/man/aggregateAcrossCells.html'>aggregateAcrossCells</a></span><span class='op'>(</span>
+  <span class='va'>x</span>,
+  id <span class='op'>=</span> <span class='fu'>colData</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>[</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Sample"</span>, <span class='st'>"Treatment"</span><span class='op'>)</span><span class='op'>]</span>,
+  coldata.merge <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  use.dimred <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  use.altexps <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/pkg/SingleCellExperiment/man/sizeFactors.html'>sizeFactors</a></span><span class='op'>(</span><span class='va'>sce.ignoring_cycling_subset</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='cn'>NULL</span>
+<span class='va'>sce.ignoring_cycling_subset</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scuttle/man/logNormCounts.html'>logNormCounts</a></span><span class='op'>(</span><span class='va'>sce.ignoring_cycling_subset</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/pkg/SingleCellExperiment/man/colLabels.html'>colLabels</a></span><span class='op'>(</span><span class='va'>sce.ignoring_cycling_subset</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='st'>"ignoring_cycling_subset"</span>
+<span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>sce.ignoring_cycling_subset</span><span class='op'>)</span> <span class='op'>&lt;-</span>
+  <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/pkg/SingleCellExperiment/man/colLabels.html'>colLabels</a></span><span class='op'>(</span><span class='va'>sce.ignoring_cycling_subset</span><span class='op'>)</span>, 
+         <span class='st'>"."</span>,
+         <span class='va'>sce.ignoring_cycling_subset</span><span class='op'>$</span><span class='va'>Sample</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>sce.ignoring_cycling_subset</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/runMDS.html'>runMDS</a></span><span class='op'>(</span><span class='va'>sce.ignoring_cycling_subset</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotMDS</a></span><span class='op'>(</span>
+  <span class='va'>sce.ignoring_cycling_subset</span>,
+  colour_by <span class='op'>=</span> <span class='st'>"Treatment"</span>,
+  shape_by <span class='op'>=</span> <span class='st'>"Sample"</span>,
+  point_size <span class='op'>=</span> <span class='fl'>3</span>,
+  point_alpha <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>scale_colour_manual</span><span class='op'>(</span>values <span class='op'>=</span> <span class='va'>treatment_colours</span>, name <span class='op'>=</span> <span class='st'>"Treatment"</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-3-1.png" width="624" /></p>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>sce.ignoring_cycling_subset_filt</span> <span class='op'>&lt;-</span> 
+  <span class='va'>sce.ignoring_cycling_subset</span><span class='op'>[</span>, <span class='va'>sce.ignoring_cycling_subset</span><span class='op'>$</span><span class='va'>ncells</span> <span class='op'>&gt;=</span> <span class='fl'>10</span><span class='op'>]</span>
+
+<span class='va'>de_results</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scran/man/pseudoBulkDGE.html'>pseudoBulkDGE</a></span><span class='op'>(</span>
+  <span class='va'>sce.ignoring_cycling_subset_filt</span>,
+  label <span class='op'>=</span> <span class='va'>sce.ignoring_cycling_subset_filt</span><span class='op'>$</span><span class='va'>label</span>,
+  design <span class='op'>=</span> <span class='op'>~</span><span class='va'>Treatment</span>,
+  coef <span class='op'>=</span> <span class='st'>"TreatmentInfected"</span>,
+  condition <span class='op'>=</span> <span class='va'>sce.ignoring_cycling_subset_filt</span><span class='op'>$</span><span class='va'>Treatment</span>,
+  include.intermediates <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  lfc <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log2</a></span><span class='op'>(</span><span class='fl'>1.5</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+</div>
+<ul>
+<li>Labels for which we couldn’t run DE (<code>character(0)</code> means none)</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'>metadata</span><span class='op'>(</span><span class='va'>de_results</span><span class='op'>)</span><span class='op'>$</span><span class='va'>failed</span>
+</code></pre>
+</div>
+</details>
+<pre><code>character(0)</code></pre>
+</div>
+<ul>
+<li>Number of DEGs per label (<code>-1</code> means downregulated in <code>Infected</code> vs. <code>Uninfected</code>, <code>0</code> means not DE, <code>1</code> means upregulated in <code>Infected</code> vs. <code>Uninfected</code>)</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>is.de</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scran/man/decideTestsPerLabel.html'>decideTestsPerLabel</a></span><span class='op'>(</span><span class='va'>de_results</span>, threshold <span class='op'>=</span> <span class='fl'>0.05</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/pkg/scran/man/decideTestsPerLabel.html'>summarizeTestsPerLabel</a></span><span class='op'>(</span><span class='va'>is.de</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<pre><code>                        -1     0  1   NA
+ignoring_cycling_subset 74 11562 92 8874</code></pre>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>outdir</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"output"</span>, <span class='st'>"DEGs"</span>, <span class='st'>"ignoring_cycling_subset"</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/files2.html'>dir.create</a></span><span class='op'>(</span><span class='va'>outdir</span>, recursive <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
+<span class='fu'>createDEGOutputs</span><span class='op'>(</span>
+  outdir <span class='op'>=</span> <span class='va'>outdir</span>, 
+  de_results <span class='op'>=</span> <span class='va'>de_results</span>, 
+  summed_filt <span class='op'>=</span> <span class='va'>sce.ignoring_cycling_subset_filt</span>,
+  sce <span class='op'>=</span> <span class='va'>sce</span>,
+  fdr <span class='op'>=</span> <span class='fl'>0.05</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>de_results</span><span class='op'>)</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span> <span class='op'>{</span>
+  <span class='va'>se</span> <span class='op'>&lt;-</span> <span class='va'>sce.ignoring_cycling_subset_filt</span><span class='op'>[</span>
+    , <span class='va'>sce.ignoring_cycling_subset_filt</span><span class='op'>$</span><span class='va'>label</span> <span class='op'>==</span> <span class='va'>n</span><span class='op'>]</span>
+  <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>de_results</span><span class='op'>[[</span><span class='va'>n</span><span class='op'>]</span><span class='op'>]</span>
+  <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>x</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/order.html'>order</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>$</span><span class='va'>FDR</span><span class='op'>)</span>, <span class='op'>]</span>
+  <span class='va'>features</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>$</span><span class='va'>FDR</span> <span class='op'>&lt;</span> <span class='fl'>0.05</span><span class='op'>)</span>, <span class='op'>]</span><span class='op'>)</span>
+  <span class='kw'>if</span> <span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>features</span><span class='op'>)</span> <span class='op'>&gt;</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>{</span>
+    <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plotHeatmap.html'>plotHeatmap</a></span><span class='op'>(</span>
+      <span class='va'>se</span>,
+      features <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>features</span>, <span class='fl'>50</span><span class='op'>)</span>,
+      center <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      zlim <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>3</span>, <span class='fl'>3</span><span class='op'>)</span>,
+      symmetric <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      color <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grDevices/palettes.html'>hcl.colors</a></span><span class='op'>(</span><span class='fl'>101</span>, <span class='st'>"Blue-Red 3"</span><span class='op'>)</span>,
+      order_columns_by <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Treatment"</span>, <span class='st'>"Sample"</span><span class='op'>)</span>,
+      column_annotation_colors <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>
+        Treatment <span class='op'>=</span> <span class='va'>treatment_colours</span>,
+        Sample <span class='op'>=</span> <span class='va'>sample_colours</span><span class='op'>)</span>,
+      cluster_rows <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      fontsize <span class='op'>=</span> <span class='fl'>8</span>,
+      main <span class='op'>=</span> <span class='va'>n</span>,
+      filename <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span><span class='op'>(</span><span class='va'>outdir</span>, <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>n</span>, <span class='st'>".pseudobulk_heatmap.pdf"</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+    
+    <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plotGroupedHeatmap.html'>plotGroupedHeatmap</a></span><span class='op'>(</span>
+      <span class='va'>sce</span>,
+      features <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>features</span>, <span class='fl'>50</span><span class='op'>)</span>,
+      group <span class='op'>=</span> <span class='st'>"Sample"</span>,
+      center <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      symmetric <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      color <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grDevices/palettes.html'>hcl.colors</a></span><span class='op'>(</span><span class='fl'>101</span>, <span class='st'>"Blue-Red 3"</span><span class='op'>)</span>,
+      cluster_rows <span class='op'>=</span> <span class='cn'>TRUE</span>,
+      fontsize <span class='op'>=</span> <span class='fl'>8</span>,
+      main <span class='op'>=</span> <span class='va'>n</span>,
+      cluster_cols <span class='op'>=</span> <span class='cn'>FALSE</span>,
+      filename <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span><span class='op'>(</span>
+        <span class='va'>outdir</span>,
+        <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>n</span>, <span class='st'>".average_expression_heatmap.pdf"</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+  <span class='op'>}</span>
+<span class='op'>}</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+</div>
+<h1 id="analysis-based-on-cycling_subset">Analysis based on <code>cycling_subset</code></h1>
+<h2 id="de-1">DE</h2>
+<p>We require that a gene has an absolute fold change (<span class="math inline">\(FC\)</span>) <span class="math inline">\(&gt;1.5\)</span> (i.e. <span class="math inline">\(|log_2(FC)| &gt; log_2(1.5) \approx 0.58\)</span>) and an <span class="math inline">\(FDR &lt; 0.05\)</span> to be called as differentially expressed. This is achieved by using the <code>glmTreat()</code> method in <em><a href="https://bioconductor.org/packages/3.12/edgeR">edgeR</a></em>, which is a statistically rigorous method for thresholded differential expression testing.</p>
+<p>Please see <a href="../output/DEGs/cycling_subset/"><code>output/DEGs/cycling_subset/</code></a> for heatmaps and spreadsheets of these DEG lists, including results of GO and KEGG analyses using the <code>goana()</code> and <code>kegga()</code> functions from the <em><a href="https://bioconductor.org/packages/3.12/limma">limma</a></em> package. The heatmaps show up to the top-50 DEGs (ordered by <span class="math inline">\(FDR\)</span>).</p>
+<p>This directory also contains interactive <em><a href="https://bioconductor.org/packages/3.12/Glimma">Glimma</a></em> plots of the differential expression results. The <em><a href="https://bioconductor.org/packages/3.12/Glimma">Glimma</a></em> plots show the pseudobulk data for that label.</p>
 <aside>
 Note that the DEG list spreadsheets contain all labels and genes whereas the Glimma plots only contain labels and genes actually tested for DE. The column names in the Glimma tables may be abbreviated. There are two types of heatmaps: (1) showing the ‘pseudobulk’ expression and (2) showing the average single-cell expression.
 </aside>
@@ -2232,12 +2414,12 @@ Show code
   shape_by <span class='op'>=</span> <span class='st'>"cycling_subset"</span>,
   point_size <span class='op'>=</span> <span class='fl'>3</span>,
   point_alpha <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'>scale_colour_manual</span><span class='op'>(</span>values <span class='op'>=</span> <span class='va'>sample_colours</span>, name <span class='op'>=</span> <span class='st'>"Treatment"</span><span class='op'>)</span>
-<span class='va'>p1</span> <span class='op'>+</span> <span class='va'>p2</span> <span class='op'>+</span> <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_layout.html'>plot_layout</a></span><span class='op'>(</span>guides <span class='op'>=</span> <span class='st'>"collect"</span><span class='op'>)</span>
+  <span class='fu'>scale_colour_manual</span><span class='op'>(</span>values <span class='op'>=</span> <span class='va'>sample_colours</span>, name <span class='op'>=</span> <span class='st'>"Sample"</span><span class='op'>)</span>
+<span class='va'>p1</span> <span class='op'>+</span> <span class='va'>p2</span>
 </code></pre>
 </div>
 </details>
-<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-3-1.png" width="624" /></p>
+<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-10-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -2254,7 +2436,8 @@ Show code
   design <span class='op'>=</span> <span class='op'>~</span><span class='va'>Treatment</span>,
   coef <span class='op'>=</span> <span class='st'>"TreatmentInfected"</span>,
   condition <span class='op'>=</span> <span class='va'>sce.cycling_subset_Sample_filt</span><span class='op'>$</span><span class='va'>Treatment</span>,
-  include.intermediates <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
+  include.intermediates <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  lfc <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log2</a></span><span class='op'>(</span><span class='fl'>1.5</span><span class='op'>)</span><span class='op'>)</span>
 </code></pre>
 </div>
 </details>
@@ -2288,9 +2471,9 @@ Show code
 </code></pre>
 </div>
 </details>
-<pre><code>             -1     0   1    NA
-Cycling     147  9560 183 10712
-Not cycling 530 10048 617  9407</code></pre>
+<pre><code>            -1     0  1    NA
+Cycling     38  9799 53 10712
+Not cycling 82 11016 97  9407</code></pre>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -2319,6 +2502,7 @@ Show code
 <pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>de_results</span><span class='op'>)</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span> <span class='op'>{</span>
   <span class='va'>se</span> <span class='op'>&lt;-</span> <span class='va'>sce.cycling_subset_Sample_filt</span><span class='op'>[</span>, <span class='va'>sce.cycling_subset_Sample_filt</span><span class='op'>$</span><span class='va'>label</span> <span class='op'>==</span> <span class='va'>n</span><span class='op'>]</span>
   <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>de_results</span><span class='op'>[[</span><span class='va'>n</span><span class='op'>]</span><span class='op'>]</span>
+  <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>x</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/order.html'>order</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>$</span><span class='va'>FDR</span><span class='op'>)</span>, <span class='op'>]</span>
   <span class='va'>features</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>$</span><span class='va'>FDR</span> <span class='op'>&lt;</span> <span class='fl'>0.05</span><span class='op'>)</span>, <span class='op'>]</span><span class='op'>)</span>
   <span class='kw'>if</span> <span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>features</span><span class='op'>)</span> <span class='op'>&gt;</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>{</span>
     <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plotHeatmap.html'>plotHeatmap</a></span><span class='op'>(</span>
@@ -2394,7 +2578,8 @@ Show code
   colour_by <span class='op'>=</span> <span class='st'>"cycling_subset"</span>, 
   text_by <span class='op'>=</span> <span class='st'>"cycling_subset"</span>,
   point_size <span class='op'>=</span> <span class='fl'>0.5</span>,
-  point_alpha <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>
+  point_alpha <span class='op'>=</span> <span class='fl'>1</span>,
+  text_size <span class='op'>=</span> <span class='fl'>4</span><span class='op'>)</span>
 <span class='va'>p2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotUMAP</a></span><span class='op'>(</span>
   <span class='va'>sce</span>, 
   colour_by <span class='op'>=</span> <span class='st'>"Treatment"</span>,
@@ -2405,7 +2590,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-10-1.png" width="624" /></p>
+<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-17-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -2439,7 +2624,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-11-1.png" width="624" /></p>
+<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-18-1.png" width="624" /></p>
 </div>
 <ul>
 <li><code>TRUE</code>/<code>FALSE</code> if label can be tested for DA</li>
@@ -2507,8 +2692,10 @@ Cycling      0.5952481 17.24486 2.947518 0.08600953 0.1720191
 Not cycling -0.1075603 19.68781 1.001231 0.31701277 0.3170128</code></pre>
 </div>
 <h1 id="analysis-based-on-subcluster-labels-in-not-cycling-subset">Analysis based on subcluster labels in <code>Not cycling</code> subset</h1>
-<h2 id="de-1">DE</h2>
-<p>Please see <a href="../output/DEGs/not_cycling_subset_subclusters/"><code>output/DEGs/not_cycling_subset_subclusters/</code></a> for heatmaps and spreadsheets of these DEG lists, including results of GO and KEGG analyses using the <code>goana()</code> and <code>kegga()</code> functions from the <em><a href="https://bioconductor.org/packages/3.12/limma">limma</a></em> package. This directory also contains interactive <em><a href="https://bioconductor.org/packages/3.12/Glimma">Glimma</a></em> plots of the differential expression results. The <em><a href="https://bioconductor.org/packages/3.12/Glimma">Glimma</a></em> plots show the pseudobulk data for that label.</p>
+<h2 id="de-2">DE</h2>
+<p>We require that a gene has an absolute fold change (<span class="math inline">\(FC\)</span>) <span class="math inline">\(&gt;1.5\)</span> (i.e. <span class="math inline">\(|log_2(FC)| &gt; log_2(1.5) \approx 0.58\)</span>) and an <span class="math inline">\(FDR &lt; 0.05\)</span> to be called as differentially expressed. This is achieved by using the <code>glmTreat()</code> method in <em><a href="https://bioconductor.org/packages/3.12/edgeR">edgeR</a></em>, which is a statistically rigorous method for thresholded differential expression testing.</p>
+<p>Please see <a href="../output/DEGs/not_cycling_subset_subclusters/"><code>output/DEGs/not_cycling_subset_subclusters/</code></a> for heatmaps and spreadsheets of these DEG lists, including results of GO and KEGG analyses using the <code>goana()</code> and <code>kegga()</code> functions from the <em><a href="https://bioconductor.org/packages/3.12/limma">limma</a></em> package. The heatmaps show up to the top-50 DEGs (ordered by <span class="math inline">\(FDR\)</span>).</p>
+<p>This directory also contains interactive <em><a href="https://bioconductor.org/packages/3.12/Glimma">Glimma</a></em> plots of the differential expression results. The <em><a href="https://bioconductor.org/packages/3.12/Glimma">Glimma</a></em> plots show the pseudobulk data for that label.</p>
 <aside>
 Note that the DEG list spreadsheets contain all labels and genes whereas the Glimma plots only contain labels and genes actually tested for DE. The column names in the Glimma tables may be abbreviated. There are two types of heatmaps: (1) showing the ‘pseudobulk’ expression and (2) showing the average single-cell expression.
 </aside>
@@ -2560,11 +2747,11 @@ Show code
   shape_by <span class='op'>=</span> <span class='st'>"Sample"</span>,
   point_size <span class='op'>=</span> <span class='fl'>3</span>,
   point_alpha <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span>
-<span class='va'>p1</span> <span class='op'>+</span> <span class='va'>p2</span> <span class='op'>+</span> <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_layout.html'>plot_layout</a></span><span class='op'>(</span>guides <span class='op'>=</span> <span class='st'>"collect"</span><span class='op'>)</span>
+<span class='va'>p1</span> <span class='op'>+</span> <span class='va'>p2</span>
 </code></pre>
 </div>
 </details>
-<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-16-1.png" width="624" /></p>
+<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-23-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -2581,7 +2768,8 @@ Show code
   design <span class='op'>=</span> <span class='op'>~</span><span class='va'>Treatment</span>,
   coef <span class='op'>=</span> <span class='st'>"TreatmentInfected"</span>,
   condition <span class='op'>=</span> <span class='va'>not_cycling_sce.subcluster_Sample_filt</span><span class='op'>$</span><span class='va'>Treatment</span>,
-  include.intermediates <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
+  include.intermediates <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  lfc <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log2</a></span><span class='op'>(</span><span class='fl'>1.5</span><span class='op'>)</span><span class='op'>)</span>
 </code></pre>
 </div>
 </details>
@@ -2616,11 +2804,11 @@ Show code
 </div>
 </details>
 <pre><code>              -1    0  1    NA
-Not cycling.1  6 6103 12 14481
-Not cycling.2  8 8239 14 12341
-Not cycling.3 68 8712 84 11738
-Not cycling.4 17 9058 14 11513
-Not cycling.5 46 9361 88 11107</code></pre>
+Not cycling.1  1 6120  0 14481
+Not cycling.2  2 8254  5 12341
+Not cycling.3 10 8829 25 11738
+Not cycling.4  3 9086  0 11513
+Not cycling.5  3 9465 27 11107</code></pre>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -2649,6 +2837,7 @@ Show code
 <pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>de_results</span><span class='op'>)</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span> <span class='op'>{</span>
   <span class='va'>se</span> <span class='op'>&lt;-</span> <span class='va'>not_cycling_sce.subcluster_Sample_filt</span><span class='op'>[</span>, <span class='va'>not_cycling_sce.subcluster_Sample_filt</span><span class='op'>$</span><span class='va'>label</span> <span class='op'>==</span> <span class='va'>n</span><span class='op'>]</span>
   <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>de_results</span><span class='op'>[[</span><span class='va'>n</span><span class='op'>]</span><span class='op'>]</span>
+  <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>x</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/order.html'>order</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>$</span><span class='va'>FDR</span><span class='op'>)</span>, <span class='op'>]</span>
   <span class='va'>features</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>$</span><span class='va'>FDR</span> <span class='op'>&lt;</span> <span class='fl'>0.05</span><span class='op'>)</span>, <span class='op'>]</span><span class='op'>)</span>
   <span class='kw'>if</span> <span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>features</span><span class='op'>)</span> <span class='op'>&gt;</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>{</span>
     <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plotHeatmap.html'>plotHeatmap</a></span><span class='op'>(</span>
@@ -2730,7 +2919,8 @@ Show code
   colour_by <span class='op'>=</span> <span class='st'>"subcluster"</span>,
   text_by <span class='op'>=</span> <span class='st'>"subcluster"</span>,
   point_size <span class='op'>=</span> <span class='fl'>0.5</span>,
-  point_alpha <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>
+  point_alpha <span class='op'>=</span> <span class='fl'>1</span>,
+  text_size <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span>
 <span class='va'>p2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotUMAP</a></span><span class='op'>(</span>
   <span class='va'>x</span>,
   colour_by <span class='op'>=</span> <span class='st'>"Treatment"</span>,
@@ -2741,7 +2931,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-23-1.png" width="624" /></p>
+<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-30-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -2775,7 +2965,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-24-1.png" width="624" /></p>
+<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-31-1.png" width="624" /></p>
 </div>
 <ul>
 <li><code>TRUE</code>/<code>FALSE</code> if label can be tested for DA</li>
@@ -2844,8 +3034,10 @@ Not cycling.5 -1.835740 17.85842  6.212515 1.268503e-02 1.585629e-02
 Not cycling.3 -1.017010 17.57522  2.006615 1.566145e-01 1.566145e-01</code></pre>
 </div>
 <h1 id="analysis-based-on-subcluster-labels-in-cycling-subset">Analysis based on subcluster labels in <code>Cycling</code> subset</h1>
-<h2 id="de-2">DE</h2>
-<p>Please see <a href="../output/DEGs/cycling_subset_subclusters/"><code>output/DEGs/cycling_subset_subclusters/</code></a> for heatmaps and spreadsheets of these DEG lists, including results of GO and KEGG analyses using the <code>goana()</code> and <code>kegga()</code> functions from the <em><a href="https://bioconductor.org/packages/3.12/limma">limma</a></em> package. This directory also contains interactive <em><a href="https://bioconductor.org/packages/3.12/Glimma">Glimma</a></em> plots of the differential expression results. The <em><a href="https://bioconductor.org/packages/3.12/Glimma">Glimma</a></em> plots show the pseudobulk data for that label.</p>
+<h2 id="de-3">DE</h2>
+<p>We require that a gene has an absolute fold change (<span class="math inline">\(FC\)</span>) <span class="math inline">\(&gt;1.5\)</span> (i.e. <span class="math inline">\(|log_2(FC)| &gt; log_2(1.5) \approx 0.58\)</span>) and an <span class="math inline">\(FDR &lt; 0.05\)</span> to be called as differentially expressed. This is achieved by using the <code>glmTreat()</code> method in <em><a href="https://bioconductor.org/packages/3.12/edgeR">edgeR</a></em>, which is a statistically rigorous method for thresholded differential expression testing.</p>
+<p>Please see <a href="../output/DEGs/cycling_subset_subclusters/"><code>output/DEGs/cycling_subset_subclusters/</code></a> for heatmaps and spreadsheets of these DEG lists, including results of GO and KEGG analyses using the <code>goana()</code> and <code>kegga()</code> functions from the <em><a href="https://bioconductor.org/packages/3.12/limma">limma</a></em> package. The heatmaps show up to the top-50 DEGs (ordered by <span class="math inline">\(FDR\)</span>).</p>
+<p>This directory also contains interactive <em><a href="https://bioconductor.org/packages/3.12/Glimma">Glimma</a></em> plots of the differential expression results. The <em><a href="https://bioconductor.org/packages/3.12/Glimma">Glimma</a></em> plots show the pseudobulk data for that label.</p>
 <aside>
 Note that the DEG list spreadsheets contain all labels and genes whereas the Glimma plots only contain labels and genes actually tested for DE. The column names in the Glimma tables may be abbreviated. There are two types of heatmaps: (1) showing the ‘pseudobulk’ expression and (2) showing the average single-cell expression.
 </aside>
@@ -2896,11 +3088,11 @@ Show code
   shape_by <span class='op'>=</span> <span class='st'>"Sample"</span>,
   point_size <span class='op'>=</span> <span class='fl'>3</span>,
   point_alpha <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span>
-<span class='va'>p1</span> <span class='op'>+</span> <span class='va'>p2</span> <span class='op'>+</span> <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_layout.html'>plot_layout</a></span><span class='op'>(</span>guides <span class='op'>=</span> <span class='st'>"collect"</span><span class='op'>)</span>
+<span class='va'>p1</span> <span class='op'>+</span> <span class='va'>p2</span>
 </code></pre>
 </div>
 </details>
-<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-29-1.png" width="624" /></p>
+<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-36-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -2917,7 +3109,8 @@ Show code
   design <span class='op'>=</span> <span class='op'>~</span><span class='va'>Treatment</span>,
   coef <span class='op'>=</span> <span class='st'>"TreatmentInfected"</span>,
   condition <span class='op'>=</span> <span class='va'>cycling_sce.subcluster_Sample_filt</span><span class='op'>$</span><span class='va'>Treatment</span>,
-  include.intermediates <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
+  include.intermediates <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  lfc <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log2</a></span><span class='op'>(</span><span class='fl'>1.5</span><span class='op'>)</span><span class='op'>)</span>
 </code></pre>
 </div>
 </details>
@@ -2951,10 +3144,10 @@ Show code
 </code></pre>
 </div>
 </details>
-<pre><code>          -1    0   1    NA
-Cycling.1 98 7519  98 12887
-Cycling.2 66 6051  98 14387
-Cycling.3 75 8356 112 12059</code></pre>
+<pre><code>          -1    0  1    NA
+Cycling.1 27 7659 29 12887
+Cycling.2 11 6184 20 14387
+Cycling.3 14 8500 29 12059</code></pre>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -2983,6 +3176,7 @@ Show code
 <pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>de_results</span><span class='op'>)</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span> <span class='op'>{</span>
   <span class='va'>se</span> <span class='op'>&lt;-</span> <span class='va'>cycling_sce.subcluster_Sample_filt</span><span class='op'>[</span>, <span class='va'>cycling_sce.subcluster_Sample_filt</span><span class='op'>$</span><span class='va'>label</span> <span class='op'>==</span> <span class='va'>n</span><span class='op'>]</span>
   <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>de_results</span><span class='op'>[[</span><span class='va'>n</span><span class='op'>]</span><span class='op'>]</span>
+  <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>x</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/order.html'>order</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>$</span><span class='va'>FDR</span><span class='op'>)</span>, <span class='op'>]</span>
   <span class='va'>features</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>$</span><span class='va'>FDR</span> <span class='op'>&lt;</span> <span class='fl'>0.05</span><span class='op'>)</span>, <span class='op'>]</span><span class='op'>)</span>
   <span class='kw'>if</span> <span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>features</span><span class='op'>)</span> <span class='op'>&gt;</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>{</span>
     <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plotHeatmap.html'>plotHeatmap</a></span><span class='op'>(</span>
@@ -3060,7 +3254,8 @@ Show code
   colour_by <span class='op'>=</span> <span class='st'>"subcluster"</span>,
   text_by <span class='op'>=</span> <span class='st'>"subcluster"</span>,
   point_size <span class='op'>=</span> <span class='fl'>0.5</span>,
-  point_alpha <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>
+  point_alpha <span class='op'>=</span> <span class='fl'>1</span>,
+  text_size <span class='op'>=</span> <span class='fl'>4</span><span class='op'>)</span>
 <span class='va'>p2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotUMAP</a></span><span class='op'>(</span>
   <span class='va'>x</span>,
   colour_by <span class='op'>=</span> <span class='st'>"Treatment"</span>,
@@ -3071,7 +3266,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-36-1.png" width="624" /></p>
+<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-43-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -3105,7 +3300,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-37-1.png" width="624" /></p>
+<p><img src="C057_Cooney.multi-sample_comparisons_files/figure-html5/unnamed-chunk-44-1.png" width="624" /></p>
 </div>
 <ul>
 <li><code>TRUE</code>/<code>FALSE</code> if label can be tested for DA</li>
@@ -3227,7 +3422,7 @@ Show code
  collate  en_US.UTF-8                 
  ctype    en_US.UTF-8                 
  tz       Australia/Melbourne         
- date     2021-05-18                  
+ date     2021-07-01                  
 
 ─ Packages ─────────────────────────────────────────────────────────
  ! package              * version  date       lib source        
@@ -3349,13 +3544,13 @@ Show code
  P zlibbioc               1.36.0   2020-10-27 [?] Bioconductor  
 
 [1] /stornext/Projects/score/Analyses/C057_Cooney/renv/library/R-4.0/x86_64-pc-linux-gnu
-[2] /tmp/RtmpFp481Q/renv-system-library
+[2] /tmp/Rtmp9ObRu6/renv-system-library
 [3] /stornext/System/data/apps/R/R-4.0.3/lib64/R/library
 
  P ── Loaded and on-disk path mismatch.</code></pre>
 </div>
 </details>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
 </div>
@@ -3363,6 +3558,15 @@ Show code
 <div class="d-appendix">
 </div>
 
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
 
 <!--radix_placeholder_site_after_body-->
 <!--/radix_placeholder_site_after_body-->
