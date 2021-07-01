@@ -49,6 +49,146 @@ not_cycling_sce$Treatment <- relevel(not_cycling_sce$Treatment, "Uninfected")
 source(here("code", "helper_functions.R"))
 ```
 
+# Analysis ignoring `cycling_subset`
+
+**The results of this analysis are as if we had done a bulk RNA-seq experiment rather than scRNA-seq.**
+**It ignores the within-sample heterogeneity and consequently we recommend the results from the other differential analyses.**
+
+There is no DA analysis when ignoring `cycling_subset`.
+
+## DE
+
+We require that a gene has an absolute fold change ($FC$) $>1.5$ (i.e. $|log_2(FC)| > log_2(1.5) \approx 0.58$) and an $FDR < 0.05$ to be called as differentially expressed.
+This is achieved by using the `glmTreat()` method in `r BiocStyle::Biocpkg("edgeR")`, which is a statistically rigorous method for thresholded differential expression testing.
+
+Please see [`output/DEGs/cycling_subset/`](../output/DEGs/cycling_subset/) for heatmaps and spreadsheets of these DEG lists, including results of GO and KEGG analyses using the `goana()` and `kegga()` functions from the `r BiocStyle::Biocpkg("limma")` package.
+The heatmaps show up to the top-50 DEGs (ordered by $FDR$).
+
+This directory also contains interactive `r BiocStyle::Biocpkg("Glimma")` plots of the differential expression results.
+The `r BiocStyle::Biocpkg("Glimma")` plots show the pseudobulk data for that label.
+
+<aside>
+Note that the DEG list spreadsheets contain all labels and genes whereas the Glimma plots only contain labels and genes actually tested for DE. The column names in the Glimma tables may be abbreviated. There are two types of heatmaps: (1) showing the 'pseudobulk' expression and (2) showing the average single-cell expression.
+</aside>
+
+```{r}
+# NOTE: Have to drop the complicated TRA and TRB DFrameList objects.
+x <- sce
+x$TRA <- NULL
+x$TRB <- NULL
+sce.ignoring_cycling_subset <- aggregateAcrossCells(
+  x,
+  id = colData(x)[, c("Sample", "Treatment")],
+  coldata.merge = FALSE,
+  use.dimred = FALSE,
+  use.altexps = FALSE)
+sizeFactors(sce.ignoring_cycling_subset) <- NULL
+sce.ignoring_cycling_subset <- logNormCounts(sce.ignoring_cycling_subset)
+colLabels(sce.ignoring_cycling_subset) <- "ignoring_cycling_subset"
+colnames(sce.ignoring_cycling_subset) <-
+  paste0(colLabels(sce.ignoring_cycling_subset), 
+         ".",
+         sce.ignoring_cycling_subset$Sample)
+```
+
+```{r, fig.asp = 1 / 2}
+sce.ignoring_cycling_subset <- runMDS(sce.ignoring_cycling_subset)
+p1 <- plotMDS(
+  sce.ignoring_cycling_subset,
+  colour_by = "Treatment",
+  shape_by = "Sample",
+  point_size = 3,
+  point_alpha = 2) +
+  scale_colour_manual(values = treatment_colours, name = "Treatment")
+p2 <- plotMDS(
+  sce.ignoring_cycling_subset,
+  colour_by = "Sample",
+  point_size = 3,
+  point_alpha = 2) +
+  scale_colour_manual(values = sample_colours, name = "Sample")
+p1 + p2 + plot_layout(guides = "collect")
+```
+
+```{r}
+sce.ignoring_cycling_subset_filt <- 
+  sce.ignoring_cycling_subset[, sce.ignoring_cycling_subset$ncells >= 10]
+
+de_results <- pseudoBulkDGE(
+  sce.ignoring_cycling_subset_filt,
+  label = sce.ignoring_cycling_subset_filt$label,
+  design = ~Treatment,
+  coef = "TreatmentInfected",
+  condition = sce.ignoring_cycling_subset_filt$Treatment,
+  include.intermediates = TRUE,
+  lfc = log2(1.5))
+```
+
+- Labels for which we couldn't run DE (`character(0)` means none)
+
+```{r}
+metadata(de_results)$failed
+```
+
+- Number of DEGs per label (`-1` means downregulated in `Infected` vs. `Uninfected`, `0` means not DE, `1` means upregulated in `Infected` vs. `Uninfected`)
+
+```{r}
+is.de <- decideTestsPerLabel(de_results, threshold = 0.05)
+summarizeTestsPerLabel(is.de)
+```
+
+```{r}
+outdir <- here("output", "DEGs", "ignoring_cycling_subset")
+dir.create(outdir, recursive = TRUE)
+createDEGOutputs(
+  outdir = outdir, 
+  de_results = de_results, 
+  summed_filt = sce.ignoring_cycling_subset_filt,
+  sce = sce,
+  fdr = 0.05)
+```
+
+```{r, message = FALSE, results = "hide"}
+lapply(names(de_results), function(n) {
+  se <- sce.ignoring_cycling_subset_filt[
+    , sce.ignoring_cycling_subset_filt$label == n]
+  x <- de_results[[n]]
+  x <- x[order(x$FDR), ]
+  features <- rownames(x[which(x$FDR < 0.05), ])
+  if (length(features) > 2) {
+    plotHeatmap(
+      se,
+      features = head(features, 50),
+      center = TRUE,
+      zlim = c(-3, 3),
+      symmetric = TRUE,
+      color = hcl.colors(101, "Blue-Red 3"),
+      order_columns_by = c("Treatment", "Sample"),
+      column_annotation_colors = list(
+        Treatment = treatment_colours,
+        Sample = sample_colours),
+      cluster_rows = TRUE,
+      fontsize = 8,
+      main = n,
+      filename = file.path(outdir, paste0(n, ".pseudobulk_heatmap.pdf")))
+    
+    plotGroupedHeatmap(
+      sce,
+      features = head(features, 50),
+      group = "Sample",
+      center = TRUE,
+      symmetric = TRUE,
+      color = hcl.colors(101, "Blue-Red 3"),
+      cluster_rows = TRUE,
+      fontsize = 8,
+      main = n,
+      cluster_cols = FALSE,
+      filename = file.path(
+        outdir,
+        paste0(n, ".average_expression_heatmap.pdf")))
+  }
+})
+```
+
 # Analysis based on `cycling_subset`
 
 ## DE
