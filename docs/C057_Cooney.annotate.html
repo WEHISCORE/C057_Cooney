@@ -91,8 +91,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
 
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2021-05-18"/>
-  <meta property="article:created" itemprop="dateCreated" content="2021-05-18"/>
+  <meta property="article:published" itemprop="datePublished" content="2021-07-01"/>
+  <meta property="article:created" itemprop="dateCreated" content="2021-07-01"/>
   <meta name="article:author" content="Peter Hickey"/>
 
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
@@ -107,10 +107,11 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
   <!--/radix_placeholder_meta_tags-->
   
+  <meta name="citation_reference" content="citation_title=Universal prediction of cell cycle position using transfer learning;citation_publication_date=2021;citation_publisher=Cold Spring Harbor Laboratory;citation_doi=10.1101/2021.04.06.438463;citation_author=Shijie C. Zheng;citation_author=Genevieve Stein-O’Brien;citation_author=Jonathan J. Augustin;citation_author=Jared Slosberg;citation_author=Giovanni A. Carosso;citation_author=Briana Winer;citation_author=Gloria Shin;citation_author=Hans T. Bjornsson;citation_author=Loyal A. Goff;citation_author=Kasper D. Hansen"/>
   <!--radix_placeholder_rmarkdown_metadata-->
 
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","editor_options","bibliography"]}},"value":[{"type":"character","attributes":{},"value":["Annotating the Cooney (C057) memory CD4+ T-cell data set"]},{"type":"NULL"},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Peter Hickey"]},{"type":"character","attributes":{},"value":["https://peterhickey.org"]},{"type":"character","attributes":{},"value":["Single Cell Open Research Endeavour (SCORE), WEHI"]},{"type":"character","attributes":{},"value":["https://www.wehi.edu.au/people/shalin-naik/3310/score"]}]}]},{"type":"character","attributes":{},"value":["2021-05-18"]},{"type":"character","attributes":{},"value":["distill::distill_article"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]},{"type":"character","attributes":{},"value":["ref.bib"]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","editor_options","bibliography"]}},"value":[{"type":"character","attributes":{},"value":["Annotating the Cooney (C057) memory CD4+ T-cell data set"]},{"type":"NULL"},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Peter Hickey"]},{"type":"character","attributes":{},"value":["https://peterhickey.org"]},{"type":"character","attributes":{},"value":["Single Cell Open Research Endeavour (SCORE), WEHI"]},{"type":"character","attributes":{},"value":["https://www.wehi.edu.au/people/shalin-naik/3310/score"]}]}]},{"type":"character","attributes":{},"value":["2021-07-01"]},{"type":"character","attributes":{},"value":["distill::distill_article"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]},{"type":"character","attributes":{},"value":["ref.bib"]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   <!--radix_placeholder_navigation_in_header-->
@@ -2064,7 +2065,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Annotating the Cooney (C057) memory CD4+ T-cell data set","authors":[{"author":"Peter Hickey","authorURL":"https://peterhickey.org","affiliation":"Single Cell Open Research Endeavour (SCORE), WEHI","affiliationURL":"https://www.wehi.edu.au/people/shalin-naik/3310/score","orcidID":""}],"publishedDate":"2021-05-18T00:00:00.000+10:00","citationText":"Hickey, 2021"}
+{"title":"Annotating the Cooney (C057) memory CD4+ T-cell data set","authors":[{"author":"Peter Hickey","authorURL":"https://peterhickey.org","affiliation":"Single Cell Open Research Endeavour (SCORE), WEHI","affiliationURL":"https://www.wehi.edu.au/people/shalin-naik/3310/score","orcidID":""}],"publishedDate":"2021-07-01T00:00:00.000+10:00","citationText":"Hickey, 2021"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -2116,7 +2117,7 @@ Supplementary files
 <div class="d-byline">
   Peter Hickey <a href="https://peterhickey.org" class="uri">https://peterhickey.org</a> (Single Cell Open Research Endeavour (SCORE), WEHI)<a href="https://www.wehi.edu.au/people/shalin-naik/3310/score" class="uri">https://www.wehi.edu.au/people/shalin-naik/3310/score</a>
   
-<br/>2021-05-18
+<br/>2021-07-01
 </div>
 
 <div class="d-article">
@@ -2144,6 +2145,7 @@ Supplementary files
 <li><a href="#cycling-subset-has-larger-library-sizes">Cycling subset has larger library sizes</a></li>
 <li><a href="#expression-of-cycling-subset-markers-and-cyclins">Expression of cycling subset markers and cyclins</a></li>
 <li><a href="#using-the-cyclone-classifier">Using the <code>cyclone()</code> classifier</a></li>
+<li><a href="#using-the-tricycle-package">Using the <em><span>tricycle</span></em> package</a></li>
 </ul></li>
 <li><a href="#subset-analysis-based-on-cycling_subset">Subset analysis based on <code>cycling_subset</code></a>
 <ul>
@@ -3278,6 +3280,119 @@ Show code
 </details>
 <p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-37-1.png" width="624" /></p>
 </div>
+<h2 id="using-the-tricycle-package">Using the <em><a href="https://bioconductor.org/packages/3.12/tricycle">tricycle</a></em> package</h2>
+<ul>
+<li><em><a href="https://bioconductor.org/packages/3.12/tricycle">tricycle</a></em> (Transferable Representation and Inference of Cell Cycle) contains functions to infer and visualize cell cycle process using scRNA-seq data <span class="citation" data-cites="Zheng2021.04.06.438463">(<a href="#ref-Zheng2021.04.06.438463" role="doc-biblioref">Zheng et al. 2021</a>)</span></li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/hansenlab/tricycle'>tricycle</a></span><span class='op'>)</span>
+
+<span class='co'># Project a single cell data set to pre-learned cell cycle space</span>
+<span class='va'>sce</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/tricycle/man/project_cycle_space.html'>project_cycle_space</a></span><span class='op'>(</span>
+  x <span class='op'>=</span> <span class='va'>sce</span>,
+  gname.type <span class='op'>=</span> <span class='st'>"SYMBOL"</span>,
+  species <span class='op'>=</span> <span class='st'>"human"</span><span class='op'>)</span>
+
+<span class='co'># Diagnostic plot: should roughly be an ellipsoid (see </span>
+<span class='co'># http://bioconductor.org/packages/release/bioc/vignettes/tricycle/inst/doc/tricycle.html#assessing-performance)</span>
+<span class='co'># plotReducedDim(</span>
+<span class='co'>#   sce, </span>
+<span class='co'>#   dimred = "tricycleEmbedding",</span>
+<span class='co'>#   point_alpha = 1) +</span>
+<span class='co'>#   labs(x = "Projected PC1", y = "Projected PC2") +</span>
+<span class='co'>#   ggtitle("Projected cell cycle space") +</span>
+<span class='co'>#   theme_cowplot()</span>
+</code></pre>
+</div>
+</details>
+</div>
+<p>The main output of <em><a href="https://bioconductor.org/packages/3.12/tricycle">tricycle</a></em> is a continuous estimate of the relative time within the cell cycle, represented as a number between <span class="math inline">\(0\)</span> and <span class="math inline">\(2\pi\)</span> (which we refer to as cell cycle position). <a href="http://bioconductor.org/packages/release/bioc/vignettes/tricycle/inst/doc/tricycle.html#infer-cell-cycle-position">According to the authors of <strong>tricycle</strong></a>:</p>
+<blockquote>
+<p>We think the continuous position [rather than discrete stages] is more appropriate when describing the cell cycle. However, to help users understand the position variable, we also note that users can approximately relate:</p>
+</blockquote>
+<blockquote>
+<ul>
+<li><span class="math inline">\(\pi/2\)</span> to be the start of S stage</li>
+<li><span class="math inline">\(\pi\)</span> to be the start of G2M stage</li>
+<li><span class="math inline">\(3\pi/2\)</span> to be the middle of M stage</li>
+<li><span class="math inline">\(7\pi/4 - \pi/4\)</span> to be G1/G0 stage</li>
+</ul>
+</blockquote>
+<p>Figure <a href="#fig:tricycle-position">1</a> shows the estimated cell cycle position of each cell. We observe that most cells have an estimated cell cycle position in <span class="math inline">\(7\pi/4 - \pi/4\)</span> (i.e. consistent with G1/G0 stage) but that there is a cluster of cells with estimated cell cycle positions across the full range of values, i.e. cells in this cluster are going through various stages of the cell cycle.</p>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># Infer cell cycle position</span>
+<span class='va'>sce</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/tricycle/man/estimate_cycle_position.html'>estimate_cycle_position</a></span><span class='op'>(</span><span class='va'>sce</span><span class='op'>)</span>
+
+<span class='co'># Plot out embedding scater plot colored by cell cycle position</span>
+<span class='va'>p</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/tricycle/man/plot_emb_circle_scale.html'>plot_emb_circle_scale</a></span><span class='op'>(</span>
+  <span class='va'>sce</span>,
+  dimred <span class='op'>=</span> <span class='st'>"UMAP"</span>,
+  point.size <span class='op'>=</span> <span class='fl'>1</span>,
+  point.alpha <span class='op'>=</span> <span class='fl'>1</span>,
+  fig.title <span class='op'>=</span> <span class='st'>""</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://wilkelab.org/cowplot/reference/theme_cowplot.html'>theme_cowplot</a></span><span class='op'>(</span><span class='op'>)</span>
+<span class='va'>legend</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/tricycle/man/circle_scale_legend.html'>circle_scale_legend</a></span><span class='op'>(</span>text.size <span class='op'>=</span> <span class='fl'>4</span>, alpha <span class='op'>=</span> <span class='fl'>0.9</span><span class='op'>)</span>
+<span class='fu'><a href='https://wilkelab.org/cowplot/reference/plot_grid.html'>plot_grid</a></span><span class='op'>(</span><span class='va'>p</span>, <span class='va'>legend</span>, ncol <span class='op'>=</span> <span class='fl'>2</span>, rel_widths <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>0.3</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<div class="figure"><span id="fig:tricycle-position"></span>
+<img src="C057_Cooney.annotate_files/figure-html5/tricycle-position-1.png" alt="UMAP plot where each celll is coloured by its estimated cell cycle position. These values can be approximately related as follows: pi/2 to be the start of S stage; pi to be the start of G2M stage; 3pi/2 to be the middle of M stage; and 7pi/4 - pi/4 to be G1/G0 stage" width="624" />
+<p class="caption">
+Figure 1: UMAP plot where each celll is coloured by its estimated cell cycle position. These values can be approximately related as follows: pi/2 to be the start of S stage; pi to be the start of G2M stage; 3pi/2 to be the middle of M stage; and 7pi/4 - pi/4 to be G1/G0 stage
+</p>
+</div>
+</div>
+<p>The authors of <em><a href="https://bioconductor.org/packages/3.12/tricycle">tricycle</a></em> also offer a modified version of the <span class="citation" data-cites="Schwabe"><a href="#ref-Schwabe" role="doc-biblioref">Schwabe et al.</a> (<a href="#ref-Schwabe" role="doc-biblioref">2020</a>)</span> cell cycle stage estimator.</p>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># Alternative: Infer cell cycle stages</span>
+<span class='va'>sce</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/tricycle/man/estimate_Schwabe_stage.html'>estimate_Schwabe_stage</a></span><span class='op'>(</span>
+  x <span class='op'>=</span> <span class='va'>sce</span>,
+  gname.type <span class='op'>=</span> <span class='st'>"SYMBOL"</span>,
+  species <span class='op'>=</span> <span class='st'>"human"</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+</div>
+<p>Note that <span class="math inline">\(n =\)</span> 4,865 cells (53%) cannot be assigned a cell stage by this procedure (<code>CCStage</code> is <code>NA</code>). Furthermore:</p>
+<ul>
+<li>Most of the cells in the main cluster are assigned a seemingly arbitrary stage, likely reflecting that these cells aren’t cycling and the algorithm cannot confidently assign these.</li>
+<li>The cells in the ‘cycling’ cluster are assigned clear, discrete cell stages that are consistent with preferred the estimated cell cycle values provided by <em><a href="https://bioconductor.org/packages/3.12/tricycle">tricycle</a></em>.</li>
+</ul>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotUMAP</a></span><span class='op'>(</span>
+  <span class='va'>sce</span>, 
+  colour_by <span class='op'>=</span> <span class='st'>"CCStage"</span>,
+  point_size <span class='op'>=</span> <span class='fl'>0.5</span>,
+  point_alpha <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://wilkelab.org/cowplot/reference/theme_cowplot.html'>theme_cowplot</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>guides</span><span class='op'>(</span>colour <span class='op'>=</span> <span class='fu'>guide_legend</span><span class='op'>(</span>override.aes <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>size <span class='op'>=</span> <span class='fl'>3</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>scale_colour_discrete</span><span class='op'>(</span>na.value <span class='op'>=</span> <span class='st'>"grey"</span>, name <span class='op'>=</span> <span class='st'>"CCStage"</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-40-1.png" width="624" /></p>
+</div>
 <h1 id="subset-analysis-based-on-cycling_subset">Subset analysis based on <code>cycling_subset</code></h1>
 <ul>
 <li>Using a fairly coarse clustering (<code>k = 50</code>)</li>
@@ -3368,7 +3483,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-40-1.png" width="624" /></p>
+<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-43-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -3391,7 +3506,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-41-1.png" width="624" /></p>
+<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-44-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -3414,12 +3529,12 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-42-1.png" width="624" /></p>
+<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-45-1.png" width="624" /></p>
 </div>
 <h2 id="cycling-subset-analysis"><code>Cycling</code> subset analysis</h2>
 <p>Please see <a href="../output/marker_genes/cycling_subset_subclusters/"><code>output/marker_genes/cycling_subset_subclusters/</code></a> for heatmaps and spreadsheets of these marker gene lists.</p>
 <ul>
-<li><code>Cycling</code> subset subclusters are strongly enriched for <code>phases</code></li>
+<li><code>Cycling</code> subset subclusters are strongly enriched for cyclone’s predicted cell cycle phase (<code>phases</code>), tricycle’s estimated cell cycle position, and tricycle-modified Schwabe cell stages (<code>CCStage</code>).</li>
 <li><code>Cycling</code> subset subclusters have strong marker genes (but these probably reflect more cell cycle and less cell type)</li>
 <li><code>Cycling</code> subset subclusters don’t appear to be <code>Treatment</code>-specific</li>
 </ul>
@@ -3461,11 +3576,66 @@ Show code
         <span class='fu'>coord_flip</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
         <span class='fu'>ylab</span><span class='op'>(</span><span class='st'>"Frequency"</span><span class='op'>)</span> <span class='op'>+</span>
         <span class='fu'><a href='https://wilkelab.org/cowplot/reference/theme_cowplot.html'>theme_cowplot</a></span><span class='op'>(</span>font_size <span class='op'>=</span> <span class='fl'>8</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_annotation.html'>plot_annotation</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Cycling cluster"</span><span class='op'>)</span>
+  <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_annotation.html'>plot_annotation</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Cycling cluster: cyclone"</span><span class='op'>)</span>
 </code></pre>
 </div>
 </details>
-<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-44-1.png" width="624" /></p>
+<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-47-1.png" width="624" /></p>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='op'>(</span><span class='fu'><a href='https://patchwork.data-imaginist.com/reference/wrap_plots.html'>wrap_plots</a></span><span class='op'>(</span>
+  <span class='fu'><a href='https://rdrr.io/pkg/tricycle/man/plot_emb_circle_scale.html'>plot_emb_circle_scale</a></span><span class='op'>(</span>
+    <span class='va'>cycling_sce</span>,
+    dimred <span class='op'>=</span> <span class='st'>"UMAP"</span>,
+    point.size <span class='op'>=</span> <span class='fl'>2</span>,
+    point.alpha <span class='op'>=</span> <span class='fl'>1</span>,
+    fig.title <span class='op'>=</span> <span class='st'>""</span>,
+    facet_by <span class='op'>=</span> <span class='st'>"subcluster"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>|</span>
+   <span class='fu'><a href='https://rdrr.io/pkg/tricycle/man/circle_scale_legend.html'>circle_scale_legend</a></span><span class='op'>(</span>text.size <span class='op'>=</span> <span class='fl'>2</span>, alpha <span class='op'>=</span> <span class='fl'>0.9</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_layout.html'>plot_layout</a></span><span class='op'>(</span>widths <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>0.2</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_annotation.html'>plot_annotation</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Cycling cluster: tricycle"</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-48-1.png" width="624" /></p>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://patchwork.data-imaginist.com/reference/wrap_plots.html'>wrap_plots</a></span><span class='op'>(</span>
+  plotlist <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span>
+    <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>
+      <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotUMAP</a></span><span class='op'>(</span>
+      <span class='va'>cycling_sce</span>,
+      colour_by <span class='op'>=</span> <span class='st'>"CCStage"</span>,
+      text_by <span class='op'>=</span> <span class='st'>"subcluster"</span>,
+      point_size <span class='op'>=</span> <span class='fl'>0.5</span>,
+      point_alpha <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>+</span>
+        <span class='fu'>scale_colour_discrete</span><span class='op'>(</span>na.value <span class='op'>=</span> <span class='st'>"grey"</span>, name <span class='op'>=</span> <span class='st'>"CCStage"</span><span class='op'>)</span>
+    <span class='op'>)</span>,
+    <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>
+      <span class='fu'>ggplot</span><span class='op'>(</span>
+        <span class='fu'><a href='https://rdrr.io/r/base/as.data.frame.html'>as.data.frame</a></span><span class='op'>(</span>
+          <span class='fu'>colData</span><span class='op'>(</span><span class='va'>cycling_sce</span><span class='op'>)</span><span class='op'>[</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"subcluster"</span>, <span class='st'>"CCStage"</span><span class='op'>)</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+        <span class='fu'>geom_bar</span><span class='op'>(</span>
+          <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>subcluster</span>, fill <span class='op'>=</span> <span class='va'>CCStage</span><span class='op'>)</span>,
+          position <span class='op'>=</span> <span class='fu'>position_fill</span><span class='op'>(</span>reverse <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+        <span class='fu'>coord_flip</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+        <span class='fu'>ylab</span><span class='op'>(</span><span class='st'>"Frequency"</span><span class='op'>)</span> <span class='op'>+</span>
+        <span class='fu'><a href='https://wilkelab.org/cowplot/reference/theme_cowplot.html'>theme_cowplot</a></span><span class='op'>(</span>font_size <span class='op'>=</span> <span class='fl'>8</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_annotation.html'>plot_annotation</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Cycling cluster: tricycle-modified Schwabe"</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-49-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -3503,7 +3673,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-45-1.png" width="624" /></p>
+<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-50-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -3538,7 +3708,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-46-1.png" width="624" /></p>
+<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-51-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -3563,7 +3733,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-47-1.png" width="624" /></p>
+<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-52-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -3594,7 +3764,10 @@ Show code
 <h2 id="not-cycling-subset-analysis"><code>Not cycling</code> subset analysis</h2>
 <p>Please see <a href="../output/marker_genes/not_cycling_subset_subclusters/"><code>output/marker_genes/not_cycling_subset_subclusters/</code></a> for heatmaps and spreadsheets of these marker gene lists.</p>
 <ul>
-<li><code>Not cycling</code> subset subclusters have little association with <code>phases</code> (or <code>G1</code>, <code>G2M</code>, or <code>S</code>)</li>
+<li><code>Not cycling</code> subset subclusters have little association with cyclone’s predicted cell cycle phase (<code>phases</code>), tricycle’s estimated cell cycle position, or tricycle-modified Schwabe cell stages (<code>CCStage</code>).
+<ul>
+<li>This is kind of obvious because by definition these cells aren’t thought to be cycling!</li>
+</ul></li>
 <li><code>Not cycling</code> subset subclusters have strong marker genes (likely reflecting cell type / state)</li>
 <li><code>Not cycling</code> subset subclusters appear to be highly <code>Treatment</code>-specific</li>
 </ul>
@@ -3636,11 +3809,66 @@ Show code
         <span class='fu'>coord_flip</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
         <span class='fu'>ylab</span><span class='op'>(</span><span class='st'>"Frequency"</span><span class='op'>)</span> <span class='op'>+</span>
         <span class='fu'><a href='https://wilkelab.org/cowplot/reference/theme_cowplot.html'>theme_cowplot</a></span><span class='op'>(</span>font_size <span class='op'>=</span> <span class='fl'>8</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_annotation.html'>plot_annotation</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Cycling cluster"</span><span class='op'>)</span>
+  <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_annotation.html'>plot_annotation</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Not cycling cluster: cyclone"</span><span class='op'>)</span>
 </code></pre>
 </div>
 </details>
-<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-50-1.png" width="624" /></p>
+<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-55-1.png" width="624" /></p>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='op'>(</span><span class='fu'><a href='https://patchwork.data-imaginist.com/reference/wrap_plots.html'>wrap_plots</a></span><span class='op'>(</span>
+  <span class='fu'><a href='https://rdrr.io/pkg/tricycle/man/plot_emb_circle_scale.html'>plot_emb_circle_scale</a></span><span class='op'>(</span>
+    <span class='va'>not_cycling_sce</span>,
+    dimred <span class='op'>=</span> <span class='st'>"UMAP"</span>,
+    point.size <span class='op'>=</span> <span class='fl'>2</span>,
+    point.alpha <span class='op'>=</span> <span class='fl'>1</span>,
+    fig.title <span class='op'>=</span> <span class='st'>""</span>,
+    facet_by <span class='op'>=</span> <span class='st'>"subcluster"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>|</span>
+   <span class='fu'><a href='https://rdrr.io/pkg/tricycle/man/circle_scale_legend.html'>circle_scale_legend</a></span><span class='op'>(</span>text.size <span class='op'>=</span> <span class='fl'>3</span>, alpha <span class='op'>=</span> <span class='fl'>0.9</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_layout.html'>plot_layout</a></span><span class='op'>(</span>widths <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>0.2</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_annotation.html'>plot_annotation</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Not-cycling cluster: tricycle"</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-56-1.png" width="624" /></p>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://patchwork.data-imaginist.com/reference/wrap_plots.html'>wrap_plots</a></span><span class='op'>(</span>
+  plotlist <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span>
+    <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>
+      <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotUMAP</a></span><span class='op'>(</span>
+      <span class='va'>not_cycling_sce</span>,
+      colour_by <span class='op'>=</span> <span class='st'>"CCStage"</span>,
+      text_by <span class='op'>=</span> <span class='st'>"subcluster"</span>,
+      point_size <span class='op'>=</span> <span class='fl'>0.5</span>,
+      point_alpha <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>+</span>
+        <span class='fu'>scale_colour_discrete</span><span class='op'>(</span>na.value <span class='op'>=</span> <span class='st'>"grey"</span>, name <span class='op'>=</span> <span class='st'>"CCStage"</span><span class='op'>)</span>
+    <span class='op'>)</span>,
+    <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>
+      <span class='fu'>ggplot</span><span class='op'>(</span>
+        <span class='fu'><a href='https://rdrr.io/r/base/as.data.frame.html'>as.data.frame</a></span><span class='op'>(</span>
+          <span class='fu'>colData</span><span class='op'>(</span><span class='va'>not_cycling_sce</span><span class='op'>)</span><span class='op'>[</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"subcluster"</span>, <span class='st'>"CCStage"</span><span class='op'>)</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+        <span class='fu'>geom_bar</span><span class='op'>(</span>
+          <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>subcluster</span>, fill <span class='op'>=</span> <span class='va'>CCStage</span><span class='op'>)</span>,
+          position <span class='op'>=</span> <span class='fu'>position_fill</span><span class='op'>(</span>reverse <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+        <span class='fu'>coord_flip</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+        <span class='fu'>ylab</span><span class='op'>(</span><span class='st'>"Frequency"</span><span class='op'>)</span> <span class='op'>+</span>
+        <span class='fu'><a href='https://wilkelab.org/cowplot/reference/theme_cowplot.html'>theme_cowplot</a></span><span class='op'>(</span>font_size <span class='op'>=</span> <span class='fl'>8</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_annotation.html'>plot_annotation</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Not cycling cluster: tricycle-modified Schwabe"</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-57-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -3674,11 +3902,11 @@ Show code
   annotation_row <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span>
     subcluster <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>features</span><span class='op'>)</span>,
     row.names <span class='op'>=</span> <span class='va'>features</span><span class='op'>)</span>,
-  main <span class='op'>=</span> <span class='st'>"Cycling: Uniquely upregulated cluster marker genes"</span><span class='op'>)</span>
+  main <span class='op'>=</span> <span class='st'>"Not cycling: Uniquely upregulated cluster marker genes"</span><span class='op'>)</span>
 </code></pre>
 </div>
 </details>
-<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-51-1.png" width="624" /></p>
+<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-58-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -3712,11 +3940,11 @@ Show code
     <span class='fu'><a href='https://wilkelab.org/cowplot/reference/theme_cowplot.html'>theme_cowplot</a></span><span class='op'>(</span>font_size <span class='op'>=</span> <span class='fl'>8</span><span class='op'>)</span> <span class='op'>+</span>
     <span class='fu'>guides</span><span class='op'>(</span>fill <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
 
-<span class='va'>p1</span> <span class='op'>+</span> <span class='va'>p2</span> <span class='op'>+</span> <span class='va'>p3</span> <span class='op'>+</span> <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_annotation.html'>plot_annotation</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Cycling"</span><span class='op'>)</span>
+<span class='va'>p1</span> <span class='op'>+</span> <span class='va'>p2</span> <span class='op'>+</span> <span class='va'>p3</span> <span class='op'>+</span> <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_annotation.html'>plot_annotation</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Not cycling"</span><span class='op'>)</span>
 </code></pre>
 </div>
 </details>
-<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-52-1.png" width="624" /></p>
+<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-59-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -3737,11 +3965,11 @@ Show code
   point_size <span class='op'>=</span> <span class='fl'>0.5</span>,
   point_alpha <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'>scale_colour_manual</span><span class='op'>(</span>values <span class='op'>=</span> <span class='va'>treatment_colours</span>, name <span class='op'>=</span> <span class='st'>"Treatment"</span><span class='op'>)</span>
-<span class='va'>p1</span> <span class='op'>+</span> <span class='va'>p2</span> <span class='op'>+</span> <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_annotation.html'>plot_annotation</a></span><span class='op'>(</span><span class='st'>"Cycling subset"</span><span class='op'>)</span>
+<span class='va'>p1</span> <span class='op'>+</span> <span class='va'>p2</span> <span class='op'>+</span> <span class='fu'><a href='https://patchwork.data-imaginist.com/reference/plot_annotation.html'>plot_annotation</a></span><span class='op'>(</span><span class='st'>"Not cycling subset"</span><span class='op'>)</span>
 </code></pre>
 </div>
 </details>
-<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-53-1.png" width="624" /></p>
+<p><img src="C057_Cooney.annotate_files/figure-html5/unnamed-chunk-60-1.png" width="624" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -3824,154 +4052,310 @@ Show code
  collate  en_US.UTF-8                 
  ctype    en_US.UTF-8                 
  tz       Australia/Melbourne         
- date     2021-05-18                  
+ date     2021-07-01                  
 
 ─ Packages ─────────────────────────────────────────────────────────
- ! package                * version  date       lib source        
- P AnnotationDbi            1.52.0   2020-10-27 [?] Bioconductor  
- P AnnotationHub            2.22.0   2020-10-27 [?] Bioconductor  
- P assertthat               0.2.1    2019-03-21 [?] CRAN (R 4.0.0)
- P batchelor              * 1.6.2    2020-11-26 [?] Bioconductor  
- P beachmat                 2.6.4    2020-12-20 [?] Bioconductor  
- P beeswarm                 0.2.3    2016-04-25 [?] CRAN (R 4.0.0)
- P Biobase                * 2.50.0   2020-10-27 [?] Bioconductor  
-   BiocFileCache            1.14.0   2020-10-27 [1] Bioconductor  
-   BiocGenerics           * 0.36.0   2020-10-27 [1] Bioconductor  
- P BiocManager              1.30.10  2019-11-16 [?] CRAN (R 4.0.0)
- P BiocNeighbors            1.8.2    2020-12-07 [?] Bioconductor  
-   BiocParallel             1.24.1   2020-11-06 [1] Bioconductor  
- P BiocSingular             1.6.0    2020-10-27 [?] Bioconductor  
-   BiocVersion              3.12.0   2020-04-27 [1] Bioconductor  
- P bit                      4.0.4    2020-08-04 [?] CRAN (R 4.0.0)
- P bit64                    4.0.5    2020-08-30 [?] CRAN (R 4.0.0)
- P bitops                   1.0-6    2013-08-17 [?] CRAN (R 4.0.0)
- P blob                     1.2.1    2020-01-20 [?] CRAN (R 4.0.0)
- P bluster                  1.0.0    2020-10-27 [?] Bioconductor  
- P bslib                    0.2.4    2021-01-25 [?] CRAN (R 4.0.3)
- P cachem                   1.0.4    2021-02-13 [?] CRAN (R 4.0.3)
- P celldex                * 1.0.0    2020-10-29 [?] Bioconductor  
- P cli                      2.3.1    2021-02-23 [?] CRAN (R 4.0.3)
- P codetools                0.2-18   2020-11-04 [?] CRAN (R 4.0.3)
- P colorspace               2.0-0    2020-11-11 [?] CRAN (R 4.0.3)
- P cowplot                * 1.1.1    2020-12-30 [?] CRAN (R 4.0.3)
- P crayon                   1.4.1    2021-02-08 [?] CRAN (R 4.0.3)
- P crosstalk                1.1.1    2021-01-12 [?] CRAN (R 4.0.3)
- P curl                     4.3      2019-12-02 [?] CRAN (R 4.0.0)
- P DBI                      1.1.1    2021-01-15 [?] CRAN (R 4.0.3)
- P dbplyr                   2.1.0    2021-02-03 [?] CRAN (R 4.0.3)
- P DelayedArray             0.16.2   2021-02-26 [?] Bioconductor  
- P DelayedMatrixStats       1.12.3   2021-02-03 [?] Bioconductor  
- P digest                   0.6.27   2020-10-24 [?] CRAN (R 4.0.2)
- P distill                  1.2      2021-01-13 [?] CRAN (R 4.0.3)
- P downlit                  0.2.1    2020-11-04 [?] CRAN (R 4.0.3)
- P dplyr                    1.0.4    2021-02-02 [?] CRAN (R 4.0.3)
- P dqrng                    0.2.1    2019-05-17 [?] CRAN (R 4.0.0)
- P DT                       0.17     2021-01-06 [?] CRAN (R 4.0.3)
- P edgeR                    3.32.1   2021-01-14 [?] Bioconductor  
- P ellipsis                 0.3.1    2020-05-15 [?] CRAN (R 4.0.0)
- P evaluate                 0.14     2019-05-28 [?] CRAN (R 4.0.0)
- P ExperimentHub            1.16.0   2020-10-27 [?] Bioconductor  
- P fansi                    0.4.2    2021-01-15 [?] CRAN (R 4.0.3)
- P farver                   2.1.0    2021-02-28 [?] CRAN (R 4.0.3)
- P fastmap                  1.1.0    2021-01-25 [?] CRAN (R 4.0.3)
- P FNN                      1.1.3    2019-02-15 [?] CRAN (R 4.0.0)
- P generics                 0.1.0    2020-10-31 [?] CRAN (R 4.0.3)
- P GenomeInfoDb           * 1.26.2   2020-12-08 [?] Bioconductor  
-   GenomeInfoDbData         1.2.4    2021-02-04 [1] Bioconductor  
- P GenomicRanges          * 1.42.0   2020-10-27 [?] Bioconductor  
- P ggbeeswarm               0.6.0    2017-08-07 [?] CRAN (R 4.0.0)
- P ggplot2                * 3.3.3    2020-12-30 [?] CRAN (R 4.0.3)
- P glue                     1.4.2    2020-08-27 [?] CRAN (R 4.0.0)
- P GO.db                    3.12.1   2020-11-04 [?] Bioconductor  
- P gridExtra                2.3      2017-09-09 [?] CRAN (R 4.0.0)
- P gtable                   0.3.0    2019-03-25 [?] CRAN (R 4.0.0)
- P here                   * 1.0.1    2020-12-13 [?] CRAN (R 4.0.3)
- P highr                    0.8      2019-03-20 [?] CRAN (R 4.0.0)
- P htmltools                0.5.1.1  2021-01-22 [?] CRAN (R 4.0.3)
- P htmlwidgets              1.5.3    2020-12-10 [?] CRAN (R 4.0.3)
- P httpuv                   1.5.5    2021-01-13 [?] CRAN (R 4.0.3)
- P httr                     1.4.2    2020-07-20 [?] CRAN (R 4.0.0)
- P igraph                   1.2.6    2020-10-06 [?] CRAN (R 4.0.2)
- P interactiveDisplayBase   1.28.0   2020-10-27 [?] Bioconductor  
- P IRanges                * 2.24.1   2020-12-12 [?] Bioconductor  
- P irlba                    2.3.3    2019-02-05 [?] CRAN (R 4.0.0)
- P jquerylib                0.1.3    2020-12-17 [?] CRAN (R 4.0.3)
- P jsonlite                 1.7.2    2020-12-09 [?] CRAN (R 4.0.3)
- P knitr                    1.31     2021-01-27 [?] CRAN (R 4.0.3)
- P labeling                 0.4.2    2020-10-20 [?] CRAN (R 4.0.0)
- P later                    1.1.0.1  2020-06-05 [?] CRAN (R 4.0.0)
- P lattice                  0.20-41  2020-04-02 [?] CRAN (R 4.0.0)
- P lifecycle                1.0.0    2021-02-15 [?] CRAN (R 4.0.3)
-   limma                  * 3.46.0   2020-10-27 [1] Bioconductor  
- P locfit                   1.5-9.4  2020-03-25 [?] CRAN (R 4.0.0)
- P magrittr               * 2.0.1    2020-11-17 [?] CRAN (R 4.0.3)
- P Matrix                   1.3-2    2021-01-06 [?] CRAN (R 4.0.3)
-   MatrixGenerics         * 1.2.1    2021-01-30 [1] Bioconductor  
- P matrixStats            * 0.58.0   2021-01-29 [?] CRAN (R 4.0.3)
- P memoise                  2.0.0    2021-01-26 [?] CRAN (R 4.0.3)
- P mime                     0.10     2021-02-13 [?] CRAN (R 4.0.3)
- P msigdbr                * 7.2.1    2020-10-02 [?] CRAN (R 4.0.2)
- P munsell                  0.5.0    2018-06-12 [?] CRAN (R 4.0.0)
- P org.Hs.eg.db             3.12.0   2020-10-20 [?] Bioconductor  
- P patchwork              * 1.1.1    2020-12-17 [?] CRAN (R 4.0.3)
- P pheatmap                 1.0.12   2019-01-04 [?] CRAN (R 4.0.0)
- P pillar                   1.5.0    2021-02-22 [?] CRAN (R 4.0.3)
- P pkgconfig                2.0.3    2019-09-22 [?] CRAN (R 4.0.0)
- P Polychrome               1.2.6    2020-11-11 [?] CRAN (R 4.0.3)
- P promises                 1.2.0.1  2021-02-11 [?] CRAN (R 4.0.3)
- P purrr                    0.3.4    2020-04-17 [?] CRAN (R 4.0.0)
- P R6                       2.5.0    2020-10-28 [?] CRAN (R 4.0.2)
- P rappdirs                 0.3.3    2021-01-31 [?] CRAN (R 4.0.3)
- P RColorBrewer             1.1-2    2014-12-07 [?] CRAN (R 4.0.0)
- P Rcpp                     1.0.6    2021-01-15 [?] CRAN (R 4.0.3)
- P RcppAnnoy                0.0.18   2020-12-15 [?] CRAN (R 4.0.3)
- P RCurl                    1.98-1.2 2020-04-18 [?] CRAN (R 4.0.0)
- P ResidualMatrix           1.0.0    2020-10-27 [?] Bioconductor  
- P rlang                    0.4.10   2020-12-30 [?] CRAN (R 4.0.3)
- P rmarkdown                2.7      2021-02-19 [?] CRAN (R 4.0.3)
- P rprojroot                2.0.2    2020-11-15 [?] CRAN (R 4.0.3)
- P RSpectra                 0.16-0   2019-12-01 [?] CRAN (R 4.0.0)
- P RSQLite                  2.2.3    2021-01-24 [?] CRAN (R 4.0.3)
- P rsvd                     1.0.3    2020-02-17 [?] CRAN (R 4.0.0)
- P S4Vectors              * 0.28.1   2020-12-09 [?] Bioconductor  
- P sass                     0.3.1    2021-01-24 [?] CRAN (R 4.0.3)
- P scales                   1.1.1    2020-05-11 [?] CRAN (R 4.0.0)
- P scater                 * 1.18.6   2021-02-26 [?] Bioconductor  
- P scatterplot3d            0.3-41   2018-03-14 [?] CRAN (R 4.0.0)
- P scran                  * 1.18.5   2021-02-04 [?] Bioconductor  
- P scuttle                  1.0.4    2020-12-17 [?] Bioconductor  
- P sessioninfo              1.1.1    2018-11-05 [?] CRAN (R 4.0.0)
- P shiny                    1.6.0    2021-01-25 [?] CRAN (R 4.0.3)
- P SingleCellExperiment   * 1.12.0   2020-10-27 [?] Bioconductor  
- P SingleR                * 1.4.1    2021-02-02 [?] Bioconductor  
- P sparseMatrixStats        1.2.1    2021-02-02 [?] Bioconductor  
- P statmod                  1.4.35   2020-10-19 [?] CRAN (R 4.0.2)
- P stringi                  1.5.3    2020-09-09 [?] CRAN (R 4.0.0)
- P stringr                  1.4.0    2019-02-10 [?] CRAN (R 4.0.0)
- P SummarizedExperiment   * 1.20.0   2020-10-27 [?] Bioconductor  
- P tibble                   3.1.0    2021-02-25 [?] CRAN (R 4.0.3)
- P tidyselect               1.1.0    2020-05-11 [?] CRAN (R 4.0.0)
- P utf8                     1.1.4    2018-05-24 [?] CRAN (R 4.0.0)
- P uwot                     0.1.10   2020-12-15 [?] CRAN (R 4.0.3)
- P vctrs                    0.3.6    2020-12-17 [?] CRAN (R 4.0.3)
- P vipor                    0.4.5    2017-03-22 [?] CRAN (R 4.0.0)
- P viridis                  0.5.1    2018-03-29 [?] CRAN (R 4.0.0)
- P viridisLite              0.3.0    2018-02-01 [?] CRAN (R 4.0.0)
- P withr                    2.4.1    2021-01-26 [?] CRAN (R 4.0.3)
- P xfun                     0.21     2021-02-10 [?] CRAN (R 4.0.3)
- P xtable                   1.8-4    2019-04-21 [?] CRAN (R 4.0.0)
- P XVector                  0.30.0   2020-10-27 [?] Bioconductor  
- P yaml                     2.2.1    2020-02-01 [?] CRAN (R 4.0.0)
- P zlibbioc                 1.36.0   2020-10-27 [?] Bioconductor  
+ ! package                * version  date       lib
+ P AnnotationDbi            1.52.0   2020-10-27 [?]
+ P AnnotationHub            2.22.0   2020-10-27 [?]
+ P assertthat               0.2.1    2019-03-21 [?]
+ P batchelor              * 1.6.2    2020-11-26 [?]
+ P beachmat                 2.6.4    2020-12-20 [?]
+ P beeswarm                 0.2.3    2016-04-25 [?]
+ P Biobase                * 2.50.0   2020-10-27 [?]
+   BiocFileCache            1.14.0   2020-10-27 [1]
+   BiocGenerics           * 0.36.0   2020-10-27 [1]
+ P BiocManager              1.30.10  2019-11-16 [?]
+ P BiocNeighbors            1.8.2    2020-12-07 [?]
+   BiocParallel             1.24.1   2020-11-06 [1]
+ P BiocSingular             1.6.0    2020-10-27 [?]
+   BiocStyle                2.18.1   2020-11-24 [1]
+   BiocVersion              3.12.0   2020-04-27 [1]
+ P bit                      4.0.4    2020-08-04 [?]
+ P bit64                    4.0.5    2020-08-30 [?]
+ P bitops                   1.0-6    2013-08-17 [?]
+ P blob                     1.2.1    2020-01-20 [?]
+ P bluster                  1.0.0    2020-10-27 [?]
+ P boot                     1.3-27   2021-02-12 [?]
+ P bslib                    0.2.4    2021-01-25 [?]
+ P cachem                   1.0.4    2021-02-13 [?]
+ P celldex                * 1.0.0    2020-10-29 [?]
+ P circular                 0.4-93   2017-06-29 [?]
+ P cli                      2.3.1    2021-02-23 [?]
+ P codetools                0.2-18   2020-11-04 [?]
+ P colorspace               2.0-0    2020-11-11 [?]
+ P cowplot                * 1.1.1    2020-12-30 [?]
+ P crayon                   1.4.1    2021-02-08 [?]
+ P crosstalk                1.1.1    2021-01-12 [?]
+ P curl                     4.3      2019-12-02 [?]
+ P DBI                      1.1.1    2021-01-15 [?]
+ P dbplyr                   2.1.0    2021-02-03 [?]
+ P DelayedArray             0.16.2   2021-02-26 [?]
+ P DelayedMatrixStats       1.12.3   2021-02-03 [?]
+ P digest                   0.6.27   2020-10-24 [?]
+ P distill                  1.2      2021-01-13 [?]
+ P downlit                  0.2.1    2020-11-04 [?]
+ P dplyr                    1.0.4    2021-02-02 [?]
+ P dqrng                    0.2.1    2019-05-17 [?]
+ P DT                       0.17     2021-01-06 [?]
+ P edgeR                    3.32.1   2021-01-14 [?]
+ P ellipsis                 0.3.1    2020-05-15 [?]
+ P evaluate                 0.14     2019-05-28 [?]
+ P ExperimentHub            1.16.0   2020-10-27 [?]
+ P fansi                    0.4.2    2021-01-15 [?]
+ P farver                   2.1.0    2021-02-28 [?]
+ P fastmap                  1.1.0    2021-01-25 [?]
+ P FNN                      1.1.3    2019-02-15 [?]
+ P generics                 0.1.0    2020-10-31 [?]
+ P GenomeInfoDb           * 1.26.2   2020-12-08 [?]
+   GenomeInfoDbData         1.2.4    2021-02-04 [1]
+ P GenomicRanges          * 1.42.0   2020-10-27 [?]
+ P ggbeeswarm               0.6.0    2017-08-07 [?]
+ P ggplot2                * 3.3.3    2020-12-30 [?]
+ P glue                     1.4.2    2020-08-27 [?]
+ P GO.db                    3.12.1   2020-11-04 [?]
+ P gridExtra                2.3      2017-09-09 [?]
+ P gtable                   0.3.0    2019-03-25 [?]
+ P here                   * 1.0.1    2020-12-13 [?]
+ P highr                    0.8      2019-03-20 [?]
+ P htmltools                0.5.1.1  2021-01-22 [?]
+ P htmlwidgets              1.5.3    2020-12-10 [?]
+ P httpuv                   1.5.5    2021-01-13 [?]
+ P httr                     1.4.2    2020-07-20 [?]
+ P igraph                   1.2.6    2020-10-06 [?]
+ P interactiveDisplayBase   1.28.0   2020-10-27 [?]
+ P IRanges                * 2.24.1   2020-12-12 [?]
+ P irlba                    2.3.3    2019-02-05 [?]
+ P jquerylib                0.1.3    2020-12-17 [?]
+ P jsonlite                 1.7.2    2020-12-09 [?]
+ P knitr                    1.31     2021-01-27 [?]
+ P labeling                 0.4.2    2020-10-20 [?]
+ P later                    1.1.0.1  2020-06-05 [?]
+ P lattice                  0.20-41  2020-04-02 [?]
+ P lifecycle                1.0.0    2021-02-15 [?]
+   limma                  * 3.46.0   2020-10-27 [1]
+ P locfit                   1.5-9.4  2020-03-25 [?]
+ P magrittr               * 2.0.1    2020-11-17 [?]
+ P Matrix                   1.3-2    2021-01-06 [?]
+   MatrixGenerics         * 1.2.1    2021-01-30 [1]
+ P matrixStats            * 0.58.0   2021-01-29 [?]
+ P memoise                  2.0.0    2021-01-26 [?]
+ P mime                     0.10     2021-02-13 [?]
+ P msigdbr                * 7.2.1    2020-10-02 [?]
+ P munsell                  0.5.0    2018-06-12 [?]
+ P mvtnorm                  1.1-2    2021-06-07 [?]
+ P org.Hs.eg.db             3.12.0   2020-10-20 [?]
+ P patchwork              * 1.1.1    2020-12-17 [?]
+ P pheatmap                 1.0.12   2019-01-04 [?]
+ P pillar                   1.5.0    2021-02-22 [?]
+ P pkgconfig                2.0.3    2019-09-22 [?]
+ P Polychrome               1.2.6    2020-11-11 [?]
+ P promises                 1.2.0.1  2021-02-11 [?]
+ P purrr                    0.3.4    2020-04-17 [?]
+ P R6                       2.5.0    2020-10-28 [?]
+ P rappdirs                 0.3.3    2021-01-31 [?]
+ P RColorBrewer             1.1-2    2014-12-07 [?]
+ P Rcpp                     1.0.6    2021-01-15 [?]
+ P RcppAnnoy                0.0.18   2020-12-15 [?]
+ P RCurl                    1.98-1.2 2020-04-18 [?]
+ P ResidualMatrix           1.0.0    2020-10-27 [?]
+ P rlang                    0.4.10   2020-12-30 [?]
+ P rmarkdown                2.7      2021-02-19 [?]
+ P rprojroot                2.0.2    2020-11-15 [?]
+ P RSpectra                 0.16-0   2019-12-01 [?]
+ P RSQLite                  2.2.3    2021-01-24 [?]
+ P rsvd                     1.0.3    2020-02-17 [?]
+ P S4Vectors              * 0.28.1   2020-12-09 [?]
+ P sass                     0.3.1    2021-01-24 [?]
+ P scales                   1.1.1    2020-05-11 [?]
+ P scater                 * 1.18.6   2021-02-26 [?]
+ P scattermore              0.7      2020-11-24 [?]
+ P scatterplot3d            0.3-41   2018-03-14 [?]
+ P scran                  * 1.18.5   2021-02-04 [?]
+ P scuttle                  1.0.4    2020-12-17 [?]
+ P sessioninfo              1.1.1    2018-11-05 [?]
+ P shiny                    1.6.0    2021-01-25 [?]
+ P SingleCellExperiment   * 1.12.0   2020-10-27 [?]
+ P SingleR                * 1.4.1    2021-02-02 [?]
+ P sparseMatrixStats        1.2.1    2021-02-02 [?]
+ P statmod                  1.4.35   2020-10-19 [?]
+ P stringi                  1.5.3    2020-09-09 [?]
+ P stringr                  1.4.0    2019-02-10 [?]
+ P SummarizedExperiment   * 1.20.0   2020-10-27 [?]
+ P tibble                   3.1.0    2021-02-25 [?]
+ P tidyselect               1.1.0    2020-05-11 [?]
+ P tricycle               * 0.99.32  2021-05-19 [?]
+ P utf8                     1.1.4    2018-05-24 [?]
+ P uwot                     0.1.10   2020-12-15 [?]
+ P vctrs                    0.3.6    2020-12-17 [?]
+ P vipor                    0.4.5    2017-03-22 [?]
+ P viridis                  0.5.1    2018-03-29 [?]
+ P viridisLite              0.3.0    2018-02-01 [?]
+ P withr                    2.4.1    2021-01-26 [?]
+ P xfun                     0.21     2021-02-10 [?]
+ P xtable                   1.8-4    2019-04-21 [?]
+ P XVector                  0.30.0   2020-10-27 [?]
+ P yaml                     2.2.1    2020-02-01 [?]
+ P zlibbioc                 1.36.0   2020-10-27 [?]
+ source                             
+ Bioconductor                       
+ Bioconductor                       
+ CRAN (R 4.0.0)                     
+ Bioconductor                       
+ Bioconductor                       
+ CRAN (R 4.0.0)                     
+ Bioconductor                       
+ Bioconductor                       
+ Bioconductor                       
+ CRAN (R 4.0.0)                     
+ Bioconductor                       
+ Bioconductor                       
+ Bioconductor                       
+ Bioconductor                       
+ Bioconductor                       
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.0)                     
+ Bioconductor                       
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ Bioconductor                       
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ Bioconductor                       
+ Bioconductor                       
+ CRAN (R 4.0.2)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.3)                     
+ Bioconductor                       
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.0)                     
+ Bioconductor                       
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.3)                     
+ Bioconductor                       
+ Bioconductor                       
+ Bioconductor                       
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.0)                     
+ Bioconductor                       
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.2)                     
+ Bioconductor                       
+ Bioconductor                       
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.3)                     
+ Bioconductor                       
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ Bioconductor                       
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.2)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.3)                     
+ Bioconductor                       
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.2)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.0)                     
+ Bioconductor                       
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.0)                     
+ Bioconductor                       
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.0)                     
+ Bioconductor                       
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.0)                     
+ Bioconductor                       
+ Bioconductor                       
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.3)                     
+ Bioconductor                       
+ Bioconductor                       
+ Bioconductor                       
+ CRAN (R 4.0.2)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.0)                     
+ Bioconductor                       
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.0)                     
+ Github (hansenlab/tricycle@143afd6)
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.0)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.3)                     
+ CRAN (R 4.0.0)                     
+ Bioconductor                       
+ CRAN (R 4.0.0)                     
+ Bioconductor                       
 
 [1] /stornext/Projects/score/Analyses/C057_Cooney/renv/library/R-4.0/x86_64-pc-linux-gnu
-[2] /tmp/RtmpFp481Q/renv-system-library
+[2] /tmp/Rtmp9ObRu6/renv-system-library
 [3] /stornext/System/data/apps/R/R-4.0.3/lib64/R/library
 
  P ── Loaded and on-disk path mismatch.</code></pre>
 </div>
 </details>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="ref-Schwabe" class="csl-entry" role="doc-biblioentry">
+Schwabe, Daniel, Sara Formichetti, Jan Philipp Junker, Martin Falcke, and Nikolaus Rajewsky. 2020. <span>“The Transcriptome Dynamics of Single Cells During the Cell Cycle.”</span> <em>Molecular Systems Biology</em> 16 (11): e9946. https://doi.org/<a href="https://doi.org/10.15252/msb.20209946">https://doi.org/10.15252/msb.20209946</a>.
+</div>
+<div id="ref-Zheng2021.04.06.438463" class="csl-entry" role="doc-biblioentry">
+Zheng, Shijie C., Genevieve Stein-O’Brien, Jonathan J. Augustin, Jared Slosberg, Giovanni A. Carosso, Briana Winer, Gloria Shin, Hans T. Bjornsson, Loyal A. Goff, and Kasper D. Hansen. 2021. <span>“Universal Prediction of Cell Cycle Position Using Transfer Learning.”</span> <em>bioRxiv</em>. <a href="https://doi.org/10.1101/2021.04.06.438463">https://doi.org/10.1101/2021.04.06.438463</a>.
+</div>
+</div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
 </div>
@@ -3979,6 +4363,15 @@ Show code
 <div class="d-appendix">
 </div>
 
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
 
 <!--radix_placeholder_site_after_body-->
 <!--/radix_placeholder_site_after_body-->
