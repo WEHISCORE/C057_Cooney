@@ -754,6 +754,86 @@ p4 <- plotUMAP(
 p1 + p2 + p3 + p4 + plot_layout(ncol = 2)
 ```
 
+## Using the `r BiocStyle::Biocpkg("tricycle")` package
+
+- `r BiocStyle::Biocpkg("tricycle")` (Transferable Representation and Inference of Cell Cycle) contains functions to infer and visualize cell cycle process using scRNA-seq data [@Zheng2021.04.06.438463]
+
+```{r}
+library(tricycle)
+
+# Project a single cell data set to pre-learned cell cycle space
+sce <- project_cycle_space(
+  x = sce,
+  gname.type = "SYMBOL",
+  species = "human")
+
+# Diagnostic plot: should roughly be an ellipsoid (see 
+# http://bioconductor.org/packages/release/bioc/vignettes/tricycle/inst/doc/tricycle.html#assessing-performance)
+# plotReducedDim(
+#   sce, 
+#   dimred = "tricycleEmbedding",
+#   point_alpha = 1) +
+#   labs(x = "Projected PC1", y = "Projected PC2") +
+#   ggtitle("Projected cell cycle space") +
+#   theme_cowplot()
+```
+
+The main output of `r BiocStyle::Biocpkg("tricycle")` is a continuous estimate of the relative time within the cell cycle, represented as a number between $0$ and $2\pi$ (which we refer to as cell cycle position).
+[According to the authors of **tricycle**](http://bioconductor.org/packages/release/bioc/vignettes/tricycle/inst/doc/tricycle.html#infer-cell-cycle-position):
+
+> We think the continuous position [rather than discrete stages] is more appropriate when describing the cell cycle. However, to help users understand the position variable, we also note that users can approximately relate:
+
+> - $\pi/2$ to be the start of S stage
+> - $\pi$ to be the start of G2M stage
+> - $3\pi/2$ to be the middle of M stage
+> - $7\pi/4 - \pi/4$ to be G1/G0 stage
+
+Figure \@ref(fig:tricycle-position) shows the estimated cell cycle position of each cell.
+We observe that most cells have an estimated cell cycle position in $7\pi/4 - \pi/4$ (i.e. consistent with G1/G0 stage) but that there is a cluster of cells with estimated cell cycle positions across the full range of values, i.e. cells in this cluster are going through various stages of the cell cycle.
+
+```{r tricycle-position, fig.cap = "UMAP plot where each celll is coloured by its estimated cell cycle position. These values can be approximately related as follows: pi/2 to be the start of S stage; pi to be the start of G2M stage; 3pi/2 to be the middle of M stage; and 7pi/4 - pi/4 to be G1/G0 stage", fig.asp = 3 / 4}
+# Infer cell cycle position
+sce <- estimate_cycle_position(sce)
+
+# Plot out embedding scater plot colored by cell cycle position
+p <- plot_emb_circle_scale(
+  sce,
+  dimred = "UMAP",
+  point.size = 1,
+  point.alpha = 1,
+  fig.title = "") +
+  theme_cowplot()
+legend <- circle_scale_legend(text.size = 4, alpha = 0.9)
+plot_grid(p, legend, ncol = 2, rel_widths = c(1, 0.3))
+```
+
+The authors of `r BiocStyle::Biocpkg("tricycle")` also offer a modified version of the @Schwabe cell cycle stage estimator.
+
+```{r}
+# Alternative: Infer cell cycle stages
+sce <- estimate_Schwabe_stage(
+  x = sce,
+  gname.type = "SYMBOL",
+  species = "human")
+```
+
+Note that $n =$ `r scales::number(sum(is.na(sce$CCStage)), big.mark = ",")` cells (`r scales::percent(sum(is.na(sce$CCStage)) / ncol(sce))`) cannot be assigned a cell stage by this procedure (`CCStage` is `NA`).
+Furthermore:
+
+- Most of the cells in the main cluster are assigned a seemingly arbitrary stage, likely reflecting that these cells aren't cycling and the algorithm cannot confidently assign these.
+- The cells in the 'cycling' cluster are assigned clear, discrete cell stages that are consistent with preferred the estimated cell cycle values provided by `r BiocStyle::Biocpkg("tricycle")`.
+
+```{r}
+plotUMAP(
+  sce, 
+  colour_by = "CCStage",
+  point_size = 0.5,
+  point_alpha = 1) +
+  theme_cowplot() +
+  guides(colour = guide_legend(override.aes = list(size = 3))) +
+  scale_colour_discrete(na.value = "grey", name = "CCStage")
+```
+
 # Subset analysis based on `cycling_subset`
 
 - Using a fairly coarse clustering (`k = 50`)
@@ -858,10 +938,9 @@ wrap_plots(
 
 Please see [`output/marker_genes/cycling_subset_subclusters/`](../output/marker_genes/cycling_subset_subclusters/) for heatmaps and spreadsheets of these marker gene lists.
 
-- `Cycling` subset subclusters are strongly enriched for `phases`
+- `Cycling` subset subclusters are strongly enriched for cyclone's predicted cell cycle phase (`phases`), tricycle's estimated cell cycle position, and tricycle-modified Schwabe cell stages (`CCStage`).
 - `Cycling` subset subclusters have strong marker genes (but these probably reflect more cell cycle and less cell type)
 - `Cycling` subset subclusters don't appear to be `Treatment`-specific
-
 
 ```{r}
 cycling_sce <- list_of_sce[["Cycling"]]
@@ -889,7 +968,46 @@ wrap_plots(
         coord_flip() +
         ylab("Frequency") +
         theme_cowplot(font_size = 8)))) +
-  plot_annotation(title = "Cycling cluster")
+  plot_annotation(title = "Cycling cluster: cyclone")
+```
+
+```{r, fig.asp = 1}
+(wrap_plots(
+  plot_emb_circle_scale(
+    cycling_sce,
+    dimred = "UMAP",
+    point.size = 2,
+    point.alpha = 1,
+    fig.title = "",
+    facet_by = "subcluster")) |
+   circle_scale_legend(text.size = 2, alpha = 0.9)) +
+  plot_layout(widths = c(1, 0.2)) +
+  plot_annotation(title = "Cycling cluster: tricycle")
+```
+
+```{r}
+wrap_plots(
+  plotlist = c(
+    list(
+      plotUMAP(
+      cycling_sce,
+      colour_by = "CCStage",
+      text_by = "subcluster",
+      point_size = 0.5,
+      point_alpha = 1) +
+        scale_colour_discrete(na.value = "grey", name = "CCStage")
+    ),
+    list(
+      ggplot(
+        as.data.frame(
+          colData(cycling_sce)[, c("subcluster", "CCStage")])) +
+        geom_bar(
+          aes(x = subcluster, fill = CCStage),
+          position = position_fill(reverse = TRUE)) +
+        coord_flip() +
+        ylab("Frequency") +
+        theme_cowplot(font_size = 8)))) +
+  plot_annotation(title = "Cycling cluster: tricycle-modified Schwabe")
 ```
 
 ```{r, fig.asp = 1.5}
@@ -989,7 +1107,8 @@ createClusterMarkerOutputs(
 
 Please see [`output/marker_genes/not_cycling_subset_subclusters/`](../output/marker_genes/not_cycling_subset_subclusters/) for heatmaps and spreadsheets of these marker gene lists.
 
-- `Not cycling` subset subclusters have little association with `phases` (or `G1`, `G2M`, or `S`)
+- `Not cycling` subset subclusters have little association with cyclone's predicted cell cycle phase (`phases`), tricycle's estimated cell cycle position, or tricycle-modified Schwabe cell stages (`CCStage`).
+  - This is kind of obvious because by definition these cells aren't thought to be cycling!
 - `Not cycling` subset subclusters have strong marker genes (likely reflecting cell type / state)
 - `Not cycling` subset subclusters appear to be highly `Treatment`-specific
 
@@ -1019,7 +1138,46 @@ wrap_plots(
         coord_flip() +
         ylab("Frequency") +
         theme_cowplot(font_size = 8)))) +
-  plot_annotation(title = "Cycling cluster")
+  plot_annotation(title = "Not cycling cluster: cyclone")
+```
+
+```{r, fig.asp = 3 / 5}
+(wrap_plots(
+  plot_emb_circle_scale(
+    not_cycling_sce,
+    dimred = "UMAP",
+    point.size = 2,
+    point.alpha = 1,
+    fig.title = "",
+    facet_by = "subcluster")) |
+   circle_scale_legend(text.size = 3, alpha = 0.9)) +
+  plot_layout(widths = c(1, 0.2)) +
+  plot_annotation(title = "Not-cycling cluster: tricycle")
+```
+
+```{r}
+wrap_plots(
+  plotlist = c(
+    list(
+      plotUMAP(
+      not_cycling_sce,
+      colour_by = "CCStage",
+      text_by = "subcluster",
+      point_size = 0.5,
+      point_alpha = 1) +
+        scale_colour_discrete(na.value = "grey", name = "CCStage")
+    ),
+    list(
+      ggplot(
+        as.data.frame(
+          colData(not_cycling_sce)[, c("subcluster", "CCStage")])) +
+        geom_bar(
+          aes(x = subcluster, fill = CCStage),
+          position = position_fill(reverse = TRUE)) +
+        coord_flip() +
+        ylab("Frequency") +
+        theme_cowplot(font_size = 8)))) +
+  plot_annotation(title = "Not cycling cluster: tricycle-modified Schwabe")
 ```
 
 ```{r, fig.asp = 1.5}
@@ -1049,7 +1207,7 @@ plotHeatmap(
   annotation_row = data.frame(
     subcluster = names(features),
     row.names = features),
-  main = "Cycling: Uniquely upregulated cluster marker genes")
+  main = "Not cycling: Uniquely upregulated cluster marker genes")
 ```
 
 ```{r, fig.asp = 1 /3}
@@ -1079,7 +1237,7 @@ p3 <- ggplot(
     theme_cowplot(font_size = 8) +
     guides(fill = FALSE)
 
-p1 + p2 + p3 + plot_annotation(title = "Cycling")
+p1 + p2 + p3 + plot_annotation(title = "Not cycling")
 ```
 
 ```{r, fig.asp = 1 / 2}
@@ -1096,7 +1254,7 @@ p2 <- plotUMAP(
   point_size = 0.5,
   point_alpha = 1) +
   scale_colour_manual(values = treatment_colours, name = "Treatment")
-p1 + p2 + plot_annotation("Cycling subset")
+p1 + p2 + plot_annotation("Not cycling subset")
 ```
 
 ```{r}
@@ -1155,4 +1313,3 @@ sessioninfo::session_info()
 ```
 
 </details>
-
