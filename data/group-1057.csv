@@ -1,0 +1,26 @@
+HGNC ID (gene),Approved symbol,Approved name,Previous symbols,Aliases
+HGNC:990,BCL2,BCL2 apoptosis regulator,,"Bcl-2,PPP1R50"
+HGNC:992,BCL2L1,BCL2 like 1,,"BCLX,BCL2L,Bcl-X,bcl-xL,bcl-xS,PPP1R52"
+HGNC:995,BCL2L2,BCL2 like 2,,"KIAA0271,BCL-W,PPP1R51"
+HGNC:6943,MCL1,"MCL1 apoptosis regulator, BCL2 family member",,"BCL2L3,Mcl-1"
+HGNC:959,BAX,"BCL2 associated X, apoptosis regulator",,BCL2L4
+HGNC:991,BCL2A1,BCL2 related protein A1,HBPA1,"GRS,BFL1,BCL2L5,ACC-1,ACC-2,ACC2,ACC1"
+HGNC:949,BAK1,BCL2 antagonist/killer 1,CDN1,"BCL2L7,BAK"
+HGNC:1087,BOK,BCL2 family apoptosis regulator BOK,,"BCL2L9,BOKL,MGC4631"
+HGNC:993,BCL2L10,BCL2 like 10,,"Diva,Boo,BCL-B"
+HGNC:13787,BCL2L12,BCL2 like 12,,
+HGNC:17164,BCL2L13,BCL2 like 13,,"MIL1,BCL-RAMBO"
+HGNC:16657,BCL2L14,BCL2 like 14,,"BCLG,BCL-G"
+HGNC:33624,BCL2L15,BCL2 like 15,C1orf178,"Bfk,FLJ22588"
+HGNC:1083,BNIP2,BCL2 interacting protein 2,,"Nip2,BNIP-2"
+HGNC:936,BAD,BCL2 associated agonist of cell death,,
+HGNC:17868,BBC3,BCL2 binding component 3,,
+HGNC:994,BCL2L11,BCL2 like 11,,
+HGNC:1050,BID,BH3 interacting domain death agonist,,
+HGNC:1051,BIK,BCL2 interacting killer,,
+HGNC:24132,BMF,Bcl2 modifying factor,,
+HGNC:1082,BNIP1,BCL2 interacting protein 1,,
+HGNC:1084,BNIP3,BCL2 interacting protein 3,,
+HGNC:26112,RTL10,retrotransposon Gag like 10,C22orf29,
+HGNC:5185,HRK,"harakiri, BCL2 interacting protein",,
+HGNC:9108,PMAIP1,phorbol-12-myristate-13-acetate-induced protein 1,,
