@@ -1,9 +1,11 @@
 # EDA of BCL2 family as requested by James
-# 2021-07-01
+# 2021-12-03
 # Peter Hickey
 
 library(here)
 library(scater)
+library(edgeR)
+
 # BCL family members provided by James
 bcl2_df <- read.csv(here("data/group-1057.csv"))
 
@@ -65,6 +67,51 @@ plotHeatmap(
     outdir,
     "ignoring_cycling_subset.pseudobulk.row-normalized_heatmap.pdf"))
 
+y <- SE2DGEList(se)
+colnames(y) <- se$Sample
+y$samples$Treatment <- relevel(y$samples$Treatment, "Uninfected")
+design <- model.matrix(~Treatment, y$samples)
+
+keep0 <- filterByExpr(y, design = design)
+keep <- keep0
+keep[bcl2_df$Approved.symbol] <- TRUE
+y <- y[keep, ,keep.lib.sizes = FALSE]
+y <- calcNormFactors(y)
+y <- estimateDisp(y, design)
+
+fit <- glmFit(y, design)
+lrt <- glmLRT(fit, "TreatmentInfected")
+
+y_index <- ids2indices(
+  list(`BCL2-family` = bcl2_df$Approved.symbol),
+  rownames(y))
+fry(
+  y,
+  index = y_index,
+  design = design,
+  coef = "TreatmentInfected")
+
+par(mfrow = c(1, 2))
+y_status <- rep("Other", nrow(lrt))
+y_status[rownames(lrt) %in% bcl2_df$Approved.symbol] <- "In"
+plotMD(
+  lrt,
+  status = y_status,
+  values = "In",
+  hl.col = "red",
+  legend = "bottomright")
+abline(h = 0, col = "darkgrey")
+barcodeplot(
+  statistics = lrt$table$logFC,
+  index = rownames(lrt) %in% bcl2_df$Approved.symbol)
+
+write.csv(
+  cbind(
+    as.data.frame(y$counts[bcl2_df$Approved.symbol, ]),
+    keep = keep0[bcl2_df$Approved.symbol]),
+  file.path(
+    outdir, "ignoring_cycling_subset.pseudobulk.raw_counts.csv"))
+
 # Non-cycling subset -----------------------------------------------------------
 
 not_cycling_sce <- readRDS(
@@ -109,6 +156,51 @@ plotHeatmap(
     outdir,
     "non-cycling_subset.pseudobulk.row-normalized_heatmap.pdf"))
 
+y <- SE2DGEList(not_cycling_se)
+colnames(y) <- not_cycling_se$Sample
+y$samples$Treatment <- relevel(y$samples$Treatment, "Uninfected")
+design <- model.matrix(~Treatment, y$samples)
+
+keep0 <- filterByExpr(y, design = design)
+keep <- keep0
+keep[bcl2_df$Approved.symbol] <- TRUE
+y <- y[keep, ,keep.lib.sizes = FALSE]
+y <- calcNormFactors(y)
+y <- estimateDisp(y, design)
+
+fit <- glmFit(y, design)
+lrt <- glmLRT(fit, "TreatmentInfected")
+
+y_index <- ids2indices(
+  list(`BCL2-family` = bcl2_df$Approved.symbol),
+  rownames(y))
+fry(
+  y,
+  index = y_index,
+  design = design,
+  coef = "TreatmentInfected")
+
+par(mfrow = c(1, 2))
+y_status <- rep("Other", nrow(lrt))
+y_status[rownames(lrt) %in% bcl2_df$Approved.symbol] <- "In"
+plotMD(
+  lrt,
+  status = y_status,
+  values = "In",
+  hl.col = "red",
+  legend = "bottomright")
+abline(h = 0, col = "darkgrey")
+barcodeplot(
+  statistics = lrt$table$logFC,
+  index = rownames(lrt) %in% bcl2_df$Approved.symbol)
+
+write.csv(
+  cbind(
+    as.data.frame(y$counts[bcl2_df$Approved.symbol, ]),
+    keep = keep0[bcl2_df$Approved.symbol]),
+  file.path(
+    outdir, "non-cycling_subset.pseudobulk.raw_counts.csv"))
+
 # Cycling subset ---------------------------------------------------------------
 
 cycling_sce <- readRDS(
@@ -152,3 +244,48 @@ plotHeatmap(
   filename = file.path(
     outdir,
     "cycling_subset.pseudobulk.row-normalized_heatmap.pdf"))
+
+y <- SE2DGEList(cycling_se)
+colnames(y) <- cycling_se$Sample
+y$samples$Treatment <- relevel(y$samples$Treatment, "Uninfected")
+design <- model.matrix(~Treatment, y$samples)
+
+keep0 <- filterByExpr(y, design = design)
+keep <- keep0
+keep[bcl2_df$Approved.symbol] <- TRUE
+y <- y[keep, ,keep.lib.sizes = FALSE]
+y <- calcNormFactors(y)
+y <- estimateDisp(y, design)
+
+fit <- glmFit(y, design)
+lrt <- glmLRT(fit, "TreatmentInfected")
+
+y_index <- ids2indices(
+  list(`BCL2-family` = bcl2_df$Approved.symbol),
+  rownames(y))
+fry(
+  y,
+  index = y_index,
+  design = design,
+  coef = "TreatmentInfected")
+
+par(mfrow = c(1, 2))
+y_status <- rep("Other", nrow(lrt))
+y_status[rownames(lrt) %in% bcl2_df$Approved.symbol] <- "In"
+plotMD(
+  lrt,
+  status = y_status,
+  values = "In",
+  hl.col = "red",
+  legend = "bottomright")
+abline(h = 0, col = "darkgrey")
+barcodeplot(
+  statistics = lrt$table$logFC,
+  index = rownames(lrt) %in% bcl2_df$Approved.symbol)
+
+write.csv(
+  cbind(
+    as.data.frame(y$counts[bcl2_df$Approved.symbol, ]),
+    keep = keep0[bcl2_df$Approved.symbol]),
+  file.path(
+    outdir, "cycling_subset.pseudobulk.raw_counts.csv"))
