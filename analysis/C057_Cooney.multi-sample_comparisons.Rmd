@@ -47,6 +47,9 @@ cycling_sce$Treatment <- relevel(cycling_sce$Treatment, "Uninfected")
 not_cycling_sce$Treatment <- relevel(not_cycling_sce$Treatment, "Uninfected")
 
 source(here("code", "helper_functions.R"))
+
+# BCL family members provided by James
+bcl2_df <- read.csv(here("data/group-1057.csv"))
 ```
 
 # Analysis ignoring `cycling_subset`
@@ -181,6 +184,63 @@ lapply(names(de_results), function(n) {
   }
 })
 ```
+
+### Gene set testing
+
+We use the `fry()` function from the `r BiocStyle::Biocpkg("edgeR")` R/Bioconductor package to perform a self-contained gene set test against the null hypothesis that none of the genes in the BCL-family gene set (supplied by James) are differentially expressed.
+We can visualise the expression of the genes in any given set and in any given comparison by highlighting those genes on the MD plot and/or using a 'barcode plot'.
+Such figures are often included in publications.
+
+```{r, echo = FALSE}
+# NOTE: The following is a workaround to the lack of support for tabsets in 
+#       distill (see https://github.com/rstudio/distill/issues/11 and 
+#       https://github.com/rstudio/distill/issues/11#issuecomment-692142414 in 
+#       particular).
+xaringanExtra::use_panelset()
+```
+
+::::: {.panelset}
+
+::: {.panel}
+
+#### ignoring_cycling_subset {.panel-name}
+
+```{r}
+n <- "ignoring_cycling_subset"
+md <- metadata(de_results[[n]])
+y <- md$y
+y_design <- md$design
+y_index <- ids2indices(
+  list(`BCL2-family` = bcl2_df$Approved.symbol),
+  rownames(y))
+fry(
+  y,
+  index = y_index,
+  design = y_design,
+  coef = "TreatmentInfected") %>%
+  knitr::kable(
+    caption = "Results of applying `fry()` to the RNA-seq differential expression results using the supplied gene sets. A significant 'Up' P-value means that the differential expression results found in the RNA-seq data are positively correlated with the expression signature from the corresponding gene set. Conversely, a significant 'Down' P-value means that the differential expression log-fold-changes are negatively correlated with the expression signature from the corresponding gene set. A significant 'Mixed' P-value means that the genes in the set tend to be differentially expressed without regard for direction.")
+
+dgelrt <- glmTreat(md$fit, coef = "TreatmentInfected", lfc = log2(1.5))
+par(mfrow = c(1, 2))
+y_status <- rep("Other", nrow(dgelrt))
+y_status[rownames(dgelrt) %in% bcl2_df$Approved.symbol] <- "In"
+plotMD(
+  dgelrt,
+  status = y_status,
+  values = "In",
+  hl.col = "red",
+  legend = "bottomright",
+  main = n)
+abline(h = 0, col = "darkgrey")
+barcodeplot(
+  statistics = dgelrt$table$logFC,
+  index = rownames(dgelrt) %in% bcl2_df$Approved.symbol)
+```
+
+:::
+
+:::::
 
 # Analysis based on `cycling_subset`
 
@@ -317,6 +377,94 @@ lapply(names(de_results), function(n) {
   }
 })
 ```
+
+### Gene set testing
+
+We use the `fry()` function from the `r BiocStyle::Biocpkg("edgeR")` R/Bioconductor package to perform a self-contained gene set test against the null hypothesis that none of the genes in the BCL-family gene set (supplied by James) are differentially expressed.
+We can visualise the expression of the genes in any given set and in any given comparison by highlighting those genes on the MD plot and/or using a 'barcode plot'.
+Such figures are often included in publications.
+
+::::: {.panelset}
+
+::: {.panel}
+
+#### Cycling {.panel-name}
+
+```{r}
+n <- "Cycling"
+md <- metadata(de_results[[n]])
+y <- md$y
+y_design <- md$design
+y_index <- ids2indices(
+  list(`BCL2-family` = bcl2_df$Approved.symbol),
+  rownames(y))
+fry(
+  y,
+  index = y_index,
+  design = y_design,
+  coef = "TreatmentInfected") %>%
+  knitr::kable(
+    caption = "Results of applying `fry()` to the RNA-seq differential expression results using the supplied gene sets. A significant 'Up' P-value means that the differential expression results found in the RNA-seq data are positively correlated with the expression signature from the corresponding gene set. Conversely, a significant 'Down' P-value means that the differential expression log-fold-changes are negatively correlated with the expression signature from the corresponding gene set. A significant 'Mixed' P-value means that the genes in the set tend to be differentially expressed without regard for direction.")
+
+dgelrt <- glmTreat(md$fit, coef = "TreatmentInfected", lfc = log2(1.5))
+par(mfrow = c(1, 2))
+y_status <- rep("Other", nrow(dgelrt))
+y_status[rownames(dgelrt) %in% bcl2_df$Approved.symbol] <- "In"
+plotMD(
+  dgelrt,
+  status = y_status,
+  values = "In",
+  hl.col = "red",
+  legend = "bottomright",
+  main = n)
+abline(h = 0, col = "darkgrey")
+barcodeplot(
+  statistics = dgelrt$table$logFC,
+  index = rownames(dgelrt) %in% bcl2_df$Approved.symbol)
+```
+
+:::
+
+::: {.panel}
+
+#### Not cycling {.panel-name}
+
+```{r}
+n <- "Not cycling"
+md <- metadata(de_results[[n]])
+y <- md$y
+y_design <- md$design
+y_index <- ids2indices(
+  list(`BCL2-family` = bcl2_df$Approved.symbol),
+  rownames(y))
+fry(
+  y,
+  index = y_index,
+  design = y_design,
+  coef = "TreatmentInfected") %>%
+  knitr::kable(
+    caption = "Results of applying `fry()` to the RNA-seq differential expression results using the supplied gene sets. A significant 'Up' P-value means that the differential expression results found in the RNA-seq data are positively correlated with the expression signature from the corresponding gene set. Conversely, a significant 'Down' P-value means that the differential expression log-fold-changes are negatively correlated with the expression signature from the corresponding gene set. A significant 'Mixed' P-value means that the genes in the set tend to be differentially expressed without regard for direction.")
+
+dgelrt <- glmTreat(md$fit, coef = "TreatmentInfected", lfc = log2(1.5))
+par(mfrow = c(1, 2))
+y_status <- rep("Other", nrow(dgelrt))
+y_status[rownames(dgelrt) %in% bcl2_df$Approved.symbol] <- "In"
+plotMD(
+  dgelrt,
+  status = y_status,
+  values = "In",
+  hl.col = "red",
+  legend = "bottomright",
+  main = n)
+abline(h = 0, col = "darkgrey")
+barcodeplot(
+  statistics = dgelrt$table$logFC,
+  index = rownames(dgelrt) %in% bcl2_df$Approved.symbol)
+```
+
+:::
+
+:::::
 
 ## DA
 
@@ -538,6 +686,211 @@ lapply(names(de_results), function(n) {
 })
 ```
 
+### Gene set testing
+
+We use the `fry()` function from the `r BiocStyle::Biocpkg("edgeR")` R/Bioconductor package to perform a self-contained gene set test against the null hypothesis that none of the genes in the BCL-family gene set (supplied by James) are differentially expressed.
+We can visualise the expression of the genes in any given set and in any given comparison by highlighting those genes on the MD plot and/or using a 'barcode plot'.
+Such figures are often included in publications.
+
+::::: {.panelset}
+
+::: {.panel}
+
+#### Not cycling.1 {.panel-name}
+
+```{r}
+n <- "Not cycling.1"
+md <- metadata(de_results[[n]])
+y <- md$y
+y_design <- md$design
+y_index <- ids2indices(
+  list(`BCL2-family` = bcl2_df$Approved.symbol),
+  rownames(y))
+fry(
+  y,
+  index = y_index,
+  design = y_design,
+  coef = "TreatmentInfected") %>%
+  knitr::kable(
+    caption = "Results of applying `fry()` to the RNA-seq differential expression results using the supplied gene sets. A significant 'Up' P-value means that the differential expression results found in the RNA-seq data are positively correlated with the expression signature from the corresponding gene set. Conversely, a significant 'Down' P-value means that the differential expression log-fold-changes are negatively correlated with the expression signature from the corresponding gene set. A significant 'Mixed' P-value means that the genes in the set tend to be differentially expressed without regard for direction.")
+
+dgelrt <- glmTreat(md$fit, coef = "TreatmentInfected", lfc = log2(1.5))
+par(mfrow = c(1, 2))
+y_status <- rep("Other", nrow(dgelrt))
+y_status[rownames(dgelrt) %in% bcl2_df$Approved.symbol] <- "In"
+plotMD(
+  dgelrt,
+  status = y_status,
+  values = "In",
+  hl.col = "red",
+  legend = "bottomright",
+  main = n)
+abline(h = 0, col = "darkgrey")
+barcodeplot(
+  statistics = dgelrt$table$logFC,
+  index = rownames(dgelrt) %in% bcl2_df$Approved.symbol)
+```
+
+:::
+
+::: {.panel}
+
+#### Not cycling.2 {.panel-name}
+
+```{r}
+n <- "Not cycling.2"
+md <- metadata(de_results[[n]])
+y <- md$y
+y_design <- md$design
+y_index <- ids2indices(
+  list(`BCL2-family` = bcl2_df$Approved.symbol),
+  rownames(y))
+fry(
+  y,
+  index = y_index,
+  design = y_design,
+  coef = "TreatmentInfected") %>%
+  knitr::kable(
+    caption = "Results of applying `fry()` to the RNA-seq differential expression results using the supplied gene sets. A significant 'Up' P-value means that the differential expression results found in the RNA-seq data are positively correlated with the expression signature from the corresponding gene set. Conversely, a significant 'Down' P-value means that the differential expression log-fold-changes are negatively correlated with the expression signature from the corresponding gene set. A significant 'Mixed' P-value means that the genes in the set tend to be differentially expressed without regard for direction.")
+
+dgelrt <- glmTreat(md$fit, coef = "TreatmentInfected", lfc = log2(1.5))
+par(mfrow = c(1, 2))
+y_status <- rep("Other", nrow(dgelrt))
+y_status[rownames(dgelrt) %in% bcl2_df$Approved.symbol] <- "In"
+plotMD(
+  dgelrt,
+  status = y_status,
+  values = "In",
+  hl.col = "red",
+  legend = "bottomright",
+  main = n)
+abline(h = 0, col = "darkgrey")
+barcodeplot(
+  statistics = dgelrt$table$logFC,
+  index = rownames(dgelrt) %in% bcl2_df$Approved.symbol)
+```
+
+:::
+
+::: {.panel}
+
+#### Not cycling.3 {.panel-name}
+
+```{r}
+n <- "Not cycling.3"
+md <- metadata(de_results[[n]])
+y <- md$y
+y_design <- md$design
+y_index <- ids2indices(
+  list(`BCL2-family` = bcl2_df$Approved.symbol),
+  rownames(y))
+fry(
+  y,
+  index = y_index,
+  design = y_design,
+  coef = "TreatmentInfected") %>%
+  knitr::kable(
+    caption = "Results of applying `fry()` to the RNA-seq differential expression results using the supplied gene sets. A significant 'Up' P-value means that the differential expression results found in the RNA-seq data are positively correlated with the expression signature from the corresponding gene set. Conversely, a significant 'Down' P-value means that the differential expression log-fold-changes are negatively correlated with the expression signature from the corresponding gene set. A significant 'Mixed' P-value means that the genes in the set tend to be differentially expressed without regard for direction.")
+
+dgelrt <- glmTreat(md$fit, coef = "TreatmentInfected", lfc = log2(1.5))
+par(mfrow = c(1, 2))
+y_status <- rep("Other", nrow(dgelrt))
+y_status[rownames(dgelrt) %in% bcl2_df$Approved.symbol] <- "In"
+plotMD(
+  dgelrt,
+  status = y_status,
+  values = "In",
+  hl.col = "red",
+  legend = "bottomright",
+  main = n)
+abline(h = 0, col = "darkgrey")
+barcodeplot(
+  statistics = dgelrt$table$logFC,
+  index = rownames(dgelrt) %in% bcl2_df$Approved.symbol)
+```
+
+:::
+
+::: {.panel}
+
+#### Not cycling.4 {.panel-name}
+
+```{r}
+n <- "Not cycling.4"
+md <- metadata(de_results[[n]])
+y <- md$y
+y_design <- md$design
+y_index <- ids2indices(
+  list(`BCL2-family` = bcl2_df$Approved.symbol),
+  rownames(y))
+fry(
+  y,
+  index = y_index,
+  design = y_design,
+  coef = "TreatmentInfected") %>%
+  knitr::kable(
+    caption = "Results of applying `fry()` to the RNA-seq differential expression results using the supplied gene sets. A significant 'Up' P-value means that the differential expression results found in the RNA-seq data are positively correlated with the expression signature from the corresponding gene set. Conversely, a significant 'Down' P-value means that the differential expression log-fold-changes are negatively correlated with the expression signature from the corresponding gene set. A significant 'Mixed' P-value means that the genes in the set tend to be differentially expressed without regard for direction.")
+
+dgelrt <- glmTreat(md$fit, coef = "TreatmentInfected", lfc = log2(1.5))
+par(mfrow = c(1, 2))
+y_status <- rep("Other", nrow(dgelrt))
+y_status[rownames(dgelrt) %in% bcl2_df$Approved.symbol] <- "In"
+plotMD(
+  dgelrt,
+  status = y_status,
+  values = "In",
+  hl.col = "red",
+  legend = "bottomright",
+  main = n)
+abline(h = 0, col = "darkgrey")
+barcodeplot(
+  statistics = dgelrt$table$logFC,
+  index = rownames(dgelrt) %in% bcl2_df$Approved.symbol)
+```
+
+:::
+
+::: {.panel}
+
+#### Not cycling.5 {.panel-name}
+
+```{r}
+n <- "Not cycling.5"
+md <- metadata(de_results[[n]])
+y <- md$y
+y_design <- md$design
+y_index <- ids2indices(
+  list(`BCL2-family` = bcl2_df$Approved.symbol),
+  rownames(y))
+fry(
+  y,
+  index = y_index,
+  design = y_design,
+  coef = "TreatmentInfected") %>%
+  knitr::kable(
+    caption = "Results of applying `fry()` to the RNA-seq differential expression results using the supplied gene sets. A significant 'Up' P-value means that the differential expression results found in the RNA-seq data are positively correlated with the expression signature from the corresponding gene set. Conversely, a significant 'Down' P-value means that the differential expression log-fold-changes are negatively correlated with the expression signature from the corresponding gene set. A significant 'Mixed' P-value means that the genes in the set tend to be differentially expressed without regard for direction.")
+
+dgelrt <- glmTreat(md$fit, coef = "TreatmentInfected", lfc = log2(1.5))
+par(mfrow = c(1, 2))
+y_status <- rep("Other", nrow(dgelrt))
+y_status[rownames(dgelrt) %in% bcl2_df$Approved.symbol] <- "In"
+plotMD(
+  dgelrt,
+  status = y_status,
+  values = "In",
+  hl.col = "red",
+  legend = "bottomright",
+  main = n)
+abline(h = 0, col = "darkgrey")
+barcodeplot(
+  statistics = dgelrt$table$logFC,
+  index = rownames(dgelrt) %in% bcl2_df$Approved.symbol)
+```
+
+:::
+
+:::::
+
 ## DA
 
 - Number of cells/label/sample
@@ -754,6 +1107,133 @@ lapply(names(de_results), function(n) {
   }
 })
 ```
+
+### Gene set testing
+
+We use the `fry()` function from the `r BiocStyle::Biocpkg("edgeR")` R/Bioconductor package to perform a self-contained gene set test against the null hypothesis that none of the genes in the BCL-family gene set (supplied by James) are differentially expressed.
+We can visualise the expression of the genes in any given set and in any given comparison by highlighting those genes on the MD plot and/or using a 'barcode plot'.
+Such figures are often included in publications.
+
+::::: {.panelset}
+
+::: {.panel}
+
+#### Cycling.1 {.panel-name}
+
+```{r}
+n <- "Cycling.1"
+md <- metadata(de_results[[n]])
+y <- md$y
+y_design <- md$design
+y_index <- ids2indices(
+  list(`BCL2-family` = bcl2_df$Approved.symbol),
+  rownames(y))
+fry(
+  y,
+  index = y_index,
+  design = y_design,
+  coef = "TreatmentInfected") %>%
+  knitr::kable(
+    caption = "Results of applying `fry()` to the RNA-seq differential expression results using the supplied gene sets. A significant 'Up' P-value means that the differential expression results found in the RNA-seq data are positively correlated with the expression signature from the corresponding gene set. Conversely, a significant 'Down' P-value means that the differential expression log-fold-changes are negatively correlated with the expression signature from the corresponding gene set. A significant 'Mixed' P-value means that the genes in the set tend to be differentially expressed without regard for direction.")
+
+dgelrt <- glmTreat(md$fit, coef = "TreatmentInfected", lfc = log2(1.5))
+par(mfrow = c(1, 2))
+y_status <- rep("Other", nrow(dgelrt))
+y_status[rownames(dgelrt) %in% bcl2_df$Approved.symbol] <- "In"
+plotMD(
+  dgelrt,
+  status = y_status,
+  values = "In",
+  hl.col = "red",
+  legend = "bottomright",
+  main = n)
+abline(h = 0, col = "darkgrey")
+barcodeplot(
+  statistics = dgelrt$table$logFC,
+  index = rownames(dgelrt) %in% bcl2_df$Approved.symbol)
+```
+
+:::
+
+::: {.panel}
+
+#### Cycling.2 {.panel-name}
+
+```{r}
+n <- "Cycling.2"
+md <- metadata(de_results[[n]])
+y <- md$y
+y_design <- md$design
+y_index <- ids2indices(
+  list(`BCL2-family` = bcl2_df$Approved.symbol),
+  rownames(y))
+fry(
+  y,
+  index = y_index,
+  design = y_design,
+  coef = "TreatmentInfected") %>%
+  knitr::kable(
+    caption = "Results of applying `fry()` to the RNA-seq differential expression results using the supplied gene sets. A significant 'Up' P-value means that the differential expression results found in the RNA-seq data are positively correlated with the expression signature from the corresponding gene set. Conversely, a significant 'Down' P-value means that the differential expression log-fold-changes are negatively correlated with the expression signature from the corresponding gene set. A significant 'Mixed' P-value means that the genes in the set tend to be differentially expressed without regard for direction.")
+
+dgelrt <- glmTreat(md$fit, coef = "TreatmentInfected", lfc = log2(1.5))
+par(mfrow = c(1, 2))
+y_status <- rep("Other", nrow(dgelrt))
+y_status[rownames(dgelrt) %in% bcl2_df$Approved.symbol] <- "In"
+plotMD(
+  dgelrt,
+  status = y_status,
+  values = "In",
+  hl.col = "red",
+  legend = "bottomright",
+  main = n)
+abline(h = 0, col = "darkgrey")
+barcodeplot(
+  statistics = dgelrt$table$logFC,
+  index = rownames(dgelrt) %in% bcl2_df$Approved.symbol)
+```
+
+:::
+
+::: {.panel}
+
+#### Cycling.3 {.panel-name}
+
+```{r}
+n <- "Cycling.3"
+md <- metadata(de_results[[n]])
+y <- md$y
+y_design <- md$design
+y_index <- ids2indices(
+  list(`BCL2-family` = bcl2_df$Approved.symbol),
+  rownames(y))
+fry(
+  y,
+  index = y_index,
+  design = y_design,
+  coef = "TreatmentInfected") %>%
+  knitr::kable(
+    caption = "Results of applying `fry()` to the RNA-seq differential expression results using the supplied gene sets. A significant 'Up' P-value means that the differential expression results found in the RNA-seq data are positively correlated with the expression signature from the corresponding gene set. Conversely, a significant 'Down' P-value means that the differential expression log-fold-changes are negatively correlated with the expression signature from the corresponding gene set. A significant 'Mixed' P-value means that the genes in the set tend to be differentially expressed without regard for direction.")
+
+dgelrt <- glmTreat(md$fit, coef = "TreatmentInfected", lfc = log2(1.5))
+par(mfrow = c(1, 2))
+y_status <- rep("Other", nrow(dgelrt))
+y_status[rownames(dgelrt) %in% bcl2_df$Approved.symbol] <- "In"
+plotMD(
+  dgelrt,
+  status = y_status,
+  values = "In",
+  hl.col = "red",
+  legend = "bottomright",
+  main = n)
+abline(h = 0, col = "darkgrey")
+barcodeplot(
+  statistics = dgelrt$table$logFC,
+  index = rownames(dgelrt) %in% bcl2_df$Approved.symbol)
+```
+
+:::
+
+:::::
 
 ## DA
 

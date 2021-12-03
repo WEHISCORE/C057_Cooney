@@ -540,6 +540,13 @@
       "Repository": "CRAN",
       "Hash": "1bf627f1f77313e345f71e779b658578"
     },
+    "boot": {
+      "Package": "boot",
+      "Version": "1.3-27",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "d9778c960792721e8433daaf3db8f16a"
+    },
     "brio": {
       "Package": "brio",
       "Version": "1.1.1",
@@ -566,6 +573,13 @@
       "Version": "1.0.0",
       "Source": "Bioconductor",
       "Hash": "1bed4a4c05354e8620e0bf813c1fbb96"
+    },
+    "circular": {
+      "Package": "circular",
+      "Version": "0.4-93",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "76d2b394bcecfb03d1d81a7d7264d55e"
     },
     "cli": {
       "Package": "cli",
@@ -1036,6 +1050,13 @@
       "Repository": "CRAN",
       "Hash": "6dfe8bf774944bd5595785e3229d8771"
     },
+    "mvtnorm": {
+      "Package": "mvtnorm",
+      "Version": "1.1-2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "6f0133c3842aef0394dbd844a21d3f5f"
+    },
     "nlme": {
       "Package": "nlme",
       "Version": "3.1-152",
@@ -1175,10 +1196,10 @@
     },
     "rmarkdown": {
       "Package": "rmarkdown",
-      "Version": "2.7",
+      "Version": "2.11",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "edbf4cb1aefae783fd8d3a008ae51943"
+      "Hash": "320017b52d05a943981272b295750388"
     },
     "rprojroot": {
       "Package": "rprojroot",
@@ -1232,6 +1253,13 @@
       "Version": "1.18.6",
       "Source": "Bioconductor",
       "Hash": "522082c4db93621132cbafb1a37b6df4"
+    },
+    "scattermore": {
+      "Package": "scattermore",
+      "Version": "0.7",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "373eb417aadd7c7f35861953f3fe3deb"
     },
     "scatterplot3d": {
       "Package": "scatterplot3d",
@@ -1379,10 +1407,22 @@
     },
     "tinytex": {
       "Package": "tinytex",
-      "Version": "0.29",
+      "Version": "0.35",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "f0b0ba735febac9a8344253ae6fa93f5"
+      "Hash": "1d7220fe46159fb9f5c99a44354a2bff"
+    },
+    "tricycle": {
+      "Package": "tricycle",
+      "Version": "0.99.32",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "hansenlab",
+      "RemoteRepo": "tricycle",
+      "RemoteRef": "master",
+      "RemoteSha": "143afd67039cd1069eb6dd43689856216d195621",
+      "Hash": "864af446b97c81599328de8355444598"
     },
     "utf8": {
       "Package": "utf8",
@@ -1390,6 +1430,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "4a5081acfb7b81a572e4384a7aaf2af1"
+    },
+    "uuid": {
+      "Package": "uuid",
+      "Version": "1.0-3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "2097822ba5e4440b81a0c7525d0315ce"
     },
     "uwot": {
       "Package": "uwot",
@@ -1440,12 +1487,24 @@
       "Repository": "CRAN",
       "Hash": "caf4781c674ffa549a4676d2d77b13cc"
     },
+    "xaringanExtra": {
+      "Package": "xaringanExtra",
+      "Version": "0.5.5",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "gadenbuie",
+      "RemoteRepo": "xaringanExtra",
+      "RemoteRef": "main",
+      "RemoteSha": "cc1f613b6c41fc1ee8d14e66e5b0b237703fb75f",
+      "Hash": "1c252ac3bf7be1611e47f85fbc63de29"
+    },
     "xfun": {
       "Package": "xfun",
-      "Version": "0.21",
+      "Version": "0.28",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "f3ddcca198959a42e8cb6b06c30d4f1e"
+      "Hash": "f7f3a61ab62cd046d307577a8ae12999"
     },
     "xgboost": {
       "Package": "xgboost",
