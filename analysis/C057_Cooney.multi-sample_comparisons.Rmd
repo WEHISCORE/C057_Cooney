@@ -1321,6 +1321,10 @@ topTags(res, n = Inf)
 
 ```{r}
 saveRDS(
+  sce.ignoring_cycling_subset,
+  here("data", "SCEs", "C057_Cooney.ignoring_cycling_subset.sce.rds"),
+  compress = "xz")
+saveRDS(
   sce.cycling_subset_Sample,
   here("data", "SCEs", "C057_Cooney.cycling_subset_Sample.sce.rds"),
   compress = "xz")
@@ -1334,7 +1338,7 @@ saveRDS(
   compress = "xz")
 ```
 
-The aggregated *SummarizedExperiment* objects are available (see [`data/SCEs/C057_Cooney.cycling_subset_Sample.sce.rds`](../data/SCEs/C057_Cooney.cycling_subset_Sample.sce.rds), [`data/SCEs/C057_Cooney.not_cycling.subcluster_Sample.sce.rds`](../data/SCEs/C057_Cooney.not_cycling.subcluster_Sample.sce.rds), and [`data/SCEs/C057_Cooney.cycling.subcluster_Sample.sce.rds`](../data/SCEs/C057_Cooney.cycling.subcluster_Sample.sce.rds)).
+The aggregated *SummarizedExperiment* objects are available (see [`data/SCEs/C057_Cooney.ignoring_cycling_subset.sce.rds`](../data/SCEs/C057_Cooney.ignoring_cycling_subset.sce.rds), [`data/SCEs/C057_Cooney.cycling_subset_Sample.sce.rds`](../data/SCEs/C057_Cooney.cycling_subset_Sample.sce.rds), [`data/SCEs/C057_Cooney.not_cycling.subcluster_Sample.sce.rds`](../data/SCEs/C057_Cooney.not_cycling.subcluster_Sample.sce.rds), and [`data/SCEs/C057_Cooney.cycling.subcluster_Sample.sce.rds`](../data/SCEs/C057_Cooney.cycling.subcluster_Sample.sce.rds)).
 These can be used for visualizations with `r BiocStyle::Biocpkg("iSEE")`.
 
 The [`output/DEGs/`](../output/DEGs/) directory contains CSV files summarising the differential expression results and PDFs showing the pseudobulk expression data for each DEG.

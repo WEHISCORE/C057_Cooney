@@ -106,7 +106,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <meta property="twitter:title" content="C057: Multi-sample comparisons with the Cooney (C057) memory CD4+ T-cell data set"/>
 
   <!--/radix_placeholder_meta_tags-->
-  
+
   <!--radix_placeholder_rmarkdown_metadata-->
 
   <script type="text/json" id="radix-rmarkdown-metadata">
@@ -2076,7 +2076,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <div class="nav-dropdown">
 <button class="nav-dropbtn">
 Supplementary files
- 
+
 <span class="down-arrow">&#x25BE;</span>
 </button>
 <div class="nav-dropdown-content">
@@ -2108,7 +2108,7 @@ Supplementary files
 
 <div class="d-byline">
   Peter Hickey <a href="https://peterhickey.org" class="uri">https://peterhickey.org</a> (WEHI SCORE)<a href="https://www.wehi.edu.au/people/shalin-naik/3310/score" class="uri">https://www.wehi.edu.au/people/shalin-naik/3310/score</a>
-  
+
 <br/>2021-12-03
 </div>
 
@@ -2230,7 +2230,7 @@ Show code
 <span class='va'>sce.ignoring_cycling_subset</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scuttle/man/logNormCounts.html'>logNormCounts</a></span><span class='op'>(</span><span class='va'>sce.ignoring_cycling_subset</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/pkg/SingleCellExperiment/man/colLabels.html'>colLabels</a></span><span class='op'>(</span><span class='va'>sce.ignoring_cycling_subset</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='st'>"ignoring_cycling_subset"</span>
 <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>sce.ignoring_cycling_subset</span><span class='op'>)</span> <span class='op'>&lt;-</span>
-  <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/pkg/SingleCellExperiment/man/colLabels.html'>colLabels</a></span><span class='op'>(</span><span class='va'>sce.ignoring_cycling_subset</span><span class='op'>)</span>, 
+  <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/pkg/SingleCellExperiment/man/colLabels.html'>colLabels</a></span><span class='op'>(</span><span class='va'>sce.ignoring_cycling_subset</span><span class='op'>)</span>,
          <span class='st'>"."</span>,
          <span class='va'>sce.ignoring_cycling_subset</span><span class='op'>$</span><span class='va'>Sample</span><span class='op'>)</span>
 </code></pre>
@@ -2262,7 +2262,7 @@ Show code
 Show code
 </summary>
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>sce.ignoring_cycling_subset_filt</span> <span class='op'>&lt;-</span> 
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>sce.ignoring_cycling_subset_filt</span> <span class='op'>&lt;-</span>
   <span class='va'>sce.ignoring_cycling_subset</span><span class='op'>[</span>, <span class='va'>sce.ignoring_cycling_subset</span><span class='op'>$</span><span class='va'>ncells</span> <span class='op'>&gt;=</span> <span class='fl'>10</span><span class='op'>]</span>
 
 <span class='va'>de_results</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scran/man/pseudoBulkDGE.html'>pseudoBulkDGE</a></span><span class='op'>(</span>
@@ -2318,8 +2318,8 @@ Show code
 <pre class="sourceCode r"><code class="sourceCode r"><span class='va'>outdir</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"output"</span>, <span class='st'>"DEGs"</span>, <span class='st'>"ignoring_cycling_subset"</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/base/files2.html'>dir.create</a></span><span class='op'>(</span><span class='va'>outdir</span>, recursive <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
 <span class='fu'>createDEGOutputs</span><span class='op'>(</span>
-  outdir <span class='op'>=</span> <span class='va'>outdir</span>, 
-  de_results <span class='op'>=</span> <span class='va'>de_results</span>, 
+  outdir <span class='op'>=</span> <span class='va'>outdir</span>,
+  de_results <span class='op'>=</span> <span class='va'>de_results</span>,
   summed_filt <span class='op'>=</span> <span class='va'>sce.ignoring_cycling_subset_filt</span>,
   sce <span class='op'>=</span> <span class='va'>sce</span>,
   fdr <span class='op'>=</span> <span class='fl'>0.05</span><span class='op'>)</span>
@@ -2355,7 +2355,7 @@ Show code
       fontsize <span class='op'>=</span> <span class='fl'>8</span>,
       main <span class='op'>=</span> <span class='va'>n</span>,
       filename <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span><span class='op'>(</span><span class='va'>outdir</span>, <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>n</span>, <span class='st'>".pseudobulk_heatmap.pdf"</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
-    
+
     <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plotGroupedHeatmap.html'>plotGroupedHeatmap</a></span><span class='op'>(</span>
       <span class='va'>sce</span>,
       features <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>features</span>, <span class='fl'>50</span><span class='op'>)</span>,
@@ -2495,7 +2495,7 @@ Show code
 <span class='va'>sce.cycling_subset_Sample</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scuttle/man/logNormCounts.html'>logNormCounts</a></span><span class='op'>(</span><span class='va'>sce.cycling_subset_Sample</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/pkg/SingleCellExperiment/man/colLabels.html'>colLabels</a></span><span class='op'>(</span><span class='va'>sce.cycling_subset_Sample</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='va'>sce.cycling_subset_Sample</span><span class='op'>$</span><span class='va'>cycling_subset</span>
 <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>sce.cycling_subset_Sample</span><span class='op'>)</span> <span class='op'>&lt;-</span>
-  <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>sce.cycling_subset_Sample</span><span class='op'>$</span><span class='va'>cycling_subset</span>, 
+  <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>sce.cycling_subset_Sample</span><span class='op'>$</span><span class='va'>cycling_subset</span>,
          <span class='st'>"."</span>,
          <span class='va'>sce.cycling_subset_Sample</span><span class='op'>$</span><span class='va'>Sample</span><span class='op'>)</span>
 </code></pre>
@@ -2535,7 +2535,7 @@ Show code
 Show code
 </summary>
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>sce.cycling_subset_Sample_filt</span> <span class='op'>&lt;-</span> 
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>sce.cycling_subset_Sample_filt</span> <span class='op'>&lt;-</span>
   <span class='va'>sce.cycling_subset_Sample</span><span class='op'>[</span>, <span class='va'>sce.cycling_subset_Sample</span><span class='op'>$</span><span class='va'>ncells</span> <span class='op'>&gt;=</span> <span class='fl'>10</span><span class='op'>]</span>
 
 <span class='va'>de_results</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scran/man/pseudoBulkDGE.html'>pseudoBulkDGE</a></span><span class='op'>(</span>
@@ -2592,8 +2592,8 @@ Show code
 <pre class="sourceCode r"><code class="sourceCode r"><span class='va'>outdir</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"output"</span>, <span class='st'>"DEGs"</span>, <span class='st'>"cycling_subset"</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/base/files2.html'>dir.create</a></span><span class='op'>(</span><span class='va'>outdir</span>, recursive <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
 <span class='fu'>createDEGOutputs</span><span class='op'>(</span>
-  outdir <span class='op'>=</span> <span class='va'>outdir</span>, 
-  de_results <span class='op'>=</span> <span class='va'>de_results</span>, 
+  outdir <span class='op'>=</span> <span class='va'>outdir</span>,
+  de_results <span class='op'>=</span> <span class='va'>de_results</span>,
   summed_filt <span class='op'>=</span> <span class='va'>sce.cycling_subset_Sample_filt</span>,
   sce <span class='op'>=</span> <span class='va'>sce</span>,
   fdr <span class='op'>=</span> <span class='fl'>0.05</span><span class='op'>)</span>
@@ -2628,7 +2628,7 @@ Show code
       fontsize <span class='op'>=</span> <span class='fl'>8</span>,
       main <span class='op'>=</span> <span class='va'>n</span>,
       filename <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span><span class='op'>(</span><span class='va'>outdir</span>, <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>n</span>, <span class='st'>".pseudobulk_heatmap.pdf"</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
-    
+
     <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plotGroupedHeatmap.html'>plotGroupedHeatmap</a></span><span class='op'>(</span>
       <span class='va'>sce</span>,
       features <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>features</span>, <span class='fl'>50</span><span class='op'>)</span>,
@@ -2814,11 +2814,11 @@ Show code
 </code></pre>
 </div>
 </details>
-<pre><code>             
+<pre><code>
               infected_1 infected_2 infected_3 uninfected_1
   Cycling            226        171        327          171
   Not cycling       1121       1004       1007         1618
-             
+
               uninfected_2 uninfected_3
   Cycling              358          142
   Not cycling         1694         1292</code></pre>
@@ -2830,14 +2830,14 @@ Show code
 </summary>
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='va'>p1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotUMAP</a></span><span class='op'>(</span>
-  <span class='va'>sce</span>, 
-  colour_by <span class='op'>=</span> <span class='st'>"cycling_subset"</span>, 
+  <span class='va'>sce</span>,
+  colour_by <span class='op'>=</span> <span class='st'>"cycling_subset"</span>,
   text_by <span class='op'>=</span> <span class='st'>"cycling_subset"</span>,
   point_size <span class='op'>=</span> <span class='fl'>0.5</span>,
   point_alpha <span class='op'>=</span> <span class='fl'>1</span>,
   text_size <span class='op'>=</span> <span class='fl'>4</span><span class='op'>)</span>
 <span class='va'>p2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plot_reddim.html'>plotUMAP</a></span><span class='op'>(</span>
-  <span class='va'>sce</span>, 
+  <span class='va'>sce</span>,
   colour_by <span class='op'>=</span> <span class='st'>"Treatment"</span>,
   point_size <span class='op'>=</span> <span class='fl'>0.5</span>,
   point_alpha <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>+</span>
@@ -2901,7 +2901,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<pre><code>    Cycling Not cycling 
+<pre><code>    Cycling Not cycling
        TRUE        TRUE </code></pre>
 </div>
 <ul>
@@ -2942,7 +2942,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<pre><code>Coefficient:  TreatmentInfected 
+<pre><code>Coefficient:  TreatmentInfected
                  logFC   logCPM       LR     PValue       FDR
 Cycling      0.5952481 17.24486 2.947518 0.08600953 0.1720191
 Not cycling -0.1075603 19.68781 1.001231 0.31701277 0.3170128</code></pre>
@@ -2978,7 +2978,7 @@ Show code
   <span class='va'>not_cycling_sce.subcluster_Sample</span><span class='op'>$</span><span class='va'>subcluster</span>
 <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>not_cycling_sce.subcluster_Sample</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span>
   <span class='va'>not_cycling_sce.subcluster_Sample</span><span class='op'>$</span><span class='va'>subcluster</span>,
-  <span class='st'>"."</span>, 
+  <span class='st'>"."</span>,
   <span class='va'>not_cycling_sce.subcluster_Sample</span><span class='op'>$</span><span class='va'>Sample</span><span class='op'>)</span>
 </code></pre>
 </div>
@@ -3015,7 +3015,7 @@ Show code
 Show code
 </summary>
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>not_cycling_sce.subcluster_Sample_filt</span> <span class='op'>&lt;-</span> 
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>not_cycling_sce.subcluster_Sample_filt</span> <span class='op'>&lt;-</span>
   <span class='va'>not_cycling_sce.subcluster_Sample</span><span class='op'>[</span>, <span class='va'>not_cycling_sce.subcluster_Sample</span><span class='op'>$</span><span class='va'>ncells</span> <span class='op'>&gt;=</span> <span class='fl'>10</span><span class='op'>]</span>
 
 <span class='va'>de_results</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scran/man/pseudoBulkDGE.html'>pseudoBulkDGE</a></span><span class='op'>(</span>
@@ -3075,8 +3075,8 @@ Show code
 <pre class="sourceCode r"><code class="sourceCode r"><span class='va'>outdir</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"output"</span>, <span class='st'>"DEGs"</span>, <span class='st'>"not_cycling_subset_subcluster"</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/base/files2.html'>dir.create</a></span><span class='op'>(</span><span class='va'>outdir</span>, recursive <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
 <span class='fu'>createDEGOutputs</span><span class='op'>(</span>
-  outdir <span class='op'>=</span> <span class='va'>outdir</span>, 
-  de_results <span class='op'>=</span> <span class='va'>de_results</span>, 
+  outdir <span class='op'>=</span> <span class='va'>outdir</span>,
+  de_results <span class='op'>=</span> <span class='va'>de_results</span>,
   summed_filt <span class='op'>=</span> <span class='va'>not_cycling_sce.subcluster_Sample_filt</span>,
   sce <span class='op'>=</span> <span class='va'>x</span>,
   fdr <span class='op'>=</span> <span class='fl'>0.05</span><span class='op'>)</span>
@@ -3111,7 +3111,7 @@ Show code
       fontsize <span class='op'>=</span> <span class='fl'>8</span>,
       main <span class='op'>=</span> <span class='va'>n</span>,
       filename <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span><span class='op'>(</span><span class='va'>outdir</span>, <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>n</span>, <span class='st'>".pseudobulk_heatmap.pdf"</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
-    
+
     <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plotGroupedHeatmap.html'>plotGroupedHeatmap</a></span><span class='op'>(</span>
       <span class='va'>not_cycling_sce</span>,
       features <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>features</span>, <span class='fl'>50</span><span class='op'>)</span>,
@@ -3513,14 +3513,14 @@ Show code
 </code></pre>
 </div>
 </details>
-<pre><code>               
+<pre><code>
                 infected_1 infected_2 infected_3 uninfected_1
   Not cycling.1         32          3         14          247
   Not cycling.2         53         11          7          342
   Not cycling.3        241        101         70          366
   Not cycling.4        532        848        881           29
   Not cycling.5        263         41         35          634
-               
+
                 uninfected_2 uninfected_3
   Not cycling.1          507           97
   Not cycling.2          258          197
@@ -3604,7 +3604,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<pre><code>Not cycling.1 Not cycling.2 Not cycling.3 Not cycling.4 Not cycling.5 
+<pre><code>Not cycling.1 Not cycling.2 Not cycling.3 Not cycling.4 Not cycling.5
          TRUE          TRUE          TRUE          TRUE          TRUE </code></pre>
 </div>
 <ul>
@@ -3645,7 +3645,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<pre><code>Coefficient:  TreatmentInfected 
+<pre><code>Coefficient:  TreatmentInfected
                   logFC   logCPM        LR       PValue          FDR
 Not cycling.4  5.023174 18.52370 35.433894 2.638552e-09 1.319276e-08
 Not cycling.1 -3.521606 16.56704 19.295114 1.119926e-05 2.799814e-05
@@ -3679,11 +3679,11 @@ Show code
   use.altexps <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/pkg/SingleCellExperiment/man/sizeFactors.html'>sizeFactors</a></span><span class='op'>(</span><span class='va'>cycling_sce.subcluster_Sample</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='cn'>NULL</span>
 <span class='va'>cycling_sce.subcluster_Sample</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scuttle/man/logNormCounts.html'>logNormCounts</a></span><span class='op'>(</span><span class='va'>cycling_sce.subcluster_Sample</span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/pkg/SingleCellExperiment/man/colLabels.html'>colLabels</a></span><span class='op'>(</span><span class='va'>cycling_sce.subcluster_Sample</span><span class='op'>)</span> <span class='op'>&lt;-</span> 
+<span class='fu'><a href='https://rdrr.io/pkg/SingleCellExperiment/man/colLabels.html'>colLabels</a></span><span class='op'>(</span><span class='va'>cycling_sce.subcluster_Sample</span><span class='op'>)</span> <span class='op'>&lt;-</span>
   <span class='va'>cycling_sce.subcluster_Sample</span><span class='op'>$</span><span class='va'>subcluster</span>
 <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>cycling_sce.subcluster_Sample</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span>
-  <span class='va'>cycling_sce.subcluster_Sample</span><span class='op'>$</span><span class='va'>subcluster</span>, 
-  <span class='st'>"."</span>, 
+  <span class='va'>cycling_sce.subcluster_Sample</span><span class='op'>$</span><span class='va'>subcluster</span>,
+  <span class='st'>"."</span>,
   <span class='va'>cycling_sce.subcluster_Sample</span><span class='op'>$</span><span class='va'>Sample</span><span class='op'>)</span>
 </code></pre>
 </div>
@@ -3720,7 +3720,7 @@ Show code
 Show code
 </summary>
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>cycling_sce.subcluster_Sample_filt</span> <span class='op'>&lt;-</span> 
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>cycling_sce.subcluster_Sample_filt</span> <span class='op'>&lt;-</span>
   <span class='va'>cycling_sce.subcluster_Sample</span><span class='op'>[</span>, <span class='va'>cycling_sce.subcluster_Sample</span><span class='op'>$</span><span class='va'>ncells</span> <span class='op'>&gt;=</span> <span class='fl'>10</span><span class='op'>]</span>
 
 <span class='va'>de_results</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/scran/man/pseudoBulkDGE.html'>pseudoBulkDGE</a></span><span class='op'>(</span>
@@ -3778,8 +3778,8 @@ Show code
 <pre class="sourceCode r"><code class="sourceCode r"><span class='va'>outdir</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"output"</span>, <span class='st'>"DEGs"</span>, <span class='st'>"cycling_subset_subcluster"</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/base/files2.html'>dir.create</a></span><span class='op'>(</span><span class='va'>outdir</span>, recursive <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
 <span class='fu'>createDEGOutputs</span><span class='op'>(</span>
-  outdir <span class='op'>=</span> <span class='va'>outdir</span>, 
-  de_results <span class='op'>=</span> <span class='va'>de_results</span>, 
+  outdir <span class='op'>=</span> <span class='va'>outdir</span>,
+  de_results <span class='op'>=</span> <span class='va'>de_results</span>,
   summed_filt <span class='op'>=</span> <span class='va'>cycling_sce.subcluster_Sample_filt</span>,
   sce <span class='op'>=</span> <span class='va'>x</span>,
   fdr <span class='op'>=</span> <span class='fl'>0.05</span><span class='op'>)</span>
@@ -3814,7 +3814,7 @@ Show code
       fontsize <span class='op'>=</span> <span class='fl'>8</span>,
       main <span class='op'>=</span> <span class='va'>n</span>,
       filename <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span><span class='op'>(</span><span class='va'>outdir</span>, <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>n</span>, <span class='st'>".pseudobulk_heatmap.pdf"</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
-    
+
     <span class='fu'><a href='https://rdrr.io/pkg/scater/man/plotGroupedHeatmap.html'>plotGroupedHeatmap</a></span><span class='op'>(</span>
       <span class='va'>cycling_sce</span>,
       features <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>features</span>, <span class='fl'>50</span><span class='op'>)</span>,
@@ -4072,12 +4072,12 @@ Show code
 </code></pre>
 </div>
 </details>
-<pre><code>           
+<pre><code>
             infected_1 infected_2 infected_3 uninfected_1
   Cycling.1         73         65        147           42
   Cycling.2         72         45         55           55
   Cycling.3         81         61        125           74
-           
+
             uninfected_2 uninfected_3
   Cycling.1          112           48
   Cycling.2          113           43
@@ -4159,7 +4159,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<pre><code>Cycling.1 Cycling.2 Cycling.3 
+<pre><code>Cycling.1 Cycling.2 Cycling.3
      TRUE      TRUE      TRUE </code></pre>
 </div>
 <ul>
@@ -4200,7 +4200,7 @@ Show code
 </code></pre>
 </div>
 </details>
-<pre><code>Coefficient:  TreatmentInfected 
+<pre><code>Coefficient:  TreatmentInfected
                 logFC   logCPM        LR     PValue       FDR
 Cycling.1  0.37294181 18.40769 3.7213695 0.05372029 0.1611609
 Cycling.2 -0.35382545 18.10346 2.1597911 0.14166395 0.2124959
@@ -4214,6 +4214,10 @@ Show code
 </summary>
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>saveRDS</a></span><span class='op'>(</span>
+  <span class='va'>sce.ignoring_cycling_subset</span>,
+  <span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"SCEs"</span>, <span class='st'>"C057_Cooney.ignoring_cycling_subset.sce.rds"</span><span class='op'>)</span>,
+  compress <span class='op'>=</span> <span class='st'>"xz"</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>saveRDS</a></span><span class='op'>(</span>
   <span class='va'>sce.cycling_subset_Sample</span>,
   <span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"SCEs"</span>, <span class='st'>"C057_Cooney.cycling_subset_Sample.sce.rds"</span><span class='op'>)</span>,
   compress <span class='op'>=</span> <span class='st'>"xz"</span><span class='op'>)</span>
@@ -4229,7 +4233,7 @@ Show code
 </div>
 </details>
 </div>
-<p>The aggregated <em>SummarizedExperiment</em> objects are available (see <a href="../data/SCEs/C057_Cooney.cycling_subset_Sample.sce.rds"><code>data/SCEs/C057_Cooney.cycling_subset_Sample.sce.rds</code></a>, <a href="../data/SCEs/C057_Cooney.not_cycling.subcluster_Sample.sce.rds"><code>data/SCEs/C057_Cooney.not_cycling.subcluster_Sample.sce.rds</code></a>, and <a href="../data/SCEs/C057_Cooney.cycling.subcluster_Sample.sce.rds"><code>data/SCEs/C057_Cooney.cycling.subcluster_Sample.sce.rds</code></a>). These can be used for visualizations with <em><a href="https://bioconductor.org/packages/3.12/iSEE">iSEE</a></em>.</p>
+<p>The aggregated <em>SummarizedExperiment</em> objects are available (see <a href="../data/SCEs/C057_Cooney.ignoring_cycling_subset.sce.rds"><code>data/SCEs/C057_Cooney.ignoring_cycling_subset.sce.rds</code></a>, <a href="../data/SCEs/C057_Cooney.cycling_subset_Sample.sce.rds"><code>data/SCEs/C057_Cooney.cycling_subset_Sample.sce.rds</code></a>, <a href="../data/SCEs/C057_Cooney.not_cycling.subcluster_Sample.sce.rds"><code>data/SCEs/C057_Cooney.not_cycling.subcluster_Sample.sce.rds</code></a>, and <a href="../data/SCEs/C057_Cooney.cycling.subcluster_Sample.sce.rds"><code>data/SCEs/C057_Cooney.cycling.subcluster_Sample.sce.rds</code></a>). These can be used for visualizations with <em><a href="https://bioconductor.org/packages/3.12/iSEE">iSEE</a></em>.</p>
 <p>The <a href="../output/DEGs/"><code>output/DEGs/</code></a> directory contains CSV files summarising the differential expression results and PDFs showing the pseudobulk expression data for each DEG.</p>
 <h1 class="appendix" id="additional-information">Additional information</h1>
 <p>The following are available on request:</p>
@@ -4253,16 +4257,16 @@ Show code
 </div>
 </details>
 <pre><code>─ Session info ─────────────────────────────────────────────────────
- setting  value                       
+ setting  value
  version  R version 4.0.3 (2020-10-10)
- os       CentOS Linux 7 (Core)       
- system   x86_64, linux-gnu           
- ui       X11                         
- language (EN)                        
- collate  en_US.UTF-8                 
- ctype    en_US.UTF-8                 
- tz       Australia/Melbourne         
- date     2021-12-03                  
+ os       CentOS Linux 7 (Core)
+ system   x86_64, linux-gnu
+ ui       X11
+ language (EN)
+ collate  en_US.UTF-8
+ ctype    en_US.UTF-8
+ tz       Australia/Melbourne
+ date     2021-12-03
 
 ─ Packages ─────────────────────────────────────────────────────────
  ! package              * version  date       lib
@@ -4381,122 +4385,122 @@ Show code
  P XVector                0.30.0   2020-10-27 [?]
  P yaml                   2.2.1    2020-02-01 [?]
  P zlibbioc               1.36.0   2020-10-27 [?]
- source                                  
- Bioconductor                            
- Bioconductor                            
- CRAN (R 4.0.0)                          
- Bioconductor                            
- CRAN (R 4.0.0)                          
- Bioconductor                            
- Bioconductor                            
- CRAN (R 4.0.0)                          
- Bioconductor                            
- Bioconductor                            
- Bioconductor                            
- Bioconductor                            
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.0)                          
- Bioconductor                            
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.3)                          
- Bioconductor                            
- Bioconductor                            
- Bioconductor                            
- CRAN (R 4.0.2)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.0)                          
- Bioconductor                            
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.3)                          
- Bioconductor                            
- Bioconductor                            
- CRAN (R 4.0.3)                          
- Bioconductor                            
- Bioconductor                            
- Bioconductor                            
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.3)                          
- Bioconductor                            
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.2)                          
- Bioconductor                            
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.3)                          
- Bioconductor                            
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.3)                          
- Bioconductor                            
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.2)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.0)                          
- Bioconductor                            
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.0)                          
- Bioconductor                            
- Bioconductor                            
- Bioconductor                            
- CRAN (R 4.0.0)                          
- Bioconductor                            
- Bioconductor                            
- CRAN (R 4.0.2)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.0)                          
- Bioconductor                            
- CRAN (R 4.0.2)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.3)                          
+ source
+ Bioconductor
+ Bioconductor
+ CRAN (R 4.0.0)
+ Bioconductor
+ CRAN (R 4.0.0)
+ Bioconductor
+ Bioconductor
+ CRAN (R 4.0.0)
+ Bioconductor
+ Bioconductor
+ Bioconductor
+ Bioconductor
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ Bioconductor
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ Bioconductor
+ Bioconductor
+ Bioconductor
+ CRAN (R 4.0.2)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ Bioconductor
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ Bioconductor
+ Bioconductor
+ CRAN (R 4.0.3)
+ Bioconductor
+ Bioconductor
+ Bioconductor
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ Bioconductor
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.2)
+ Bioconductor
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ Bioconductor
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ Bioconductor
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.2)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ Bioconductor
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ Bioconductor
+ Bioconductor
+ Bioconductor
+ CRAN (R 4.0.0)
+ Bioconductor
+ Bioconductor
+ CRAN (R 4.0.2)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ Bioconductor
+ CRAN (R 4.0.2)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.3)
  Github (gadenbuie/xaringanExtra@cc1f613)
- CRAN (R 4.0.3)                          
- CRAN (R 4.0.0)                          
- CRAN (R 4.0.0)                          
- Bioconductor                            
- CRAN (R 4.0.0)                          
- Bioconductor                            
+ CRAN (R 4.0.3)
+ CRAN (R 4.0.0)
+ CRAN (R 4.0.0)
+ Bioconductor
+ CRAN (R 4.0.0)
+ Bioconductor
 
 [1] /stornext/Projects/score/Analyses/C057_Cooney/renv/library/R-4.0/x86_64-pc-linux-gnu
 [2] /tmp/RtmpyCwH1Q/renv-system-library
