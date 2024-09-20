@@ -7,7 +7,7 @@
 
 
 # NOTE: This script does not use the renv analysis environment used by the rest
-#       of this project.
+#       of this project. Instead, it used R 4.4, BioC 3.19, and edgeR 4.2.1.
 renv::deactivate()
 
 library(here)
